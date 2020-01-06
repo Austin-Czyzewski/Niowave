@@ -20,6 +20,37 @@ Functions to be found:
 
     - Ramp two way
         - Select the magnet, set an end value, define a step size, and this will walk the magnet to and from that value
+        
+    - Plot
+        - Currently not very useful, don't use this
+    
+    - Rapid_T_Scan
+        - This takes a 2 axis magnet and rapidly scans in a t shape, this can prove to be useful for taking large datasets
+
+
+Example Code to Write a script that reads the value of dipole 1 and then writes a new value. Then it checks that it actually wrote:
+
+from Master import *
+from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.payload import BinaryPayloadBuilder
+from pymodbus.constants import Endian
+
+Client = Make_Client('192.186.10.2') #Establish Client
+Dipole_1_Before = Read(Client,22201) #Read DP1
+
+New_Dipole_1 = 0.123 #Amps, Set new value to be set
+
+Dipole_1 = Write(Client,22201,New_Dipole_1) #Write to DP1 
+Dipole_1_After = Read(Client,22201) #Read DP1
+
+
+
+if Dipole_1_After == Dipole_1_Before:
+    print("True")
+else:
+    print("False")
+
 
 
 
@@ -371,32 +402,168 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
     plt.show()
     
 
+    
+def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
+    '''
+    Inputs: Client, see "Client" abov
+        __ WFH_Tag: The tag for the horizontal controls for the window frame we are scanning
+        __ WFV_Tag: The tag for the horizontal controls for the window frame we are scanning
+        __ Read_Tag: This is the modbus tag for the data output tag we are reading, generally a beam dump outputting current
+        __ Horizontal_Delta (Amps): How far we want to scan in the magnet frame space with the horizontal tag
+        __ Vertical_Delta (Amps): How far we want to scan in the vertical magnet space
+        __ Resolution: For each leg of the scan from the center, how many points do we want to collect
+    Outputs: A window frame scan in which a quick sweep is performed with no regard to data collection. This is done for data gathering.
+    Starting at the center. The scan is done in the following order:
+        -- Move Upward, taking *Resolution* number of data points
+        -- Quickly scan to the left center, gathering no data
+        -- Move to the right, through the center, and to the rightmost point we are gathering, taking *Resolution* x 2 data points
+        -- Quickly scan to the bottom center, gathering no data
+        -- Move upward back to the center, taking *Resolution* data points
+        
+        Total data taken: Resolution * 4 data points
+        
+        Data: An array containing three columns of data. The first column is the horizontal window frame value,
+            The second column is the vertical window frame value
+            The third column contains the data taken from *Read_Tag* at the two values listed above
+            
+    Common changes to be made:
+        -- Averaging number: Default is 25, this is how many points will be averaged over for the data collection, this number may
+            want to be reduced to speed up the scanning
+        -- Sleep_Time: (S) this is the amount of time between reads that we rest before making another request from the PLC
+            The minimum value on the system as of 01/01/2020 is a 7 ms delay (0.007) to avoid repeat values
+        -- Chunk_Size: This is the amount of chunky steps taken in the quick walking to the corner values, these are necessary to 
+            Avoid magnetizing our magnets in the system.
+        -- Chunk_rest_factor: This is a multiple from the sleep time on the averaging loop, we typically want a longer rest here
+            to fully allow the PLC to catch up.
+   
+    '''
+    WFH_Start = Read(Client, WFH_Tag) #Taking the start value for the window frames
+    WFV_Start = Read(Client, WFV_Tag)
 
+    Delta_H = Horizontal_Delta/Resolution #The step size for each step along the data taking routes
+    Delta_V = Vertical_Delta/Resolution
+    
+    Averaging_Number = 25 #Number of times we read the Read tags for averaging, recommended about 25 if pulsing, 10 if CW
+    Sleep_Time = .010 #Sleep time between reads
+    Chunks = 4 #Number of chunks in the diagonal moving sections 
+    Chunk_rest_factor = 10 #Multiple of Sleep_Time to allow PLC to catch up.
+    
+    Data = np.zeros([(Resolution * 4),3])
+    
+    #################################################################################
+    
+    #####
+    #Moving upward first
+    #####
+    
+    Loop_Number = 0
+    for i in range(Resolution):
+        WFV_Write_Value = WFV_Start + ((i+1) * Delta_V)
+        
+        Write(Client, WFV_Tag, WFV_Write_Value)
+        
+        Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
+        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
+        
+        
+        temp_list = []
+        for j in range(Averaging_Number):
+            temp_list.append(Read(Client, Read_Tag))
+            time.sleep(Sleep_Time)
+            
+        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+    
+        
+    #####
+    #Now moving to the left center
+    #####
+    
+    for i in range(int(Resolution/Chunks)):
+        WFH_Write_Value = WFH_Start - (i * (Horizontal_Delta/int(Resolution/Chunks)))
+        WFV_Write_Value = (WFV_Start + Vertical_Delta) - ((i+1) * (Horizontal_Delta/int(Resolution/Chunks)))
+        
+        Write(Client, WFH_Tag, WFH_Write_Value)
+        Write(Client, WFV_Tag, WFV_Write_Value)
+        
+        time.sleep(Sleep_Time*Chunk_rest_factor)
+    
+    #####
+    #Now moving right to center center
+    #####
+    
+    Loop_Number = 1
+    for i in range(Resolution):
+        WFH_Write_Value = (WFH_Start - Horizontal_Delta) + (i * Delta_H) 
+        
+        Write(Client, WFH_Tag, WFH_Write_Value)
+        
+        Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
+        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
+        
+        
+        temp_list = []
+        for j in range(Averaging_Number):
+            temp_list.append(Read(Client, Read_Tag))
+            time.sleep(Sleep_Time)
+            
+        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+        
+        
+    #####
+    #Now moving center center to center right
+    #####
+    
+    Loop_Number = 2
+    for i in range(Resolution):
+        WFH_Write_Value = WFH_Start + (i * Delta_H)
+        
+        Write(Client, WFH_Tag, WFH_Write_Value)
+        
+        Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
+        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
+        
+        
+        temp_list = []
+        for j in range(Averaging_Number):
+            temp_list.append(Read(Client, Read_Tag))
+            time.sleep(Sleep_Time)
+            
+        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+        
+    #####
+    #Now moving Center Bottom
+    #####
+    
+    for i in range(int(Resolution/Chunks)):
+        WFH_Write_Value = (WFH_Start + Horizontal_Delta) - ((i+1) * (Horizontal_Delta/int(Resolution/Chunks)))
+        WFV_Write_Value = (WFV_Start) - ((i+1) * (Vertical_Delta/int(Resolution/Chunks)))
 
-'''
-Example Code to Write a script that reads the value of dipole 1 and then writes a new value. Then it checks that it actually wrote:
+        Write(Client, WFH_Tag, WFH_Write_Value)
+        Write(Client, WFV_Tag, WFV_Write_Value)
 
-from Master import *
-from pymodbus.client.sync import ModbusTcpClient
-from pymodbus.payload import BinaryPayloadDecoder
-from pymodbus.payload import BinaryPayloadBuilder
-from pymodbus.constants import Endian
-
-Client = Make_Client('192.186.10.2') #Establish Client
-Dipole_1_Before = Read(Client,22201) #Read DP1
-
-New_Dipole_1 = 0.123 #Amps, Set new value to be set
-
-Dipole_1 = Write(Client,22201,New_Dipole_1) #Write to DP1 
-Dipole_1_After = Read(Client,22201) #Read DP1
-
-
-
-if Dipole_1_After == Dipole_1_Before:
-    print("True")
-else:
-    print("False")
-
-
-
-'''
+        time.sleep(Sleep_Time*Chunk_rest_factor)
+    
+    #####
+    #Now Moving Center Bottom to Center Center again
+    #####
+    
+    Loop_Number = 3
+    for i in range(Resolution):
+        WFV_Write_Value = (WFV_Start - Vertical_Delta) + ((i+1) * Delta_V)
+        
+        Write(Client, WFV_Tag, WFV_Write_Value)
+        
+        Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
+        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
+        
+        
+        temp_list = []
+        for j in range(Averaging_Number):
+            temp_list.append(Read(Client, Read_Tag))
+            time.sleep(Sleep_Time)
+            
+        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+        
+            
+    
+    return Data
