@@ -445,10 +445,10 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     
     Averaging_Number = 25 #Number of times we read the Read tags for averaging, recommended about 25 if pulsing, 10 if CW
     Sleep_Time = .010 #Sleep time between reads
-    Chunks = 4 #Number of chunks in the diagonal moving sections 
+    Chunks = 4 #Inverse number of chunks, we use Resolution/Chunks, thus, the maximum value allowable is Resolution
     Chunk_rest_factor = 10 #Multiple of Sleep_Time to allow PLC to catch up.
     
-    Data = np.zeros([(Resolution * 4),3])
+    Data = np.zeros([(Resolution * 4),3]) #Initializing our data into an empty array to write over later
     
     #################################################################################
     
@@ -456,33 +456,36 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     #Moving upward first
     #####
     
-    Loop_Number = 0
+    Loop_Number = 0 #Repeat variable, used to calculate where to write to, this iterates up to 3
     for i in range(Resolution):
-        WFV_Write_Value = WFV_Start + ((i+1) * Delta_V)
+        WFV_Write_Value = WFV_Start + ((i+1) * Delta_V) #Moving in the vertical direction
         
-        Write(Client, WFV_Tag, WFV_Write_Value)
+        Write(Client, WFV_Tag, WFV_Write_Value) #Writing the value to the PLC
         
-        Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
-        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
+        Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag) #Storing the Horizontal Value
+        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) #Storing the Vertical Value
         
         
-        temp_list = []
+        temp_list = [] #Used for temporary storage of the averaging number
         for j in range(Averaging_Number):
-            temp_list.append(Read(Client, Read_Tag))
-            time.sleep(Sleep_Time)
+            temp_list.append(Read(Client, Read_Tag)) #Reading and storing the Read_Tag
+            time.sleep(Sleep_Time) #Sleeping
             
-        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number #Storing the Read_Tag averaged value
+        
+        #This loop is being repeated with some minor changes being made in the Write_values sections these
+            #Are to reflect the changes in direction. Otherwise, refer to documentation in this loop for help.
     
         
     #####
     #Now moving to the left center
     #####
     
-    for i in range(int(Resolution/Chunks)):
-        WFH_Write_Value = WFH_Start - (i * (Horizontal_Delta/int(Resolution/Chunks)))
-        WFV_Write_Value = (WFV_Start + Vertical_Delta) - ((i+1) * (Horizontal_Delta/int(Resolution/Chunks)))
+    for i in range(int(Resolution/Chunks)): #We still don't want huge steps so we simply reduce the steps taken by chunks
+        WFH_Write_Value = WFH_Start - (i * (Horizontal_Delta/int(Resolution/Chunks))) #Chunking horizontally
+        WFV_Write_Value = (WFV_Start + Vertical_Delta) - ((i+1) * (Horizontal_Delta/int(Resolution/Chunks))) #Chunking Vertically
         
-        Write(Client, WFH_Tag, WFH_Write_Value)
+        Write(Client, WFH_Tag, WFH_Write_Value) #Writing the values, notice no data is being collected here
         Write(Client, WFV_Tag, WFV_Write_Value)
         
         time.sleep(Sleep_Time*Chunk_rest_factor)
@@ -567,3 +570,5 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
             
     
     return Data
+
+
