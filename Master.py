@@ -572,3 +572,48 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     return Data
 
 
+
+def Save_and_Plot(Data, Save = True, Plot = True):
+    '''
+    Inputs: A 3 column array as produced by Rapid_T_Scan above
+    
+    Outputs: A txt file with the data in it and a 3D plot
+    '''
+
+    now = datetime.today().strftime('%y%m%d_%H%M') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
+    
+    if Save == True:
+        with open(now +'.txt', 'w') as f: #Open a new file by writing to it named the date as created above + .txt
+    
+            for i in Total_Data:
+                f.write(str(i) + '\n')
+            
+            f.close()
+
+    
+    ######
+    #Plotting
+    ######
+    x = Data[:,0]
+    x = x.astype(np.float)
+
+    y = Data[:,1]
+    y = y.astype(np.float)
+
+    z = Data[:,2]
+    z = z.astype(np.float)
+
+    fig = plt.figure(figsize = (12,8))
+    ax = Axes3D(fig)
+    ax.scatter(x, y, z, c=z, cmap='viridis', linewidth=0.5)
+
+    ax.set_xlabel("Window Frame Horizontal Amperage")
+    ax.set_ylabel("Window Frame Vertical Amperage")
+    ax.set_zlabel("Collected Current")
+    ax.set_title("Rapid Dog Leg Results")
+    
+    if Save == True:
+        plt.savefig(now + '_graph.svg')
+
+
+    plt.show()
