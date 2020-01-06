@@ -14,7 +14,6 @@ A file labeled Master, this is a python file and acts as a library for other pro
 	it is imparitive to have a good idea of exactly how many versions are using each function,
 	and that if you really need to change one of these, consider the change to the functionality,
 	look at the other programs and test them, or just make a new function.
-	
 	The purpose of these functions is to make further programming more comprehensible and easier to write.
 	
 	
