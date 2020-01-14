@@ -94,10 +94,13 @@ def Make_Client(IP):
 
 
 
-def Read(Client, Tag_Number):
+def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010):
     '''
         -Inputs: Client, see "Client" Above
             __ Tag_Number: which modbus to read, convention is this: input the modbus start tag number. Must have a modbus tag.
+            __ Average: Tells us wether or not to average these data points
+            __ Count: The number of points that we will average over if Average == True
+            __ sleep_time: Time (ms) that we will rest before grabbing the next piece of data
 
         -Must have established client before attempting to read from the client
         
@@ -122,6 +125,21 @@ def Read(Client, Tag_Number):
     Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
     Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
     Tag_Value = Tag_Value_Bit.decode_32bit_float()
+    
+    if Average == True:
+        
+        temp_list = []
+        for i in range(count):
+            Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+            Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+            Tag_Value = Tag_Value_Bit.decode_32bit_float()
+            temp_list.append(Tag_Value)
+
+            time.sleep(sleep_time)
+
+        return (sum(temp_list)/count)
+        
+        
 
     return Tag_Value
 
