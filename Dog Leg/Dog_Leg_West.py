@@ -1,6 +1,15 @@
 #Created by: Austin Czyzewski
-#    Date Tested: 12/13/2019
-#         Date last updated: 01/03/2020
+#    Date Tested: 01/14/2020
+#         Date last updated: 01/15/2020
+
+####################
+
+###Notes:
+#   There is a known bug if the current dumps are not stable/are shorted out. This may
+#       result in the magnets not going back to their original position. I am working on an overhaul
+#       to reformat how walking to center is done.
+
+####################
 
 
 import Master as M
@@ -71,16 +80,9 @@ WF7H_list = [] #Storing the values for the horizontal run for Window Frame 7
 
 start_time = time.time()
 
-temp_list = []
+#Summing the start current of the two dumps
+Start_Current = (M.Read(Client, Target_Tag, Average = True, count = 20,sleep_time = .010) + M.Read(Client, Target_Tag_2, Average = True, count = 20,sleep_time = .010))
     
-for _ in range(count):
-    temp_list.append(M.Read(Client,Target_Tag)) #Appending to the temporary list to average over later
-    temp_list.append(M.Read(Client,Target_Tag_2))
-
-    time.sleep(sleep) #Sleep for the time defined in start values
-
-Start_Current = sum(temp_list)/(count*2) #Summing the values collected
-
 H_Broken = False #Creating the check tag for the Horizontal dog leg, starting out as false as no errors could have been raised yet
 V_Broken = False #Creating the check tag for the Vertical dog leg, starting out as false as no errors could have been raised yet
 
@@ -136,15 +138,8 @@ for i in range(read_steps+1):
     M.Write(Client, WF7H_Tag, WF7H_Write_Value)
 
     #Taking the value of the current collected and averaging, the list is temporary because it is updated each run
-    temp_list = []
+    collection = (M.Read(Client, Target_Tag, Average = True, count = 20,sleep_time = .010) + M.Read(Client, Target_Tag_2, Average = True, count = 20,sleep_time = .010))
 
-    for _ in range(count):
-    	temp_list.append(M.Read(Client,Target_Tag)) #Appending to the temporary list to average over later
-    	temp_list.append(M.Read(Client,Target_Tag_2))
-
-    	time.sleep(sleep) #Sleep for the time defined in start values
-
-    collection = sum(temp_list)/(count*2)
     collected_list_H.append(collection) #Storing the values in the collection list
 
     i_max = i #storing the maximum i value to be used to walk the loop back
@@ -195,17 +190,9 @@ for i in range(read_steps+1):
             #Storing the max achieved by this loop, in which case it is the minimum value acheived for window frame 6
             WF6H_min = WF6H_Write_Value
             WF7H_min = WF7H_Write_Value
-
-            #Same loop as above for the current collected
-            temp_list = []
-
-            for _ in range(count):
-    	        temp_list.append(M.Read(Client,Target_Tag)) #Appending to the temporary list to average over later
-    	        temp_list.append(M.Read(Client,Target_Tag_2))
-
-    	        time.sleep(sleep) #Sleep for the time defined in start values
-
-            collection = sum(temp_list)/(count*2)
+            
+            collection = (M.Read(Client, Target_Tag, Average = True, count = 20,sleep_time = .010) + M.Read(Client, Target_Tag_2, Average = True, count = 20,sleep_time = .010))
+            
             collected_list_H.append(collection) #Storing the values in the collection list
                 
             #We are storing j_max as the j-read_steps because this will tell us how far past 0 we walked
@@ -258,15 +245,8 @@ for i in range(read_steps+1):
                     M.Write(Client, WF6H_Tag, WF6H_Write_Value)
                     M.Write(Client, WF7H_Tag, WF7H_Write_Value)
 
-                    #Same current collection loop as above
-                    temp_list = []
-                    for _ in range(count):
-    	                temp_list.append(M.Read(Client,Target_Tag)) #Appending to the temporary list to average over later
-    	                temp_list.append(M.Read(Client,Target_Tag_2))
-
-    	                time.sleep(sleep) #Sleep for the time defined in start values
-
-                    collection = sum(temp_list)/(count*2)
+                    collection = (M.Read(Client, Target_Tag, Average = True, count = 20,sleep_time = .010) + M.Read(Client, Target_Tag_2, Average = True, count = 20,sleep_time = .010))
+                    
                     collected_list_H.append(collection) #Storing the values in the collection list
                 #print("End Ascent")
                 
@@ -336,14 +316,8 @@ for i in range(read_steps + 1):
     M.Write(Client, WF7V_Tag, WF7V_Write_Value)
 
     
-    temp_list = []
-    for _ in range(count):
-    	temp_list.append(M.Read(Client,Target_Tag)) #Appending to the temporary list to average over later
-    	temp_list.append(M.Read(Client,Target_Tag_2))
-
-    	time.sleep(sleep) #Sleep for the time defined in start values
-
-    collection = sum(temp_list)/(count*2)
+    collection = (M.Read(Client, Target_Tag, Average = True, count = 20,sleep_time = .010) + M.Read(Client, Target_Tag_2, Average = True, count = 20,sleep_time = .010))
+    
     collected_list_V.append(collection) #Storing the values in the collection list
 
     i_max = i
@@ -384,15 +358,8 @@ for i in range(read_steps + 1):
             WF7V_min = WF7V_Write_Value
 
             
-            temp_list = []
-
-            for _ in range(count):
-    	        temp_list.append(M.Read(Client,Target_Tag)) #Appending to the temporary list to average over later
-    	        temp_list.append(M.Read(Client,Target_Tag_2))
-
-    	        time.sleep(sleep) #Sleep for the time defined in start values
-
-            collection = sum(temp_list)/(count*2)
+            collection = (M.Read(Client, Target_Tag, Average = True, count = 20,sleep_time = .010) + M.Read(Client, Target_Tag_2, Average = True, count = 20,sleep_time = .010))
+            
             collected_list_V.append(collection) #Storing the values in the collection list
 
             j_max = j - read_steps
@@ -435,14 +402,8 @@ for i in range(read_steps + 1):
                     M.Write(Client, WF7V_Tag, WF7V_Write_Value)
 
                     
-                    temp_list = []
-                    for _ in range(count):
-    	                temp_list.append(M.Read(Client,Target_Tag)) #Appending to the temporary list to average over later
-    	                temp_list.append(M.Read(Client,Target_Tag_2))
-
-    	                time.sleep(sleep) #Sleep for the time defined in start values
-
-                    collection = sum(temp_list)/(count*2)
+                    collection = (M.Read(Client, Target_Tag, Average = True, count = 20,sleep_time = .010) + M.Read(Client, Target_Tag_2, Average = True, count = 20,sleep_time = .010))
+                    
                     collected_list_V.append(collection) #Storing the values in the collection list
                 #print("Done with Vertical Ascent")
 
