@@ -33,7 +33,18 @@ A folder titled: Magnet Saves
 	Hopefully, months down the road, this folder gets hard to find because it is surrounded by so
 	many great programs to make beamwork more precise.
 	
-A foldre titled:
+A folder titled: Magnet Ramping
+	This folder contains a project that stood in only for a few weeks. This was a temporary fix
+	for a problem that operators faced with new updates to the GUI or Logic of the PLC's where 
+	all of our magnets would be turned off and it would waste time to ramp them up. This was created 
+	to load in a magnet save and ramp the magnets to the new values, it still took some time but saved
+	many man-hours.
+	
+A folder titled: Scripts
+	This is a folder of scripts that were tested but never quite found a use, there are files in here that
+	may be useful in the future, for automated tuning of the beamline. But that project is quite a bit down 
+	the line, so here are the scripts in all their glory. 
+	
 	
 A word document titled: future projects
 	This document contains ramblings and ideas about future ideas with python as a modbus communicator.
