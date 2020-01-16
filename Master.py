@@ -26,6 +26,13 @@ Functions to be found:
     
     - Rapid_T_Scan
         - This takes a 2 axis magnet and rapidly scans in a t shape, this can prove to be useful for taking large datasets
+        
+    - Ramp_Two
+        - Ramps two magnets to the desired endpoint concurrently, useful for resetting magnets after scissoring.
+            See: Dog Leg
+            
+    - Save and Plot
+        - From the output of the Rapid_T_Scan this will save and plot the data into a 3d plot
 
 
 Example Code to Write a script that reads the value of dipole 1 and then writes a new value. Then it checks that it actually wrote:
@@ -264,14 +271,8 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
         Write(Client, Tag_Number, write_value)
 
         if Read_Tag != "00000":
-            
-            temp_list = []
-            for i in range(count):
-                temp_list.append(Read(Client,Read_Tag))
 
-                time.sleep(sleep_time) #Sleep for 20 ms, this is tested to not overload PLC or give redundant data
-
-            collected_list.append(sum(temp_list)/count)
+            collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
         
         else:
             time.sleep(sleep_time * 10)
@@ -364,31 +365,30 @@ def Ramp_Two_Way(Client, Tag_Number, End_Value = 0, Runs = 1, Max_Step = 0.010, 
             Write(Client, Tag_Number, write_value)
 
             if Read_Tag != "00000":
-                
-                temp_list = []
-                for i in range(count):
-                    temp_list.append(Read(Client,Read_Tag))
 
-                    time.sleep(sleep_time) #Sleep for 33 ms, this is tested to not overload PLC or give redundant data
-
-                collected_list.append(sum(temp_list)/count)
+                collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
 
         max_spot = write_value
         #Same loop as above, removed spacing
         for i in range(Steps + 1):
+            
             if i != 0:
+                
                 temp_check = Read(Client,Tag_Number)
+                
                 if abs(temp_check - write_value) >= 0.001:
+                    
                     exit()
+                    
             write_value = max_spot - (Delta/Steps)*i #Only difference is the subtraction instead of addition
+            
             write_value_list.append(write_value)
+            
             Write(Client, Tag_Number, write_value)
+            
             if Read_Tag != "00000":
-                temp_list = []
-                for i in range(count):
-                    temp_list.append(Read(Client,Read_Tag))
-                    time.sleep(sleep_time)
-                collected_list.append(sum(temp_list)/count)
+                
+                collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
                 
             
 
@@ -409,6 +409,8 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
     '''
     plt.figure(figsize = (9,6))
     plt.scatter(X_list, Y_list)
+    plt.minorticks_on() #Turning on the minor axis
+    plt.grid(True,alpha = 0.25,which = 'both',color = 'gray') #Making the grid (and making it more in the background)
     plt.ylabel(Y_axis)
     plt.xlabel(Y_axis)
     plt.grid(True)
@@ -416,9 +418,10 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
 
     if Save != "N":
         now = datetime.today().strftime('%y%m%d_%H%M')
-        plt.savefig(now+".png")
+        plt.savefig(now + "_graph.png", transparent = True)
     plt.show()
     
+    return
 
     
 def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
@@ -482,14 +485,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag) #Storing the Horizontal Value
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) #Storing the Vertical Value
-        
-        
-        temp_list = [] #Used for temporary storage of the averaging number
-        for j in range(Averaging_Number):
-            temp_list.append(Read(Client, Read_Tag)) #Reading and storing the Read_Tag
-            time.sleep(Sleep_Time) #Sleeping
-            
-        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number #Storing the Read_Tag averaged value
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time) #Storing the Read_Tag averaged value
         
         #This loop is being repeated with some minor changes being made in the Write_values sections these
             #Are to reflect the changes in direction. Otherwise, refer to documentation in this loop for help.
@@ -519,15 +515,8 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         Write(Client, WFH_Tag, WFH_Write_Value)
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
-        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        
-        
-        temp_list = []
-        for j in range(Averaging_Number):
-            temp_list.append(Read(Client, Read_Tag))
-            time.sleep(Sleep_Time)
-            
-        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+        Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) 
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
         
         
     #####
@@ -542,14 +531,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        
-        
-        temp_list = []
-        for j in range(Averaging_Number):
-            temp_list.append(Read(Client, Read_Tag))
-            time.sleep(Sleep_Time)
-            
-        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
         
     #####
     #Now moving Center Bottom
@@ -576,20 +558,44 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        
-        
-        temp_list = []
-        for j in range(Averaging_Number):
-            temp_list.append(Read(Client, Read_Tag))
-            time.sleep(Sleep_Time)
-            
-        Data[i + Resolution * Loop_Number, 2] = sum(temp_list)/Averaging_Number
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
         
             
     
     return Data
 
+def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Stop = 0, Resolution = 25):
+    
+    Magnet_1_Start =  Read(Client,Magnet_1_Tag)
+    Magnet_2_Start =  Read(Client,Magnet_2_Tag)
+    
+    Delta_1 = Magnet_1_Stop - Magnet_1_Start
+    Delta_2 = Magnet_2_Stop - Magnet_2_Start
+    
+    for a__ in range(1,Resolution+1):
+    
+        if a__ != 1: #Don't check on the first run due to absence of write values
+        
+            temp_check_1 = Read(Client,Magnet_1_Tag) #Take the current value of Magnet 1
+            temp_check_2 = Read(Client,Magnet_2_Tag) #Take the current value of Magnet 2
+        
+            #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
+            if abs(temp_check_1 - Magnet_1_Write_Value) >= 0.001: #Magnet 1 Check
+                print("Loop Broken")
+                break
+            if abs(temp_check_2 - Magnet_2_Write_Value) >= 0.001: #Magnet 2 Check
+                print("Loop Broken")
+                break
+            
+        Magnet_1_Write_Value = Magnet_1_Start + (Delta_1/Resolution)*a__
+        Magnet_2_Write_Value = Magnet_2_Start + (Delta_2/Resolution)*a__
+    
+        Write(Client, Magnet_1_Tag, Magnet_1_Write_Value)
+        Write(Client, Magnet_2_Tag, Magnet_2_Write_Value)
 
+        time.sleep(.010)
+        
+    return
 
 def Save_and_Plot(Data, Save = True, Plot = True):
     '''
@@ -635,3 +641,5 @@ def Save_and_Plot(Data, Save = True, Plot = True):
 
 
     plt.show()
+    
+    return
