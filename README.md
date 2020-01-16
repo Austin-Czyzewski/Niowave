@@ -33,5 +33,7 @@ A folder titled: Magnet Saves
 	Hopefully, months down the road, this folder gets hard to find because it is surrounded by so
 	many great programs to make beamwork more precise.
 	
+A foldre titled:
+	
 A word document titled: future projects
 	This document contains ramblings and ideas about future ideas with python as a modbus communicator.
