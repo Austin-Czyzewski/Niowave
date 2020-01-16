@@ -26,13 +26,6 @@ Functions to be found:
     
     - Rapid_T_Scan
         - This takes a 2 axis magnet and rapidly scans in a t shape, this can prove to be useful for taking large datasets
-        
-    - Ramp_Two
-        - Ramps two magnets to the desired endpoint concurrently, useful for resetting magnets after scissoring.
-            See: Dog Leg
-            
-    - Save and Plot
-        - From the output of the Rapid_T_Scan this will save and plot the data into a 3d plot
 
 
 Example Code to Write a script that reads the value of dipole 1 and then writes a new value. Then it checks that it actually wrote:
@@ -409,8 +402,6 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
     '''
     plt.figure(figsize = (9,6))
     plt.scatter(X_list, Y_list)
-    plt.minorticks_on() #Turning on the minor axis
-    plt.grid(True,alpha = 0.25,which = 'both',color = 'gray') #Making the grid (and making it more in the background)
     plt.ylabel(Y_axis)
     plt.xlabel(Y_axis)
     plt.grid(True)
@@ -418,10 +409,9 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
 
     if Save != "N":
         now = datetime.today().strftime('%y%m%d_%H%M')
-        plt.savefig(now + "_graph.png", transparent = True)
+        plt.savefig(now+".png")
     plt.show()
     
-    return
 
     
 def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
@@ -565,6 +555,24 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     return Data
 
 def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Stop = 0, Resolution = 25):
+    '''
+    Inputs: Client, see "Client" abov
+        __ Magnet_1_Tag: The tag for the horizontal controls for the window frame we are scanning
+        __ Magnet_2_Tag: The tag for the horizontal controls for the window frame we are scanning
+        __ Magent_1_Stop: This is the modbus tag for the data output tag we are reading, generally a beam dump outputting current
+        __ Magnet_2_Stop (Amps): How far we want to scan in the magnet frame space with the horizontal tag
+        __ Resolution: For each leg of the scan from the center, how many points do we want to collect
+        
+    Outputs: Moves two magnets to their "stop" value in "Resolution" steps
+    
+    !Returns nothing!
+    
+    Logic:
+        -- Check to see if there has been human intervention, if so, break
+        -- Write to the magnets the next step value towards the goal
+        -- Sleep for a small amount of time to avoid crowding the PLC
+   
+    '''
     
     Magnet_1_Start =  Read(Client,Magnet_1_Tag)
     Magnet_2_Start =  Read(Client,Magnet_2_Tag)
@@ -641,5 +649,3 @@ def Save_and_Plot(Data, Save = True, Plot = True):
 
 
     plt.show()
-    
-    return
