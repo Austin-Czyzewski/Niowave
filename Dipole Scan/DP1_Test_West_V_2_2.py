@@ -1,3 +1,22 @@
+''' Creator: Austin Czyzewski
+
+Date Created: 12/04/2019
+Date Last Updated: 01/17/2020
+
+Purpose: Move the first dipole up and down while taking data of collected current
+
+Route: Gather user input for changes to dipole 1 to be made
+    - Define the parameters of data gathering
+    - Read the value, perform safety checks
+    - Write new Dipole one setting
+    - Read Collected current
+    - Repeat in ascending order
+    - Repeat in descending order until reaching starting value
+    - Plot
+    - Save plot and txt file
+
+'''
+
 import matplotlib.pyplot as plt
 from datetime import datetime
 import time
