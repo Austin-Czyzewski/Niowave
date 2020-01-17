@@ -77,8 +77,7 @@ plt.xlabel("Magnet Setting (A)")
 plt.title("Dipole 1 current collected over walk from {0:.3f} to {1:.3f}".format(Start_Value, End_Value))
 plt.suptitle("Orange = Ascending, Red = Descending",fontsize = 8, alpha = 0.65)
 
-plt.grid(True)
-plt.savefig(now + '_graph.png',trasnparent = True)
+plt.savefig(now + '_graph.png', dpi = 450, trasnparent = True) #Saving to the time and date as png
 
 save_list = M.merge(DP1_Values,DBA_Collection)
 with open(now+'.txt', 'w') as f:
