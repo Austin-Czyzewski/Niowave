@@ -6,6 +6,8 @@ AI to tune/run/do something with our accelerators but... This is a dream... one 
 
 These scripts are not commented out. They do work, but have found themselves in the forbidden land.
 
+You will also find a theoretical addition to the Master, whose can has been kicked because Object-Oriented Programming is a skill only in my wheelhouse, and would make future work difficult.
+
 Since they work, and are not commented, I trust you to do the right thing. You can learn about what they're doing by looking in
 the Master file and reading up on some of my other work. If you still don't know. At the time I am writing this the scripts 
 are almost solely for the use of gathering BIG DATA, not the song, the data.
