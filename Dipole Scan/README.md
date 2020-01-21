@@ -2,7 +2,7 @@ Greetings, Adventurer,
 
 Congratulations! You have stumbled upon a Scan of Dipole 1!
 
-To Run this software, simply double click on the python file currently named, "DP1_Test_West_V_2_2"
+To Run this software, simply double click on the python file currently named, "DP1_Test_West_V_2_3"
 
 Some things you may need to change in this software, without the assistance of my humble creator, Austin Czyzewski, are the following:
 
