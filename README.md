@@ -45,6 +45,9 @@ A folder titled: Scripts
 	may be useful in the future, for automated tuning of the beamline. But that project is quite a bit down 
 	the line, so here are the scripts in all their glory. 
 	
+A folder titled: Degauss
+	This is a program designed to degauss the magnets in our system. This is used for more consistent testing
+	and production runs. This currently uses a decaying cosine function to degauss the magnets.
 	
 A word document titled: future projects
 	This document contains ramblings and ideas about future ideas with python as a modbus communicator.
