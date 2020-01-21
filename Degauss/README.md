@@ -31,7 +31,7 @@ I am not your boss. But remember, things run a lot better if you don't change an
 
 All the best, 
 
-Your friendly neighborhood python programming accelerator engineer, 
+Your friendly neighborhood pythoner programmer accelerator engineer, 
 
 Austin Czyzewski
 
