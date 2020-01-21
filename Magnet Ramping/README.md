@@ -1,3 +1,5 @@
+(Please excuse the lack of sarcasm)
+
 USER MANUAL-- RAMPDOWN.PY, MAG_LOAD.PY
 
 ############################################################################
