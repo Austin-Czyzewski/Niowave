@@ -4,7 +4,7 @@ Hello Traveler,
 
 You have come far and I can see that you are tired. Let me offer you some assistance.
 
-In this directory you will find the following items as of 01/06/2020 (that's in mm/dd/yyyy):
+In this directory you will find the following items as of 01/21/2020 (that's in mm/dd/yyyy):
 
 A file labeled Master, this is a python file and acts as a library for other programs
 	listed in the files below. In this file you will find the functions called in other
