@@ -1,8 +1,6 @@
 import Master as M
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn
-seaborn.set()
 import time
 
 '''
@@ -18,23 +16,33 @@ Method:
 
 '''
 
+##### Turn to False if no plot output is desired
+plot = True
+
+##### Turn to False when fully running, true stops from actual writing
+testing = True
+
 ######################################
 #Adjustable Key Parameters
 ######################################
 
-Time = 5 #Artbitrary scaling, defualt value
-Amplitude = 1
-Decay_Constant = .6 #Lower values = more peaks, longer decay time
+#If adjusting ANY of these, 
+
+Time = 4 #Artbitrary scaling, defualt value
+Amplitude = .05
+Decay_Constant = .75 #Lower values = more peaks, longer decay time
                 #higher values = more decay between each peak, recommended range
                 # of 0.4 < x < 0.75
-Points = 1500
+Points = 3000
 
 Dipole_Amplitude = 5 #(Amps) The value we want Dipoles to reach in the peak
                         #This can also be set to the start value if need be
 
+Frequency = 5 #Increase this value for more oscillations
+
 WF_Amplitude = 3 #(Amps)
 
-Sol_Amplitude = 5 #(Amps)
+Sol_Amplitude = 4 #(Amps)
 
 ######################################
 #PLC Parameters
@@ -55,6 +63,7 @@ Window_Frame_Count = 21 #Number of Window Frames
 Solenoid_Count = 9 #Number of Solenoids (Not used currently)
 
 Start_Time = time.time()
+
 ###################
 #Uncomment the following to have amplitude start at the current setpoint
 ###################
@@ -70,7 +79,9 @@ Start_Time = time.time()
 
 x = np.linspace(0,Time*3/4*np.pi, Points) #Defining the number of points that we'll take
 
-y = (Amplitude) * np.exp(Decay_Constant * -x) * np.cos(1/Decay_Constant * (2 * np.pi * x)) #Producing the Guassian
+y = (Amplitude) * np.exp(Decay_Constant * -x) * np.cos((Frequency * np.pi * x)) #Producing the Guassian
+
+x = np.linspace(0,len(x)*.1,len(x)) #Overwriting x to convert to seconds
 
 y[-1] = 0 #Setting the last point in y to 0 so all magnets are at 0
 
@@ -94,13 +105,34 @@ for pre_scaled_value in y:
     
     for _ in range(Solenoid_Count):
         Sols.append(pre_scaled_value * Sol_Amplitude)
+
+    if testing == False:
+        M.Write_Multiple(Client, Dipole_Start_Tag, Dipoles)
+        M.Write_Multiple(Client, Window_Frame_Start_Tag, WFs)
+
+        ##################################################
+        #DO NOT UNCOMMENT UNTIL WE HAVE SOLENOID TOGGLING FUNCTIONALITY
+        #M.Write_Multiple(Client, Solenoid_Start_Tag, Sols)
+        ##################################################
+
+        time.sleep(.1)
+
+    else:
+        continue
     
-    M.Write_Multiple(Client, Dipole_Start_Tag, Dipoles)
-    M.Write_Multiple(Client, Window_Frame_Start_Tag, WFs)
     
-    ##################################################
-    #DO NOT UNCOMMENT UNTIL WE HAVE SOLENOID TOGGLING FUNCTIONALITY
-    #M.Write_Multiple(Client, Solenoid_Start_Tag, Sols)
-    ##################################################
 
 print("{0:.1f} Seconds to run".format(time.time() - Start_Time))
+
+if plot == True:
+    plt.plot(x,y* Dipole_Amplitude, label = 'Dipoles', alpha = 0.5)
+    plt.plot(x,y* WF_Amplitude, label = 'Window Frames', alpha = 0.5)
+    plt.plot(x,y * Sol_Amplitude, label = 'Solenoids', alpha = 0.5)
+    plt.legend()
+    plt.title("DeGaussing Path Taken")
+    plt.xlabel("Seconds")
+    plt.ylabel("Amps")
+    plt.show()
+
+
+
