@@ -13,7 +13,11 @@ Functions to be found:
         - Read the output from a modbus tag
         
     - Write to client
-        - Similar to read, however, give a new value to write to. Be careful, there is no safety in magnet step size here
+        - Similar to read; however, give a new value to write to. Be careful, there is no safety in magnet step size here
+      
+    - Write multiple to client
+        - Similar to write; however, writes to multiple registers in a row depending on the length of the list provided
+            Again, there is no compare check here so there may be large impacts from writing the wrong value.
         
     - Ramp one way
         - Select the magnet, set an end value, and define a step size and this will walk the magnet to that value
@@ -184,6 +188,57 @@ def Write(Client, Tag_Number, New_Value):
 
     return
 
+
+def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
+    
+    '''
+    Inputs:
+        __ Client: See client
+        __ Start_Tag_Number: This is the starting tag value, this will increment
+            by two for each of the items in the New_Values_List
+        __ New_Values_List: This is a list of new values that you want to write, this
+            is typically the same number repeated once for each time that you want
+            to write to each magnet. This is done this way so that you can write
+            different values to each magnet if you want to. (Typically by a scaled
+            amount if you are doing that.)
+        
+        - Must have an established Client before running this function.
+        
+        - Outputs:
+            __ Writes to a number of user defined magnets, may, in the future,
+                allow one value to be written to a specified number of magnets.
+                
+        - Method:
+                - Set up the Client
+                - Define the start tag value, 22201 for dipole 1 for example
+                - For each dipole you want to step, you define the new value 
+                    you want written to it.
+        - Example (Writing to 8 Dipoles starting with DP1)
+        
+        List = [0.100,0.100,0.100,0.100,0.100,0.100,0.100,0.100]
+        DP1_Tag = 22201
+        
+        Client = M.Make_Client('192.168.1.2')
+        
+        M.Write_Multiple(Client, DP1_Tag, List)
+        
+            - Result: All of the Dipoles (Assuming there are 8 will be written to 0.100) 
+    
+    '''
+    
+    Tag_Number = int(Start_Tag_Number)-1
+    
+    Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
+    
+    for value in New_Value_List:
+        Builder.add_32bit_float(value)
+        
+    Payload = Builder.to_registers()
+    Payload = Builder.build()
+    
+    Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
+    
+    return
 
 
 def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
