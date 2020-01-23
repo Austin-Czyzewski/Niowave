@@ -4,7 +4,7 @@ these and they were immediately thrown out. They may be useful for the future of
 AI to tune/run/do something with our accelerators but... This is a dream... one too large for now... so they have been "tabled" (AKA kicked to the curb and noted to be laughed at if brought up again.).)
 
 
-These scripts are not commented out. They do work, but have found themselves in the forbidden land.
+These scripts are not commented or documented. They do work, but have found themselves in the forbidden land.
 
 You will also find a theoretical addition to the Master, whose can has been kicked because Object-Oriented Programming is a skill only in my wheelhouse, and would make future work difficult.
 
