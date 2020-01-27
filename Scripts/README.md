@@ -1,7 +1,7 @@
 You have entered the forbidden land! GET OUT (or don't, you can stay and look at my work. Really, I don't mind. 
 Actually, the more that I think about it, please stay, I get lonely and could really use the company. I worked pretty hard on 
 these and they were immediately thrown out. They may be useful for the future of this programming project and for implementing 
-AI to tune/run/do something with our accelerators but... This is a dream... one too large for now... so they have been "tabled" (AKA kicked to the curb and noted to be laughed at if brought up again.).)
+AI to tune/run/do something with our accelerators but... This is a dream... one too large for now... so they have been "tabled" (AKA kicked to the curb).).
 
 
 These scripts are not commented or documented. They do work, but have found themselves in the forbidden land.
