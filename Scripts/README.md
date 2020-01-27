@@ -6,7 +6,7 @@ AI to tune/run/do something with our accelerators but... This is a dream... one 
 
 These scripts are not commented or documented. They do work, but have found themselves in the forbidden land.
 
-You will also find a theoretical addition to the Master, whose can has been kicked because Object-Oriented Programming is a skill only in my wheelhouse, and would make future work difficult.
+You will also find a theoretical addition to the Master.
 
 Since they work, and are not commented, I trust you to do the right thing. You can learn about what they're doing by looking in
 the Master file and reading up on some of my other work. If you still don't know. At the time I am writing this the scripts 
