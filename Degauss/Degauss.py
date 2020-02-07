@@ -2,6 +2,7 @@ import Master as M
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import Tag_Database as Tags
 
 '''
 Purpose:
@@ -50,11 +51,11 @@ Sol_Amplitude = 4 #(Amps)
 
 Client = M.Make_Client("192.168.1.2")
 
-Dipole_Start_Tag = 22201 #First Dipole we are controlling
+Dipole_Start_Tag = Tags.DP1 #First Dipole we are controlling
 
-Window_Frame_Start_Tag = 20201 #First Window Frame we are controlling
+Window_Frame_Start_Tag = Tags.WF1V #First Window Frame we are controlling
 
-Solenoid_Start_Tag = 21201 #First Solenoid we are controlling
+Solenoid_Start_Tag = Tags.Sol1 #First Solenoid we are controlling
 
 Dipole_Count = 8 #Number of Dipoles 
 
