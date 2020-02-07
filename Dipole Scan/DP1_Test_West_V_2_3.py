@@ -32,9 +32,9 @@ End_Value = float(input("What is the ending amperage that you want to ramp the m
 #Runs = int(input("How many runs do you want the Dipole to make?   "))
 
 Runs = 1 #Number of times you want to ramp to the input value and back to the start
-Dipole_Tag = 22201 #Modbus address of the magnet we are writing to
+Dipole_Tag = Tags.DP1 #Modbus address of the magnet we are writing to
 Step_size = .001 #Step Size, in Amps, that we are taking to reach our goal
-Read = "11109" #Modbus address of the value we want to read while we scan the magnet
+Read = Tags.DBA_Bypass #Modbus address of the value we want to read while we scan the magnet
 count = 20 #Number of times we want to average the Read Tag value
 
 Start_Value = M.Read(Client, Dipole_Tag) #Recording the starting value of the Dipole
