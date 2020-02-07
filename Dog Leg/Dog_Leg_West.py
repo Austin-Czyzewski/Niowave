@@ -16,6 +16,7 @@ import Master as M
 import time
 import matplotlib.pyplot as plt
 from datetime import datetime
+import Tag_Database as Tags
 
 
 
@@ -45,8 +46,8 @@ Client = M.Make_Client('10.50.0.10')
 
 #Dog Leg
 
-Target_Tag = 11111 #Int or Str. Which Tag we are reading, 11109 is Loop bypass dump as of 01/01/2020
-Target_Tag_2 = 11113
+Target_Tag = Tags.Recirculator_Halfway #Importing the tag value from our Tag Database
+Target_Tag_2 = Tags.Recirculator_Bypass
 Threshold_Percent = 0 #Float. The percentage of beam that we want to collect in order to turn the Dog Leg around
 
 Zoom_In_Factor = 1 #This is how much we want to zoomn in if we are interested in an artifact at the center of the dog leg or want higher precision in the center
