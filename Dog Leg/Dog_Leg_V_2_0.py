@@ -43,8 +43,8 @@ Client = M.Make_Client('10.50.0.10')
 start_time = time.time()
 #Dog Leg
 
-Target_Tag = 11111 #Int or Str. Which Tag we are reading, 11109 is Loop bypass dump as of 01/01/2020
-Target_Tag_2 = 11113
+Target_Tag = Tags.Recirculator_Halfway #Int or Str. Which Tag we are reading, 11109 is Loop bypass dump as of 01/01/2020
+Target_Tag_2 = Tags.Recirculator_Bypass
 Threshold_Percent = 20 #Float. The percentage of beam that we want to collect in order to turn the Dog Leg around
 
 Zoom_In_Factor = 1 #This is how much we want to zoomn in if we are interested in an artifact at the center of the dog leg or want higher precision in the center
@@ -65,11 +65,11 @@ Delta_7 = 0.228*Scale_Factor/Zoom_In_Factor #Change in Window Frame 7 Values thr
 
 #Window Frames Horizontal
 
-WF6H_Tag = 20223 #The tag for Window Frame 6 Horizontal
-WF7H_Tag = 20227 #The tag for Window Frame 7 Horizontal
+WF6H_Tag = Tags.WF6H #The tag for Window Frame 6 Horizontal
+WF7H_Tag = Tags.WF7H #The tag for Window Frame 7 Horizontal
 
-WF6V_Tag = 20221 #Window Frame 6 Vertical Tag
-WF7V_Tag = 20225 #Window Frame 7 Vertical Tag
+WF6V_Tag = Tags.WF6V #Window Frame 6 Vertical Tag
+WF7V_Tag = Tags.WF7V #Window Frame 7 Vertical Tag
 
 ###################################################################################################
 
@@ -373,7 +373,7 @@ Dump_Sum = Dump_1 + Dump_2
 ### Plotting
 
 #Converting to mms of displacement
-Horizontal_In_mms = (Horizontal_6 - WF6H_Start)/Delta_6*15/Zoom_In_Factor
+Horizontal_In_mms = (Horizontal_6 - WF6H_Start)/Delta_6*15/Zoom_In_Factor #Our max displacement is 15 mms
 Vertical_In_mms = (Vertical_6 - WF6V_Start)/Delta_6*15/Zoom_In_Factor
 
 #Dump Sum into percent from start
