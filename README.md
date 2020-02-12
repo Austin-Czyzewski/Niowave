@@ -51,3 +51,6 @@ A folder titled: Degauss
 	
 A word document titled: future projects
 	This document contains ramblings and ideas about future ideas with python as a modbus communicator.
+
+A Document named: Tag_Database.py
+	This script is designed to have one place for the Modbus addresses for minor future-proofing. This will help if addresses change or the style changes overall so that changes can be made in one place.
