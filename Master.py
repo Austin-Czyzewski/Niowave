@@ -309,7 +309,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
             temp_check = Read(Client,Tag_Number)
 
             if abs(temp_check - write_value) >= 0.001:
-                exit()
+                break
         
             
         write_value = Start_Value + (Delta/Steps)*i
