@@ -33,10 +33,10 @@ Client = M.Make_Client('10.50.0.10')
 start_time = time.time()
 #Dog Leg
 
-Target_Tag = Tags.RF_Beam_Mon #Int or Str. Which Tag we are reading, 11109 is Loop bypass dump as of 01/01/2020
+Target_Tag = Tags.RF_Beam_Mon #Int or Str. Which Tag we are reading, we are interested in the RF Beam monitor currently
 Threshold_Percent = 70 #Float. The percentage of beam that we want to collect in order to turn the Dog Leg around
 
-Zoom_In_Factor = 1 #This is how much we want to zoomn in if we are interested in an artifact at the center of the dog leg or want higher precision in the center
+Zoom_In_Factor = 1 #This is how much we want to zoom in if we are interested in an artifact at the center of the dog leg or want higher precision in the center
 
 Scale_Factor = 1 #This is how much we want to scale off of the excel documents used prior to Dog Legs
 mm_factor = 1
@@ -50,16 +50,16 @@ sleep_time = 10 #Float.(ms)Sleep for 20 ms, this is tested to not overload PLC o
 sleep = sleep_time/1000 #Setting the sleep time to ms
 
 
-Delta_12 = 0.384*Scale_Factor/Zoom_In_Factor #Change in Window Frame 6 Values throughout the test, standard is 0.384 from Dog Leg Excel sheets (01/01/2020)
-Delta_13 = 0.228*Scale_Factor/Zoom_In_Factor #Change in Window Frame 7 Values throughout the test, standard is 0.228 from Dog Leg Excel sheets (01/01/2020)
+Delta_12 = 0.500*Scale_Factor/Zoom_In_Factor #Change in Window Frame 12 Values throughout the test
+Delta_13 = 0.500*Scale_Factor/Zoom_In_Factor #Change in Window Frame 13 Values throughout the test
 
 #Window Frames Horizontal
 
-WF12H_Tag = Tags.WF12H #The tag for Window Frame 6 Horizontal
-WF13H_Tag = Tags.WF13H #The tag for Window Frame 7 Horizontal
+WF12H_Tag = Tags.WF12H #The tag for Window Frame 12 Horizontal
+WF13H_Tag = Tags.WF13H #The tag for Window Frame 13 Horizontal
 
-WF12V_Tag = Tags.WF12V #Window Frame 6 Vertical Tag
-WF13V_Tag = Tags.WF13V #Window Frame 7 Vertical Tag
+WF12V_Tag = Tags.WF12V #Window Frame 12 Vertical Tag
+WF13V_Tag = Tags.WF13V #Window Frame 13 Vertical Tag
 
 ###################################################################################################
 
@@ -67,11 +67,11 @@ WF13V_Tag = Tags.WF13V #Window Frame 7 Vertical Tag
 
 ###################################################################################################
 
-WF12H_Start = M.Read(Client,WF12H_Tag) #Starting value for Window Frame 6 Horizontal
-WF13H_Start = M.Read(Client,WF13H_Tag) #Starting value for Window Frame 7 Horizontal
+WF12H_Start = M.Read(Client,WF12H_Tag) #Starting value for Window Frame 12 Horizontal
+WF13H_Start = M.Read(Client,WF13H_Tag) #Starting value for Window Frame 13 Horizontal
 
-WF12V_Start = M.Read(Client,WF12V_Tag) #Starting value for Window Frame 6 Horizontal
-WF13V_Start = M.Read(Client,WF13V_Tag) #Starting value for Window Frame 7 Horizontal
+WF12V_Start = M.Read(Client,WF12V_Tag) #Starting value for Window Frame 12 Horizontal
+WF13V_Start = M.Read(Client,WF13V_Tag) #Starting value for Window Frame 13 Horizontal
 
 start_time = time.time()
 
@@ -88,8 +88,8 @@ V_Broken = False #Creating the check tag for the Vertical dog leg, starting out 
 ###################################################################################################
 
 # 6 Columns, unknown rows
-# WF6H | WF7H | WF6V | WF7V | Dump 1 | Dump 2 |
-#  0   |  1   |  2   |  3   |   4    |   5    |
+# WF12H | WF13H | WF12V | WF13V | Target |
+#  0   |  1   |  2   |  3   |   4    |
 
 Full_Data_Set = []
 
@@ -102,7 +102,7 @@ Full_Data_Set = []
 
 #Example:
 # plt.plot(Full_Data_Set[:iterator_1,0],Full_Data_Set[:iterator_1,4])
-# The above example would plot WF6H vs Dump_1
+# The above example would plot WF12H vs Target_1_Collection
 
 ###################################################################################################
 
@@ -114,54 +114,58 @@ Full_Data_Set = []
 ### To the right
 #############################
 
+# First we are going to read the first value before we move at all
 Full_Data_Set.append([M.Read(Client, WF12H_Tag),
                      M.Read(Client, WF13H_Tag),
                      M.Read(Client, WF12V_Tag),
                      M.Read(Client, WF13V_Tag),
                      M.Read(Client, Target_Tag, Average = True, count = count, sleep_time = sleep)])
 
+#Now we are going to iterate up to the Read_Steps while making sure that we maintain our threshold collection
 for Right_Steps in range(1, Read_Steps + 1):
     
     if Right_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
         
-        temp_check_12 = M.Read(Client,WF12H_Tag) #Take the current value of WF6H
-        temp_check_13 = M.Read(Client,WF13H_Tag) #Take the current value of WF7H
+        temp_check_12 = M.Read(Client,WF12H_Tag) #Take the current value of WF12H
+        temp_check_13 = M.Read(Client,WF13H_Tag) #Take the current value of WF13H
         
         #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-        if abs(temp_check_12 - WF12H_Write_Value) >= 0.001: #WF6H Check
-            H_Broken = True
+        if abs(temp_check_12 - WF12H_Write_Value) >= 0.001: #WF12H Check
+            H_Broken = True #Update the value of our loop breaker if there was human intervention so that further loops and this one don't run
             V_Broken = True
             print("Loop Broken")
             break
-        if abs(temp_check_13 - WF13H_Write_Value) >= 0.001: #WF7H Check
+        if abs(temp_check_13 - WF13H_Write_Value) >= 0.001: #WF13H Check
             H_Broken = True
             V_Broken = True
             print("Loop Broken")
             break
             
-    WF12H_Write_Value = WF12H_Start + (Delta_12/Read_Steps)*Right_Steps
+    WF12H_Write_Value = WF12H_Start + (Delta_12/Read_Steps)*Right_Steps #Calculate the written value for each window frame
     WF13H_Write_Value = WF13H_Start - (Delta_13/Read_Steps)*Right_Steps
     
-    M.Write(Client, WF12H_Tag, WF12H_Write_Value)
+    M.Write(Client, WF12H_Tag, WF12H_Write_Value) #Write the calculated value to each window frame
     M.Write(Client, WF13H_Tag, WF13H_Write_Value)
     
-    RFBM_Collection = M.Read(Client, Target_Tag, Average = True, count = count, sleep_time = sleep)
+    RFBM_Collection = M.Read(Client, Target_Tag, Average = True, count = count, sleep_time = sleep) #Read the Target tag count times and average
     
-    Full_Data_Set.append([M.Read(Client, WF12H_Tag), M.Read(Client, WF13H_Tag), M.Read(Client, WF12V_Tag), M.Read(Client, WF13V_Tag), RFBM_Collection])
+    Full_Data_Set.append([M.Read(Client, WF12H_Tag), M.Read(Client, WF13H_Tag), M.Read(Client, WF12V_Tag), M.Read(Client, WF13V_Tag), RFBM_Collection]) #Append all data to the current list
     
-    if abs(RFBM_Collection) < abs(Threshold_Percent*Start_Current*.01):
+    if abs(RFBM_Collection) < abs(Threshold_Percent*Start_Current*.01): #Check to see that we are above our Threshold
         break
 
 #############################
 ### Back to Center
 #############################
 
+#This function will walk us back to the start positions without taking data
 M.Ramp_Two(Client, WF12H_Tag, WF13H_Tag, Magnet_1_Stop = WF12H_Start, Magnet_2_Stop = WF13H_Start, Resolution = Right_Steps)
 
 #############################
 ### To the left
 #############################
 
+#Repeat the following loop with same logic with the difference being in the write value calculation
 Full_Data_Set.append([M.Read(Client, WF12H_Tag),
                      M.Read(Client, WF13H_Tag),
                      M.Read(Client, WF12V_Tag),
@@ -175,16 +179,16 @@ for Left_Steps in range(1, Read_Steps + 1):
         break
     if Left_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
         
-        temp_check_12 = M.Read(Client,WF12H_Tag) #Take the current value of WF6H
-        temp_check_13 = M.Read(Client,WF13H_Tag) #Take the current value of WF7H
+        temp_check_12 = M.Read(Client,WF12H_Tag) #Take the current value of WF12H
+        temp_check_13 = M.Read(Client,WF13H_Tag) #Take the current value of WF13H
         
         #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-        if abs(temp_check_12 - WF12H_Write_Value) >= 0.001: #WF6H Check
+        if abs(temp_check_12 - WF12H_Write_Value) >= 0.001: #WF12H Check
             H_Broken = True
             V_Broken = True
             print("Loop Broken")
             break
-        if abs(temp_check_13 - WF13H_Write_Value) >= 0.001: #WF7H Check
+        if abs(temp_check_13 - WF13H_Write_Value) >= 0.001: #WF13H Check
             H_Broken = True
             V_Broken = True
             print("Loop Broken")
@@ -232,16 +236,16 @@ for Upward_Steps in range(1, Read_Steps + 1):
         break
     if Upward_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
         
-        temp_check_12 = M.Read(Client,WF12V_Tag) #Take the current value of WF6H
-        temp_check_13 = M.Read(Client,WF13V_Tag) #Take the current value of WF7H
+        temp_check_12 = M.Read(Client,WF12V_Tag) #Take the current value of WF12H
+        temp_check_13 = M.Read(Client,WF13V_Tag) #Take the current value of WF13H
         
         #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-        if abs(temp_check_12 - WF12V_Write_Value) >= 0.001: #WF6H Check
+        if abs(temp_check_12 - WF12V_Write_Value) >= 0.001: #WF12H Check
             H_Broken = True
             V_Broken = True
             print("Loop Broken")
             break
-        if abs(temp_check_13 - WF13V_Write_Value) >= 0.001: #WF7H Check
+        if abs(temp_check_13 - WF13V_Write_Value) >= 0.001: #WF13H Check
             H_Broken = True
             V_Broken = True
             print("Loop Broken")
@@ -283,16 +287,16 @@ for Downward_Steps in range(1, Read_Steps + 1):
         break
     if Downward_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
         
-        temp_check_12 = M.Read(Client,WF12V_Tag) #Take the current value of WF6H
-        temp_check_13 = M.Read(Client,WF13V_Tag) #Take the current value of WF7H
+        temp_check_12 = M.Read(Client,WF12V_Tag) #Take the current value of WF12H
+        temp_check_13 = M.Read(Client,WF13V_Tag) #Take the current value of WF13H
         
         #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-        if abs(temp_check_12 - WF12V_Write_Value) >= 0.001: #WF6H Check
+        if abs(temp_check_12 - WF12V_Write_Value) >= 0.001: #WF12H Check
             H_Broken = True
             V_Broken = True
             print("Loop Broken")
             break
-        if abs(temp_check_13 - WF13V_Write_Value) >= 0.001: #WF7H Check
+        if abs(temp_check_13 - WF13V_Write_Value) >= 0.001: #WF13H Check
             H_Broken = True
             V_Broken = True
             print("Loop Broken")
@@ -348,9 +352,7 @@ Horizontal_13 = Full_Data_Array[:(Right_Steps + 2 + Left_Steps),1]
 
 Vertical_12 = Full_Data_Array[(Right_Steps + 2 + Left_Steps):,2]
 Vertical_13 = Full_Data_Array[(Right_Steps + 2 + Left_Steps):,3]
-Dump_1 = Full_Data_Array[:,4]
-Dump_2 = Full_Data_Array[:,5]
-Dump_Sum = Dump_1 + Dump_2
+Target_1_Collection = Full_Data_Array[:,4]
 
 ### Plotting
 
@@ -359,8 +361,8 @@ Horizontal_In_mms = (Horizontal_12 - WF12H_Start)/Delta_12*mm_factor/Zoom_In_Fac
 Vertical_In_mms = (Vertical_12 - WF12V_Start)/Delta_12*mm_factor/Zoom_In_Factor
 
 #Dump Sum into percent from start
-Horizontal_Percent = Dump_Sum[:(Right_Steps + 2 + Left_Steps)]/Start_Current*100
-Vertical_Percent = Dump_Sum[(Right_Steps + 2 + Left_Steps):]/Start_Current*100
+Horizontal_Percent = Target_1_Collection[:(Right_Steps + 2 + Left_Steps)]/Start_Current*100
+Vertical_Percent = Target_1_Collection[(Right_Steps + 2 + Left_Steps):]/Start_Current*100
 
 #Plotting
 plt.figure(figsize = (9,6)) #Changing the figure to be larger
@@ -378,7 +380,7 @@ plt.legend() #Making the legend for the plot
 plt.xlabel("Displacement (mm)") #Making the x axis label
 plt.ylabel("Collection from start (%); ({0:.3f}\u03BCA) collected at start".format(1000*abs(Start_Current))) #Making the y axis label
 plt.title("Dog Leg Taken at " + now) #Making the title
-plt.suptitle("WF6H:{0:.3f}; WF6V:{1:.3f}; WF7H:{2:.3f}; WF8H:{3:.3f} (Amps)".format(WF12H_Start,WF12V_Start,WF13H_Start,WF13V_Start)) #Creating the label below the title
+plt.suptitle("WF12H:{0:.3f}; WF12V:{1:.3f}; WF13H:{2:.3f}; WF8H:{3:.3f} (Amps)".format(WF12H_Start,WF12V_Start,WF13H_Start,WF13V_Start)) #Creating the label below the title
 
 plt.savefig(now + "_graph.svg",transparent = True, dpi = 600) #Saving the figure to a plot
 #plt.savefig(now + "_graph.png",dpi = 600,transparent = True) #This would save to a high resolution png (For easy printing of multiple graphs on one sheet of paper or whatever you want a png for)
