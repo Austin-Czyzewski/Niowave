@@ -88,8 +88,8 @@ V_Broken = False #Creating the check tag for the Vertical dog leg, starting out 
 ###################################################################################################
 
 # 6 Columns, unknown rows
-# WF12H | WF13H | WF12V | WF13V | Dump 1 | Dump 2 |
-#  0   |  1   |  2   |  3   |   4    |   5    |
+# WF12H | WF13H | WF12V | WF13V | Target |
+#  0   |  1   |  2   |  3   |   4    |
 
 Full_Data_Set = []
 
