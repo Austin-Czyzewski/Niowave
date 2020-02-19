@@ -9,3 +9,5 @@ print(M.Read(Client,Tags.RF_Beam_Mon))
 time.sleep(0.01)
 
 print(M.Read(Client,Tags.RF_Beam_Mon))
+
+time.sleep(15)

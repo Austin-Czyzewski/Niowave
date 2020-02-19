@@ -34,7 +34,7 @@ start_time = time.time()
 #Dog Leg
 
 Target_Tag = Tags.RF_Beam_Mon #Int or Str. Which Tag we are reading, we are interested in the RF Beam monitor currently
-Threshold_Percent = 70 #Float. The percentage of beam that we want to collect in order to turn the Dog Leg around
+Threshold_Percent = 0 #Float. The percentage of beam that we want to collect in order to turn the Dog Leg around
 
 Zoom_In_Factor = 1 #This is how much we want to zoom in if we are interested in an artifact at the center of the dog leg or want higher precision in the center
 
