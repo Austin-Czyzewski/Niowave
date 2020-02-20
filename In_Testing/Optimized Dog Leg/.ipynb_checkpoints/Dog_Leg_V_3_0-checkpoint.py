@@ -1,6 +1,6 @@
 #Created by: Austin Czyzewski
-#    Date Tested: 01/14/2020
-#         Date last updated: 01/15/2020
+#    Date Tested: NA
+#         Date last updated: 02/20/2020
 
 ############
 ### Notes:
@@ -134,6 +134,8 @@ Full_Data_Set.append([M.Read(Client, WF6H_Tag),
                      M.Read(Client, Target_Tag_2, Average = True, count = count, sleep_time = sleep)])
 
 
+print("Displacement | Collection | WF6 | WF7")
+
 for run in runs:
     
     Start_Current = (M.Read(Client, Target_Tag, Average = True, count = count,sleep_time = sleep) + M.Read(Client, Target_Tag_2, Average = True, count = count,sleep_time = sleep))
@@ -160,13 +162,18 @@ for run in runs:
         WF6H_Write_Value = WF6H_Start + (Delta_6/Read_Steps)*Right_Steps
         WF7H_Write_Value = WF7H_Start - (Delta_7/Read_Steps)*Right_Steps
         
+        X_Disp = (WF6H_Write_Value - WF6H_Start)/Delta_6*12/Zoom_In_Factor
+        
         M.Write(Client, WF6H_Tag, WF6H_Write_Value)
         M.Write(Client, WF7H_Tag, WF7H_Write_Value)
         
         Target_1_Collection = M.Read(Client, Target_Tag, Average = True, count = count, sleep_time = sleep)
         Target_2_Collection = M.Read(Client, Target_Tag_2, Average = True, count = count, sleep_time = sleep)
         
+        
         Full_Data_Set.append([M.Read(Client, WF6H_Tag), M.Read(Client, WF7H_Tag), M.Read(Client, WF6V_Tag), M.Read(Client, WF7V_Tag), Target_1_Collection, Target_2_Collection])
+        
+        print("H:{:.2f} | {:.3f} | {:.3f} | {:.3f}".format(X_Disp, Target_1_Collection + Target_2_Collection, WF6H_Write_Value, WF7H_Write_Value))
         
         if abs(Target_1_Collection + Target_2_Collection) < abs(Threshold_Percent*Start_Current*.01):
             break
@@ -213,6 +220,8 @@ for run in runs:
         WF6H_Write_Value = WF6H_Start - (Delta_6/Read_Steps)*Left_Steps
         WF7H_Write_Value = WF7H_Start + (Delta_7/Read_Steps)*Left_Steps
         
+        X_Disp = (WF6H_Write_Value - WF6H_Start)/Delta_6*12/Zoom_In_Factor
+        
         M.Write(Client, WF6H_Tag, WF6H_Write_Value)
         M.Write(Client, WF7H_Tag, WF7H_Write_Value)
         
@@ -220,6 +229,8 @@ for run in runs:
         Target_2_Collection = M.Read(Client, Target_Tag_2, Average = True, count = count, sleep_time = sleep)
         
         Full_Data_Set.append([M.Read(Client, WF6H_Tag), M.Read(Client, WF7H_Tag), M.Read(Client, WF6V_Tag), M.Read(Client, WF7V_Tag), Target_1_Collection, Target_2_Collection])
+        
+        print("H:{:.2f} | {:.3f} | {:.3f} | {:.3f}".format(X_Disp,Target_1_Collection + Target_2_Collection, WF6H_Write_Value, WF7H_Write_Value))
         
         if abs(Target_1_Collection + Target_2_Collection) < abs(Threshold_Percent*Start_Current*.01):
             break
@@ -272,6 +283,8 @@ for run in runs:
         WF6V_Write_Value = WF6V_Start + (Delta_6/Read_Steps)*Upward_Steps
         WF7V_Write_Value = WF7V_Start - (Delta_7/Read_Steps)*Upward_Steps
         
+        Y_Disp = (WF6V_Write_Value - WF6V_Start)/Delta_6*12/Zoom_In_Factor
+        
         M.Write(Client, WF6V_Tag, WF6V_Write_Value)
         M.Write(Client, WF7V_Tag, WF7V_Write_Value)
         
@@ -279,6 +292,8 @@ for run in runs:
         Target_2_Collection = M.Read(Client, Target_Tag_2, Average = True, count = count, sleep_time = sleep)
         
         Full_Data_Set.append([M.Read(Client, WF6H_Tag), M.Read(Client, WF7H_Tag), M.Read(Client, WF6V_Tag), M.Read(Client, WF7V_Tag), Target_1_Collection, Target_2_Collection])
+        
+        print("V:{:.2f} | {:.3f} | {:.3f} | {:.3f}".format(Y_Disp,Target_1_Collection + Target_2_Collection, WF6V_Write_Value, WF7V_Write_Value))
         
         if abs(Target_1_Collection + Target_2_Collection) < abs(Threshold_Percent*Start_Current*.01):
             break
@@ -325,6 +340,8 @@ for run in runs:
         WF6V_Write_Value = WF6V_Start - (Delta_6/Read_Steps)*Downward_Steps
         WF7V_Write_Value = WF7V_Start + (Delta_7/Read_Steps)*Downward_Steps
         
+        Y_Disp = (WF6V_Write_Value - WF6V_Start)/Delta_6*12/Zoom_In_Factor
+        
         M.Write(Client, WF6V_Tag, WF6V_Write_Value)
         M.Write(Client, WF7V_Tag, WF7V_Write_Value)
         
@@ -332,6 +349,8 @@ for run in runs:
         Target_2_Collection = M.Read(Client, Target_Tag_2, Average = True, count = count, sleep_time = sleep)
         
         Full_Data_Set.append([M.Read(Client, WF6H_Tag), M.Read(Client, WF7H_Tag), M.Read(Client, WF6V_Tag), M.Read(Client, WF7V_Tag), Target_1_Collection, Target_2_Collection])
+        
+        print("V:{:.2f} | {:.3f} | {:.3f} | {:.3f}".format(Y_Disp,Target_1_Collection + Target_2_Collection, WF6V_Write_Value, WF7V_Write_Value))
         
         if abs(Target_1_Collection + Target_2_Collection) < abs(Threshold_Percent*Start_Current*.01):
             break
@@ -405,8 +424,8 @@ Dump_Sum = Dump_1 + Dump_2
 ### Plotting
 
 #Converting to mms of displacement
-Horizontal_In_mms = (Horizontal_6 - WF6H_Start)/Delta_6*15/Zoom_In_Factor #Our max displacement is 15 mms
-Vertical_In_mms = (Vertical_6 - WF6V_Start)/Delta_6*15/Zoom_In_Factor
+Horizontal_In_mms = (Horizontal_6 - WF6H_Start)/Delta_6*12/Zoom_In_Factor #Our max displacement is 15 mms
+Vertical_In_mms = (Vertical_6 - WF6V_Start)/Delta_6*12/Zoom_In_Factor
 
 #Dump Sum into percent from start
 Horizontal_Percent = Dump_Sum[:(Right_Steps + 2 + Left_Steps)]/Start_Current*100
