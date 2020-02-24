@@ -37,3 +37,10 @@ Delta6&7: These values create a ratio and breadth of our beamline as calculated 
   
 Everything else is just the script. This will output a plot, it will save the plot, and it will output a txt file.
   This txt file will be hard to interpret because I am bad at getting rid of parentheses before saving. 
+
+
+Recent Updates: Dog_Leg_V2_1
+	- Added the info table with FWHM Calculations 
+	- Added FWHM plotting differences
+	- Added the ability to move to the optimal point as calculated by the FWHM
+	- Added a column to the data table of the emitted current for normalization
