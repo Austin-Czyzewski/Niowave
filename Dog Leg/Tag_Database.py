@@ -6,6 +6,11 @@
 #    as most of the legwork is done here. Simply reference this program for what I've named each item. This program
 #    is currently in its early stages so it is best to remember that these names may change and so may the tags.
 
+## How to use:
+# import Tag_Database as Tags
+# Tags.WF1V
+
+# Result: 20201
 
 ########################################
 ### Window Frame Request
