@@ -10,8 +10,8 @@ import time
 
 RM = pyvisa.ResourceManager()
 print(RM.list_resources())
-SG = RM.open_resource('GPIB0::1::INSTR')
-OS = RM.open_resource('GPIB0::10::INSTR')
+SG = RM.open_resource('GPIB0::11::INSTR')
+OS = RM.open_resource('GPIB0::7::INSTR')
 
 Measurement = 1
 Channel = 3
