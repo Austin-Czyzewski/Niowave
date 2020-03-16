@@ -32,7 +32,7 @@ GPIB.channel_settings_check(OS, IF_Channel) #Setting up the vertical and horizon
 GPIB.trigger_settings_set(OS, Trigger_Channel, Trigger_Level) #Sets up the vertical settings for trigger channel and trigger parameters
 GPIB.vertical_marker_pulsing(OS, IF_Channel) #Sets up vertical cursor bars to read edge of pulse
 
-interlock_color = MediumPurple1
+interlock_color = 'MediumPurple1'
 global Ups #Defining global parameters, these ones are not actually necessary but leave them be
 global Downs
 global i
