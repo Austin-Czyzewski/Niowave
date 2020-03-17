@@ -76,14 +76,14 @@ WF13V_Start = M.Read(Client,WF13V_Tag) #Starting value for Window Frame 13 Horiz
 start_time = time.time()
 
 #Summing the start current of the two dumps
-Start_Current = M.Read(Client, Target_Tag, Average = True, count = count,sleep_time = sleep)
+Start_Power = M.Read(Client, Target_Tag, Average = True, count = count,sleep_time = sleep)
     
 H_Broken = False #Creating the check tag for the Horizontal dog leg, starting out as false as no errors could have been raised yet
 V_Broken = False #Creating the check tag for the Vertical dog leg, starting out as false as no errors could have been raised yet
 
 ###################################################################################################
 
-### #Creating the data structure
+### Creating the data structure
 
 ###################################################################################################
 
@@ -103,6 +103,16 @@ Full_Data_Set = []
 #Example:
 # plt.plot(Full_Data_Set[:iterator_1,0],Full_Data_Set[:iterator_1,4])
 # The above example would plot WF12H vs Target_1_Collection
+
+###################################################################################################
+
+### Defining Watt to dBm conversion
+
+###################################################################################################
+
+def dBm_to_Watts(dBm):
+    """Returns input dBm as Watts"""
+    return 10**(dBm/10)/1000
 
 ###################################################################################################
 
@@ -151,7 +161,7 @@ for Right_Steps in range(1, Read_Steps + 1):
     
     Full_Data_Set.append([M.Read(Client, WF12H_Tag), M.Read(Client, WF13H_Tag), M.Read(Client, WF12V_Tag), M.Read(Client, WF13V_Tag), RFBM_Collection]) #Append all data to the current list
     
-    if abs(RFBM_Collection) < abs(Threshold_Percent*Start_Current*.01): #Check to see that we are above our Threshold
+    if dBm_to_Watts(RFBM_Collection)/dBm_to_Watts(Start_Power) < Threshold_Percent*0.01: #Check to see that we are above our Threshold
         break
 
 #############################
@@ -204,7 +214,7 @@ for Left_Steps in range(1, Read_Steps + 1):
     
     Full_Data_Set.append([M.Read(Client, WF12H_Tag), M.Read(Client, WF13H_Tag), M.Read(Client, WF12V_Tag), M.Read(Client, WF13V_Tag), RFBM_Collection])
     
-    if abs(RFBM_Collection) < abs(Threshold_Percent*Start_Current*.01):
+    if dBm_to_Watts(RFBM_Collection)/dBm_to_Watts(Start_Power) < Threshold_Percent*0.01:
         break
 
 #############################
@@ -261,14 +271,14 @@ for Upward_Steps in range(1, Read_Steps + 1):
     
     Full_Data_Set.append([M.Read(Client, WF12H_Tag), M.Read(Client, WF13H_Tag), M.Read(Client, WF12V_Tag), M.Read(Client, WF13V_Tag), RFBM_Collection])
     
-    if abs(RFBM_Collection) < abs(Threshold_Percent*Start_Current*.01):
+    if dBm_to_Watts(RFBM_Collection)/dBm_to_Watts(Start_Power) < Threshold_Percent*0.01:
         break
 
 #############################
 ### Back to Center
 #############################
 
-M.Ramp_Two(Client, WF12V_Tag, WF13V_Tag, Magnet_1_Stop = WF12V_Start, Magnet_2_Stop = WF13V_Start, Resolution = Upward_Steps, sleep_time = .100)
+M.Ramp_Two(Client, WF12V_Tag, WF13V_Tag, Magnet_1_Stop = WF12V_Start, Magnet_2_Stop = WF13V_Start, Resolution = Upward_Steps)
 
 #############################
 ### Downward
@@ -312,14 +322,14 @@ for Downward_Steps in range(1, Read_Steps + 1):
     
     Full_Data_Set.append([M.Read(Client, WF12H_Tag), M.Read(Client, WF13H_Tag), M.Read(Client, WF12V_Tag), M.Read(Client, WF13V_Tag), RFBM_Collection])
     
-    if abs(RFBM_Collection) < abs(Threshold_Percent*Start_Current*.01):
+    if dBm_to_Watts(RFBM_Collection)/dBm_to_Watts(Start_Power) < Threshold_Percent*0.01:
         break
 
 #############################
 ### Back to Center
 #############################
 
-M.Ramp_Two(Client, WF12V_Tag, WF13V_Tag, Magnet_1_Stop = WF12V_Start, Magnet_2_Stop = WF13V_Start, Resolution = Downward_Steps, sleep_time = .100)
+M.Ramp_Two(Client, WF12V_Tag, WF13V_Tag, Magnet_1_Stop = WF12V_Start, Magnet_2_Stop = WF13V_Start, Resolution = Downward_Steps)
 
 ###################################################################################################
 
@@ -357,12 +367,12 @@ Target_1_Collection = Full_Data_Array[:,4]
 ### Plotting
 
 #Converting to mms of displacement
-Horizontal_In_mms = (Horizontal_12 - WF12H_Start)/Delta_12*mm_factor/Zoom_In_Factor #Our max displacement is 15 mms
-Vertical_In_mms = (Vertical_12 - WF12V_Start)/Delta_12*mm_factor/Zoom_In_Factor
+Horizontal_In_mms = (Horizontal_12 - WF12H_Start)
+Vertical_In_mms = (Vertical_12 - WF12V_Start)
 
 #Dump Sum into percent from start
-Horizontal_Percent = Target_1_Collection[:(Right_Steps + 2 + Left_Steps)]/Start_Current*100
-Vertical_Percent = Target_1_Collection[(Right_Steps + 2 + Left_Steps):]/Start_Current*100
+Horizontal_Percent = dBm_to_Watts(Target_1_Collection[:(Right_Steps + 2 + Left_Steps)])/dBm_to_Watts(Start_Power)*100
+Vertical_Percent = dBm_to_Watts(Target_1_Collection[(Right_Steps + 2 + Left_Steps):])/dBm_to_Watts(Start_Power)*100
 
 #Plotting
 plt.figure(figsize = (9,6)) #Changing the figure to be larger
@@ -377,8 +387,8 @@ plt.gca().set_ylim(bottom=-2)
 
 plt.legend() #Making the legend for the plot
 
-plt.xlabel("Displacement (mm)") #Making the x axis label
-plt.ylabel("Collection from start (%); ({0:.3f}\u03BCA) collected at start".format(1000*abs(Start_Current))) #Making the y axis label
+plt.xlabel("Displacement (Amps)") #Making the x axis label
+plt.ylabel("Collection from start (%); ({0:.2f}dBm) collected at start".format(Start_Power)) #Making the y axis label
 plt.title("Dog Leg Taken at " + now) #Making the title
 plt.suptitle("WF12H:{0:.3f}; WF12V:{1:.3f}; WF13H:{2:.3f}; WF8H:{3:.3f} (Amps)".format(WF12H_Start,WF12V_Start,WF13H_Start,WF13V_Start)) #Creating the label below the title
 

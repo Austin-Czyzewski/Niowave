@@ -440,7 +440,7 @@ ax1.scatter(Horizontal_6 - Horizontal_6[0], Horizontal_Below, label = 'Horizonta
 ax1.scatter(Vertical_6 - Vertical_6[0], Vertical_Above, label = 'Vertical above FWHM', color = 'C1', alpha = 0.75) #Plotting 6V above FWHM
 ax1.scatter(Vertical_6 - Vertical_6[0], Vertical_Below, label = 'Vertical below FWHM', color = 'C1', alpha = 0.5, marker = '.') #plotting 6V Below FWHM
 ax1.set_xlabel("Displacement WF6 (Amps)", fontsize = 12) #Setting xlabel
-ax1.set_ylabel("Collection from start (%); ({0:.2f}\u03BCA) collected at start".format(1000*abs(min(Dump_Sum))), fontsize = 12) #Making the y axis label
+ax1.set_ylabel("Collected percent from emission (%); ({0:.2f}\u03BCA) collected at start".format(1000*abs(min(Dump_Sum))), fontsize = 12) #Making the y axis label
 ax1.set_title("Dog Leg Taken at " + now, fontsize = 16) #Making the title 
 ax1.legend(bbox_to_anchor = (0.5,0.27), loc = 'upper center') #Adding the legend and placing it in the bottom center of the plot
 
