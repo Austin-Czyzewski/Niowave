@@ -4,6 +4,8 @@ This is the GPIB Programming area, where we write mostly python scripts to mostl
 
 Currently, there a few folders here with names that represent scientific equipment. What is contained within them is
   python scripts testing functions, communications, and overall interactions with them. The most successful of which is the
-  O-scope file which contains the ingredients for the Error Signal regulation loop between the signal generator and oscilloscope.
+  GUI-python folder which contains the culminations of the work for error signal regulation. This is a large bright GUI that
+  contains four buttons that are clearly labeled (Except reset oscilloscope, which instead of resetting the oscilloscope only
+  resets the options for it).
 
 There will be more to come. Thank you for visiting the GPIBinn
