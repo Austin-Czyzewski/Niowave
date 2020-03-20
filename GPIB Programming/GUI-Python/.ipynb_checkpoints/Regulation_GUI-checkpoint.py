@@ -3,7 +3,6 @@ import pyvisa #import GPIB communication module
 import time #imports time to sleep program temporarily
 from tkinter import * #importing GUI library
 
-
 RM = pyvisa.ResourceManager() #pyVISA device manager
 print(RM.list_resources()) #Printing out all detected device IDs
 SG = RM.open_resource('GPIB0::10::INSTR') #Opening the Signal generator as an object
@@ -32,7 +31,8 @@ GPIB.channel_settings_check(OS, IF_Channel) #Setting up the vertical and horizon
 GPIB.trigger_settings_set(OS, Trigger_Channel, Trigger_Level) #Sets up the vertical settings for trigger channel and trigger parameters
 GPIB.vertical_marker_pulsing(OS, IF_Channel) #Sets up vertical cursor bars to read edge of pulse
 
-interlock_color = 'MediumPurple1'
+interlock_color = "Yellow"
+
 global Ups #Defining global parameters, these ones are not actually necessary but leave them be
 global Downs
 global i
@@ -41,11 +41,11 @@ Downs = 0 #visa versa
 i = 0 #total number of iterative loops gone through, only present to show differences in command line readouts
 Start_Freq = GPIB.freq(SG) #taking the start frequency of the signal generator
 
-try: #Test to see if the short form of the oscilloscope or long form of output
-    short_test = float(OS.query("MEASU:MEAS1:VAL?"))
+try: #Quick test to determine short or long form oscilloscope output
+    short_test = float(OS.query("MEASU:MEAS{}:VAL?".format(Measurement)))
     pass
 except:
-    long_test = float(OS.query("MEASU:MEAS{}:VAL?".format(1)).split(' ')[1].strip("\n"))
+    long_test = float(OS.query("MEASU:MEAS{}:VAL?".format(Measurement)).split(' ')[1].strip("\n"))
     Long = True
     pass
 
@@ -70,7 +70,7 @@ def scanning(): #Defining what is happening when scanning our GUI
     #########################################
     
     if reset: #Checks the reset parameter and runs if True
-        print("-"*60, "\n\n\nResetting Oscilloscope\n\n\n", "-"*60) #print statement
+        print("-"*60 + "\n\n\nResetting Oscilloscope\n\n\n" + "-"*60) #print statement
         
         GPIB.measurement_setup(OS,IF_Channel, measurement = Measurement) #Same as beginning parameters above
         GPIB.channel_settings_check(OS, IF_Channel)
@@ -223,10 +223,10 @@ root.geometry("1000x1000") #Size of the GUI
 app = Frame(root) #Application window
 app.grid() #Making this visible
 size = 10 #Size marker used universally between buttons
-start = Button(app, text="Start Regulation", command=start, activebackground="white", height = size, width = size*5, bg = 'SpringGreen2', font=('Helvetica', '20')) #Start button configuration, same for next three lines 
-stop = Button(app, text="Stop Regulation", command=stop, activebackground="white", height = size, width = size*5, bg = 'firebrick1', font=('Helvetica', '20'))
-reset_button = Button(app, text="Reset Oscilloscope", command=reset_measurement, activebackground="white", height = int(size/3), width = size*5, bg = 'sky blue', font=('Helvetica', '20'))
-Pulsing_button = Checkbutton(app, text="Pulsing", command=pulsing_toggle, activebackground="white", height = int(size/3), width = size*4, bg = 'orange', font=('Helvetica', '20'))
+start = Button(app, text="Start Regulation", command=start, activebackground="SpringGreen2", height = size, width = size*5, bg = 'Pale Green', font=('Helvetica', '20'), bd = size) #Start button configuration, same for next three lines
+stop = Button(app, text="Stop Regulation", command=stop, activebackground="firebrick1", height = size, width = size*5, bg = 'tomato', font=('Helvetica', '20'), bd = size)
+reset_button = Button(app, text="Reset Oscilloscope", command=reset_measurement, activebackground="light sky blue", height = int(size/3), width = size*5, bg = 'sky blue', font=('Helvetica', '20'), bd = size)
+Pulsing_button = Checkbutton(app, text="Pulsing", command=pulsing_toggle, activebackground="white", height = int(size/3), width = size*5, bg = 'gray', font=('Helvetica', '20'), bd = size,indicatoron=False,selectcolor='orange')
 start.grid() #put the start button on the GUI, same for next three lines
 stop.grid()
 reset_button.grid()
