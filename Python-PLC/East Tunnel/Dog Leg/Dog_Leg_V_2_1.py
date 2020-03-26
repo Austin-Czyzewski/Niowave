@@ -13,7 +13,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
-import Tag_Database as Tags
+import Tag_Database_East as Tags
 
 
 
