@@ -1,0 +1,1 @@
+Gun_Vac, Gun_Cross, SRF_Cavity_Vac, HE_Sraight_Vac, Insulating_Vac, E_Station_Vac, BH_OC_Temp, DBA_Pipe_Temp, Cu_Gun_Temp, HE_Straight_Col, DBA_Dump_CHWR, DBA_Dump_CHWS, Tuner_Plate_Temp, Gate_Valve_Downstream_Temp, Gate_Valve_Upstream_Temp, Loop_Bypass_CHWS, Loop_Bypass_CHWR, DBA_Coupler, Coupler_Shoulder, Solenoid_4_Temp, Solenoid_5_Temp
