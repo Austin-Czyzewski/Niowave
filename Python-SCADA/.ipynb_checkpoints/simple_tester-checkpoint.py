@@ -17,25 +17,11 @@ from bokeh.models.ranges import DataRange1d
 from bokeh.plotting import figure, curdoc
 from bokeh.driving import linear, count
 import numpy.random as random
-
 from bokeh.layouts import column
 from bokeh.models import Slider
-#from bokeh.io import show
-
 from datetime import datetime
 import time
 import os
-from bokeh.models.widgets import CheckboxGroup
-from Tag_Database import *
-
-Vacuums = [Gun_Vac, Gun_Cross, SRF_Cavity_Vac, HE_Sraight_Vac, # All of the vacuum tags that we currently have, in order
-           Insulating_Vac, E_Station_Vac]
-
-Temps = [BH_OC_Temp, DBA_Pipe_Temp, Cu_Gun_Temp, HE_Straight_Col, 
-         DBA_Dump_CHWR, DBA_Dump_CHWS, Tuner_Plate_Temp, 
-         Gate_Valve_Downstream_Temp, Gate_Valve_Upstream_Temp, 
-         Loop_Bypass_CHWS, Loop_Bypass_CHWR, DBA_Coupler, 
-         Coupler_Shoulder, Solenoid_4_Temp, Solenoid_5_Temp]
 
 DST_Conversion = 3
 if time.localtime().tm_isdst == 1:
@@ -49,7 +35,7 @@ temp_roll_scale = 10000
 
 ROLL = int(1000*60*60*24/Update_time)
 
-span = 10*60 #Seconds
+span = 30 #Seconds
 
 line_width = 4
 
@@ -74,27 +60,11 @@ p = figure(plot_width=1000, plot_height=400,
                                  range_padding_units = 'absolute',range_padding = 1000,))
           #other_property = here)
 p.yaxis.visible = False
+
+
 p.xaxis.formatter = DatetimeTickFormatter(milliseconds = '%H:%M:%S.%2N',seconds = "%H:%M:%S",minsec = "%H:%M:%S",minutes = "%H:%M:%S",hourmin = "%H:%M:%S",hours = "%H:%M:%S",days = ['%m/%d', '%a%d'],months = ['%m/%Y', '%b %Y'],years = ['%Y'])
     
     
-#slider = Slider(title = 'Follow Range', start= 2*1000 , end= 60*1000, step=1000, value=span*1000)
-#slider.js_link('value', p.x_range, 'follow_interval')
-#slider.on_change('value', p.x_range, 'follow_interval')
-#Column = column(slider, width = 100, height = 100)
-#p.add_layout(Column, 'below')
-
-#r1 = p.line([], [], color="yellow", line_width=line_width, y_range_name = "pressures")
-#r2 = p.line([], [], color="skyblue", line_width=line_width, y_range_name = "temps")
-#r3 = p.line([], [], color="green", line_width=line_width, y_range_name = "temps")
-
-import numpy as np
-with open("Data.txt",'r') as file:
-    lines = file.readlines()
-for num,line in enumerate(lines[1:]):
-    lines[num+1] = line.strip("\nr").split(",")
-data = np.array(lines[1:]).astype(float)
-data[:,0]
-
 r1 = p.line([], [], color="yellow", line_width=line_width, y_range_name = "pressures")
 r2 = p.line([], [], color="skyblue", line_width=line_width, y_range_name = "temps")
 r3 = p.line([], [], color="green", line_width=line_width, y_range_name = "temps")
@@ -143,51 +113,22 @@ run = True
 @count()
 def update(step):
     
-    global last_time
-    run = True
+    current_time = time.time()*10**3-DST_Conversion*60*60*1000
     
-    with open('Data.txt', 'rb') as file: #delete to f?
-        file.seek(-2, os.SEEK_END)
-        while file.read(1) != b'\n':
-            file.seek(-2, os.SEEK_CUR) 
-        last_line = file.readline().decode().split(",")
-    temp_list = []
-    for item in last_line:
-        try:
-            temp_list.append(float(item))
-        except:
-            temp_list.append(float(item.strip("\rn")))
-            
-    #currenttime = time.time()*10**3-DST_Conversion*60*60*1000
-    try:
-        #print("temp list",temp_list[0])
-        #print("last time",last_time)
-        temp_list[0] = time.time()*10**3-DST_Conversion*60*60*1000
-        if temp_list[0] == last_time:
-            run = False
-    except:
-        run = True
+
+    ds1.data['x'].append(current_time)
+    ds1.data['y'].append(random.normal(65,10)*1e-6)            #ds1.data['y'].append(temp_list[1])
+
+    ds2.data['x'].append(current_time)
+    ds2.data['y'].append(random.normal(47,5))
         
-    
-    if run:
-        ds1.data['x'].append(temp_list[0])
-        ds1.data['y'].append(random.normal(65,10)*1e-6)
-        #ds1.data['y'].append(temp_list[1])
-
-        ds2.data['x'].append(temp_list[0])
-        ds2.data['y'].append(random.normal(47,5))
-        #ds2.data['y'].append(temp_list[2])
-
-        ds3.data['x'].append(temp_list[0])
-        ds3.data['y'].append(random.normal(74,1))  
-        #ds3.data['y'].append(temp_list[3])
-
-        ds1.trigger('data', ds1.data, ds1.data)
+    ds3.data['x'].append(current_time)
+    ds3.data['y'].append(random.normal(74,1))  
+        
+    ds1.trigger('data', ds1.data, ds1.data)
         #ds1.stream({"x": ds1.data['x'], "y": ds1.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
-        ds2.trigger('data', ds2.data, ds2.data)
-        ds3.trigger('data', ds3.data, ds3.data)
-
-        last_time = temp_list[0]
+    ds2.trigger('data', ds2.data, ds2.data)
+    ds3.trigger('data', ds3.data, ds3.data)
 
     
 curdoc().add_root(p)

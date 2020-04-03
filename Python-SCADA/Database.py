@@ -1,9 +1,10 @@
 import time
 import numpy as np
 from Tag_Database import *
+import Master as M
 
 # Parameters
-txt_file_length = 86400
+txt_file_length = 10000
 
 #############################################
 # Don't touch it
@@ -22,6 +23,8 @@ DST_Conversion = 3
 if time.localtime().tm_isdst == 1:
     DST_Conversion = 4
     
+Client = M.Make_Client("192.168.1.6")
+
 while True:
 
     temp_list = [time.time()*10**3-DST_Conversion*60*60*1000]
