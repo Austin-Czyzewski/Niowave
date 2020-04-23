@@ -33,7 +33,7 @@ from Tag_Database import *
 Vacuums = [Gun_Vac, Gun_Cross, SRF_Cavity_Vac, HE_Sraight_Vac, # All of the vacuum tags that we currently have, in order
            Insulating_Vac, E_Station_Vac]
 
-Temps = [BH_OC_Temp, DBA_Pipe_Temp, Cu_Gun_Temp, HE_Straight_Col, 
+Temps = [BH_OC_Temp, DBA_Pipe_Temp, Cu_Gun_Temp, HE_Straight_Col, #All of the Temp tags that we currently have
          DBA_Dump_CHWR, DBA_Dump_CHWS, Tuner_Plate_Temp, 
          Gate_Valve_Downstream_Temp, Gate_Valve_Upstream_Temp, 
          Loop_Bypass_CHWS, Loop_Bypass_CHWR, DBA_Coupler, 
@@ -51,7 +51,7 @@ temp_roll_scale = 10000
 
 ROLL = int(1000*60*60*24/Update_time)
 
-span = 10*60 #Seconds
+span = 10       *60 #Minutes
 
 line_width = 4
 
@@ -59,7 +59,6 @@ y_max = None
 y_min = None
 range_scale = 0.2
 curdoc().theme = 'dark_minimal'
-#DataRange1d(only_visible = True)
 
 p = figure(plot_width=1000, plot_height=400,
            x_axis_label = 'Time', y_axis_label = 'Numbers', x_axis_type = 'datetime', 

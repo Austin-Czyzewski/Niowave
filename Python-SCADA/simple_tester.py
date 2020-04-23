@@ -28,7 +28,9 @@ Update_time = 25
 
 temp_roll_scale = 10000
 
-ROLL = int(1000*60*60*24/Update_time)
+#ROLL = int(1000*60*60*24/Update_time)
+
+ROLL = 100
 
 span = 30 #Seconds
 
@@ -112,10 +114,12 @@ def update(step):
     ds3.data['x'].append(current_time)
     ds3.data['y'].append(random.normal(74,1))  
         
-    ds1.trigger('data', ds1.data, ds1.data)
-        #ds1.stream({"x": ds1.data['x'], "y": ds1.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
-    ds2.trigger('data', ds2.data, ds2.data)
-    ds3.trigger('data', ds3.data, ds3.data)
+    #ds1.trigger('data', ds1.data, ds1.data)
+    ds1.stream({"x": ds1.data['x'], "y": ds1.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
+    #ds2.trigger('data', ds2.data, ds2.data)
+    ds2.stream({"x": ds2.data['x'], "y": ds2.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
+    #ds3.trigger('data', ds3.data, ds3.data)
+    ds3.stream({"x": ds3.data['x'], "y": ds3.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
 
     
 curdoc().add_root(p)

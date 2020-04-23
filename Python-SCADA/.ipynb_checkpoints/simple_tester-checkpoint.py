@@ -2,11 +2,6 @@
 #bokeh serve --show bokeh_tester.py
 #####################
 
-##########################################################
-##########################################################
-# Temperature trends
-##########################################################
-##########################################################
 import numpy as np
 from bokeh.plotting import figure
 from bokeh.io import show, output_notebook, curdoc
@@ -33,7 +28,9 @@ Update_time = 25
 
 temp_roll_scale = 10000
 
-ROLL = int(1000*60*60*24/Update_time)
+#ROLL = int(1000*60*60*24/Update_time)
+
+ROLL = 100
 
 span = 30 #Seconds
 
@@ -86,14 +83,6 @@ p.grid.grid_line_color = 'gray'
 p.grid.minor_grid_line_alpha = 0.4
 p.grid.grid_line_alpha = 0.4
 
-#################################
-#Add data here
-#################################
-
-#r1 = p.line([Start_Time], [0], color="yellow", line_width=2, y_range_name = "pressures")
-#r2 = p.line([Start_Time], [0], color="skyblue", line_width=2, y_range_name = "temps")
-
-
 legend = Legend(items=[("One" , [r1]),
                        ("Two" ,  [r2]), 
                        ("Three", [r3]), 
@@ -125,10 +114,12 @@ def update(step):
     ds3.data['x'].append(current_time)
     ds3.data['y'].append(random.normal(74,1))  
         
-    ds1.trigger('data', ds1.data, ds1.data)
-        #ds1.stream({"x": ds1.data['x'], "y": ds1.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
-    ds2.trigger('data', ds2.data, ds2.data)
-    ds3.trigger('data', ds3.data, ds3.data)
+    #ds1.trigger('data', ds1.data, ds1.data)
+    ds1.stream({"x": ds1.data['x'], "y": ds1.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
+    #ds2.trigger('data', ds2.data, ds2.data)
+    ds2.stream({"x": ds2.data['x'], "y": ds2.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
+    #ds3.trigger('data', ds3.data, ds3.data)
+    ds3.stream({"x": ds3.data['x'], "y": ds3.data['y']}, rollover=ROLL) ##### THIS LINE IS ONLY IF TXT FILE IS NOT USED
 
     
 curdoc().add_root(p)

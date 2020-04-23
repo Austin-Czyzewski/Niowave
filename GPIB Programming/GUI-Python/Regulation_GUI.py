@@ -3,109 +3,9 @@ import pyvisa #import GPIB communication module
 import time #imports time to sleep program temporarily
 from tkinter import * #importing GUI library
 
-def freq(Device):
-    frequency = Device.query("freq:cw?")
-    Device.write("*wai")
-    
-    return float(frequency)
-
-def write_frequency(Device, Value, Units = "MHZ"):
-    Device.write("freq:cw {} {}".format(Value,Units))
-    Device.write("*wai")
-    
-    return
-
-def read_mv(Device, measurement, long = False):
-    #value = 1000*float(Device.query("MEASU:MEAS{}:VAL?".format(measurement)).split(' ')[0].strip("\n"))
-    if long == False:
-        value = 1000*float(Device.query("MEASU:MEAS{}:VAL?".format(measurement)))
-        Device.write("*wai")
-        return value
-    if long == True:
-        value = 1000*float(Device.query("MEASU:MEAS{}:VAL?".format(measurement)).split(' ')[1].strip("\n"))
-        Device.write("*wai")
-        return value
-
-def read_v(Device, measurement, long = True):
-    if long == False:
-        value = float(Device.query("MEASU:MEAS{}:VAL?".format(measurement)))
-        Device.write("*wai")
-        return value
-    if long == True:
-        value = float(Device.query("MEASU:MEAS{}:VAL?".format(measurement)).split(' ')[1].strip("\n"))
-        Device.write("*wai")
-        return value
-
-def measurement_setup(Device, channel, measurement, scale = False):
-    
-    if type(channel) and type(measurement) != int:
-        print("Must be integers!")
-    
-    if not scale == False:
-        Device.write("CH3:SCA {:.1E}".format())
-        
-    Device.write("MEASU:MEAS{}:SOURCE1 CH{}".format(measurement, channel))
-    Device.write("MEASU:MEAS{}:UNI v".format(measurement))
-    Device.write("MEASU:MEAS{}:STATE ON".format(measurement))
-    Device.write("MEASU:MEAS{}:TYP MEAN".format(measurement))
-    Device.write("*wai")
-    time.sleep(2.5)
-    return Device.query("MEASU:meas{}:val?".format(measurement))
-
-
-def channel_settings_check(Device, channel):
-    Device.write("SELECT:CH{} 1".format(channel))
-    Device.write("HORIZONTAL:SCALE .010")
-    Format_String = ':CH{}:SCA 1.0E-2;POS 0.0E0;OFFS 0.0E0;COUP DC;BAN TWE;DESK 0.0E0;IMP MEG;PRO 1.0E0;YUN "V";'.format(channel)#ID "";INV 0'
-    if Device.query("CH{}?".format(channel))[:90] != Format_String:
-    
-        Device.write("CH{}:SCALE .010".format(channel))
-        Device.write("CH{}:POSITION 0".format(channel))
-        Device.write("CH{}:OFFSET 0".format(channel))
-        Device.write("CH{}:COUPLING DC".format(channel))
-        Device.write("CH{}:BANDWIDTH TWE".format(channel))
-        Device.write("CH{}:DESKEW 0".format(channel))
-        Device.write("CH{}:IMPEDANCE MEG".format(channel))
-        Device.write("CH{}:PROBE 1".format(channel))
-        Device.write("CH{}:YUNIT 'V'".format(channel))
-        Device.write("*wai")
-        
-    return
-
-def trigger_settings_set(Device, channel, level):
-    Device.write("SELECT:CH{} 1".format(channel))
-    Device.write("CH{}:SCALE .050".format(channel))
-    Device.write("CH{}:POSITION -3.00E0".format(channel))
-    Device.write("CH{}:OFFSET 0".format(channel))
-    Device.write("CH{}:COUPLING DC".format(channel))
-    Device.write("CH{}:BANDWIDTH TWE".format(channel))
-    Device.write("CH{}:DESKEW 0".format(channel))
-    Device.write("CH{}:IMPEDANCE MEG".format(channel))
-    Device.write("CH{}:PROBE 1".format(channel))
-    Device.write("CH{}:YUNIT 'V'".format(channel))
-    Device.write("*wai")
-    
-    Device.write(":TRIG:A:EDG:SOU CH{0};COUP DC;SLO FALL;:TRIG:A:VID:STAN NTS;SOU CH{0};FIELD ALLL;:TRIG:A:LEV {1:.2E}".format(channel,level))
-    return
-
-
-def vertical_marker_pulsing(Device, channel):
-    Device.write("CURS:FUNC VBA")
-    Device.write('CURS:VBA:POSITION1 0.0E0')
-    Device.write("CURS:VBA:POSITION2 0.0E0")
-    Device.write("CURS:VBA:UNI 'V'")
-    Device.write("SEL:CONTRO CH{}".format(channel))
-    return
-
-def cursor_vbar_read_mv(Device, Cursor = 1):
-    value = 1000*float(Device.query("CURS:VBA:HPOS{}?".format(Cursor)).split(" ")[1])
-    return value
-
-
-
 RM = pyvisa.ResourceManager() #pyVISA device manager
 print(RM.list_resources()) #Printing out all detected device IDs
-SG = RM.open_resource('GPIB0::10::INSTR') #Opening the Signal generator as an object
+SG = RM.open_resource('GPIB0::11::INSTR') #Opening the Signal generator as an object
 OS = RM.open_resource('GPIB0::16::INSTR') #Opening the oscilloscope as an object
 
 running = False # Global flag, used for run status of GUI
@@ -115,21 +15,30 @@ pulsing = False # Global flag, used to change the modulation parameters for CW t
 IF_Channel = 3 #The channel that the error signal is on
 Trigger_Channel = 4 #The channel which shows the SRF pulse
 Trigger_Level = 20   /1000 #mv #The level of the pulse trigger
+Read_Start_Voltage = True
 
 Measurement = 3 #Measurement channel
 Step_size = 20 #(Hz) Change in frequency with each regulation step
 Pulse_Step_Size = 10 #(Hz) Change in frequency with each regulation step when pulsing
-Max_Threshold = 10000 #(Hz) Total amount of frequency change before automatically tripping off program
-Walk_Threshold = 2.5 #(mV) Deviation from 0 the error signal needs to be before CW regulation kicks in
+Max_Threshold = 100000 #(Hz) Total amount of frequency change before automatically tripping off program
+Walk_Threshold = 0.5 #(mV) Deviation from 0 the error signal needs to be before CW regulation kicks in
 Pulse_Walk_Threshold = 0.5 #(mV) Deviation from 0 the error signal needs before pulsing regulation kicks in
 Wait_after_step = 0.0400 #Seconds, the time waited after a step is taken, necessary to allow oscope measurements to change
 Wait_between_reads = 0.0100 #Seconds, currently not used, supplemented by GUI time between reads
-Long = False #The form that our measurement is output from the o-scope, depending on the way it is set up this can be in either a short or long form
+Interlock_Threshold_mv = 30 #mv, this is the amount of deviation before regulation trips off
 
-GPIB.measurement_setup(OS,IF_Channel, measurement = Measurement) #Setting up the required measurement
-GPIB.channel_settings_check(OS, IF_Channel) #Setting up the vertical and horizontal settings for the error signal
-GPIB.trigger_settings_set(OS, Trigger_Channel, Trigger_Level) #Sets up the vertical settings for trigger channel and trigger parameters
-GPIB.vertical_marker_pulsing(OS, IF_Channel) #Sets up vertical cursor bars to read edge of pulse
+Long = False #The form that our measurement is output from the o-scope, depending on the way it is set up this can be in either a short or long form
+## additional tweak in testing 200417
+
+Error_signal_offset = 0 # (mV) want to pulse off zero
+reset_on_start = True
+
+GPIB.measurement_setup(OS,IF_Channel, measurement = Measurement) #Setting up the required measurement for regulation
+
+# These reset the oscilloscope on startup, only the one above is needed.
+#GPIB.channel_settings_check(OS, IF_Channel) #Setting up the vertical and horizontal settings for the error signal
+#GPIB.trigger_settings_set(OS, Trigger_Channel, Trigger_Level) #Sets up the vertical settings for trigger channel and trigger parameters
+#GPIB.vertical_marker_pulsing(OS, IF_Channel) #Sets up vertical cursor bars to read edge of pulse
 
 interlock_color = "Yellow"
 
@@ -143,10 +52,14 @@ Start_Freq = GPIB.freq(SG) #taking the start frequency of the signal generator
 
 try: #Quick test to determine short or long form oscilloscope output
     short_test = float(OS.query("MEASU:MEAS{}:VAL?".format(Measurement)))
+    if Read_Start_Voltage == True:
+        Error_signal_offset = short_test
     pass
 except:
     long_test = float(OS.query("MEASU:MEAS{}:VAL?".format(Measurement)).split(' ')[1].strip("\n"))
     Long = True
+    if Read_Start_Voltage == True:
+        Error_signal_offset = long_test
     pass
 
 #print statement
@@ -164,13 +77,14 @@ def scanning(): #Defining what is happening when scanning our GUI
     global Ups
     global Downs
     global i
+    global Error_signal_offset
     
     #########################################
     # Reset button loop
     #########################################
     
     if reset: #Checks the reset parameter and runs if True
-        print("-"*60 + "\n\n\nResetting Oscilloscope\n\n\n" + "-"*60) #print statement
+        print("-"*60 + "\n\n\nResetting Oscilloscope\n\n\n" + "-"*60) #print visual break to indicate reset
         
         GPIB.measurement_setup(OS,IF_Channel, measurement = Measurement) #Same as beginning parameters above
         GPIB.channel_settings_check(OS, IF_Channel)
@@ -194,19 +108,23 @@ def scanning(): #Defining what is happening when scanning our GUI
             
             read_value = GPIB.cursor_vbar_read_mv(OS) #Takes the current value of oscilloscope vbar
         
-            if read_value > Pulse_Walk_Threshold: #Checks to see if that value is outside of threshold
+            if read_value > (Error_signal_offset + Pulse_Walk_Threshold): #Checks to see if that value is outside of threshold
                 Ups += 1
                 Downs = 0
                 if Ups > 3: #Effective debounce
                     temp_freq = GPIB.freq(SG) #Gathers the current frequency
                     if (temp_freq + Pulse_Step_Size) > (Start_Freq + Max_Threshold): #Sees if the new frequency is outside of bounds
-                        print("Broken on too many steps upward")
+                        print("Error: Broken on too many steps upward")
                         root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False #Breaks loop if true
                     if OS.query("MEASU:Meas{}:State?".format(Measurement))[-2] != str(1): #Sees if the measurement is still active
-                        print("Measurement Off")
+                        print("Error: Measurement Off")
                         root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False #Breaks loop if true
+                    if read_value > (Error_signal_offset + Interlock_Threshold_mv):
+                        print("Error: Deviation too far")
+                        root.configure(bg = interlock_color) #Sets to the interlock color
+                        running = False
                     GPIB.write_frequency(SG, (temp_freq + Pulse_Step_Size),"HZ") #Writes calculated frequency to the signal generator
                     print("Raised Frequency ", i) #Shows that we took a step in frequency
                     time.sleep(Wait_after_step) #Sleep for after step debounce time
@@ -216,7 +134,7 @@ def scanning(): #Defining what is happening when scanning our GUI
             #########################################
             
             
-            if read_value < -Pulse_Walk_Threshold: 
+            if read_value < (Error_signal_offset - Pulse_Walk_Threshold): 
                 Downs += 1
                 Ups = 0
                 if Downs > 3:
@@ -228,6 +146,10 @@ def scanning(): #Defining what is happening when scanning our GUI
                     if OS.query("MEASU:Meas{}:State?".format(Measurement))[-2] != str(1):
                         print("Measurement Off")
                         root.configure(bg = interlock_color)
+                        running = False
+                    if read_value < (Error_signal_offset - Interlock_Threshold_mv):
+                        print("Error: Deviation too far")
+                        root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False
                     GPIB.write_frequency(SG, (temp_freq - Pulse_Step_Size),"HZ")
                     print("Lowered Frequency ", i)
@@ -243,7 +165,7 @@ def scanning(): #Defining what is happening when scanning our GUI
         else:
             read_value = GPIB.read_mv(OS, long = Long, measurement = Measurement)
         
-            if read_value > Walk_Threshold:
+            if read_value > (Error_signal_offset + Walk_Threshold):
                 Ups += 1
                 Downs = 0
                 if Ups > 3:
@@ -256,6 +178,10 @@ def scanning(): #Defining what is happening when scanning our GUI
                         print("Measurement Off")
                         root.configure(bg = interlock_color)
                         running = False
+                    if read_value > (Error_signal_offset + Interlock_Threshold_mv):
+                        print("Error: Deviation too far")
+                        root.configure(bg = interlock_color) #Sets to the interlock color
+                        running = False
                     GPIB.write_frequency(SG, (temp_freq + Step_size),"HZ")
                     print("Raised Frequency ", i)
                     time.sleep(Wait_after_step)
@@ -264,7 +190,7 @@ def scanning(): #Defining what is happening when scanning our GUI
             # Repeat above loop but below the threshold instead of above
             #########################################
 
-            if read_value < -Walk_Threshold:
+            if read_value < (Error_signal_offset - Walk_Threshold):
                 Downs += 1
                 Ups = 0
                 if Downs > 3:
@@ -276,6 +202,10 @@ def scanning(): #Defining what is happening when scanning our GUI
                     if OS.query("MEASU:Meas{}:State?".format(Measurement))[-2] != str(1):
                         print("Measurement Off")
                         root.configure(bg = interlock_color)
+                        running = False
+                    if read_value < (Error_signal_offset - Interlock_Threshold_mv):
+                        print("Error: Deviation too far")
+                        root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False
                     GPIB.write_frequency(SG, (temp_freq - Step_size),"HZ")
                     print("Lowered Frequency ", i)
@@ -291,6 +221,9 @@ def scanning(): #Defining what is happening when scanning our GUI
 def start():
     """Enable scanning by setting the global flag to True."""
     global running
+    global Error_signal_offset
+    if reset_on_start == True:
+        Error_signal_offset = GPIB.read_mv(OS, long = Long, measurement = Measurement)
     running = True
 
 def stop():
@@ -312,8 +245,38 @@ def pulsing_toggle():
         pulsing = False
     else:
         pulsing = True
-    
 
+def pass_value():
+    """Passes the value into the label and the listbox"""
+    global Error_signal_offset
+    newtext = textvar.get() #Grabs the updated value
+    
+    try:
+        Error_signal_offset = float(newtext)
+        print(Error_signal_offset)
+        
+    except:
+        print("Value must be a number")
+        newtext = "Warning: Value must be a integer or float in"
+        
+    label['text'] = newtext + ' (mv)'
+    
+    textvar.set("") # Delete the entry text
+
+textvar = tkinter.StringVar()
+
+def entry():
+	"""Creates an entry, a label and a listbox"""
+	entry = tkinter.Entry(root, textvariable=textvar)
+	entry['font'] = "Arial 12"
+	entry.focus()
+	entry.pack()
+	entry.bind("<Return>", lambda x: pass_value())
+	label = tkinter.Label(root)
+	label.pack()
+	return entry, label
+
+entry, label = entry()
 
 root = Tk() #Beginning the GUI object
 root.title("Regulation Window") #Title of the GUI
@@ -327,6 +290,10 @@ start = Button(app, text="Start Regulation", command=start, activebackground="Sp
 stop = Button(app, text="Stop Regulation", command=stop, activebackground="firebrick1", height = size, width = size*5, bg = 'tomato', font=('Helvetica', '20'), bd = size)
 reset_button = Button(app, text="Reset Oscilloscope", command=reset_measurement, activebackground="light sky blue", height = int(size/3), width = size*5, bg = 'sky blue', font=('Helvetica', '20'), bd = size)
 Pulsing_button = Checkbutton(app, text="Pulsing", command=pulsing_toggle, activebackground="white", height = int(size/3), width = size*5, bg = 'gray', font=('Helvetica', '20'), bd = size,indicatoron=False,selectcolor='orange')
+
+### May need to uncomment to visualize the entry and label boxes
+#entry.grid()
+#label.grid()
 start.grid() #put the start button on the GUI, same for next three lines
 stop.grid()
 reset_button.grid()

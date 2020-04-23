@@ -36,12 +36,9 @@ while True:
     
     file = open("Data.txt",'a')
     file.write(str(temp_list).strip("[]")+"\n")
-    #file.write(str(temp_list).strip("[]")+"\n")
     file.close()
-    #mid_loop_time = time.time()
     with open("Data.txt", "r+") as file:
         contents = file.readlines()
-        #print(np.shape(contents)[0])
         if np.shape(contents)[0] > txt_file_length:
             file.seek(0)
             for num,j in enumerate(contents):
