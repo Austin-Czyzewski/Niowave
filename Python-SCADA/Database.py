@@ -34,7 +34,7 @@ while True:
         temp_list.append(M.Read(Client,Tag))
     for Tag in Temps:
         temp_list.append(M.Read(Client,Tag))
-    
+        
     file = open("Data.txt",'a')
     file.write(str(temp_list).strip("[]")+"\n")
     file.close()
