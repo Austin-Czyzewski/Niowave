@@ -274,9 +274,7 @@ def entry():
 	entry.bind("<Return>", lambda x: pass_value())
 	label = tkinter.Label(root)
 	label.pack()
-	#listbox = tkinter.Listbox(root)
-	#listbox.pack()
-	return entry, label#, listbox
+	return entry, label
 
 entry, label = entry()
 

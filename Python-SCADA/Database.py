@@ -4,7 +4,7 @@ from Tag_Database import *
 import Master as M
 
 # Parameters
-txt_file_length = 10000
+txt_file_length = 1000
 
 #############################################
 # Don't touch it
@@ -23,9 +23,10 @@ DST_Conversion = 3
 if time.localtime().tm_isdst == 1:
     DST_Conversion = 4
     
-Client = M.Make_Client("192.168.1.6")
+Client = M.Make_Client("10.50.0.10")
 
 while True:
+    start_time = time.time()
 
     temp_list = [time.time()*10**3-DST_Conversion*60*60*1000]
     
@@ -46,3 +47,6 @@ while True:
                     file.write(j)
             file.truncate()
     file.close()
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
+    time.sleep(abs(1 - elapsed_time))

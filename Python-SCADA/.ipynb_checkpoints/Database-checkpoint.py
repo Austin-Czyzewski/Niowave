@@ -1,9 +1,10 @@
 import time
 import numpy as np
 from Tag_Database import *
+import Master as M
 
 # Parameters
-txt_file_length = 86400
+txt_file_length = 1000
 
 #############################################
 # Don't touch it
@@ -22,6 +23,8 @@ DST_Conversion = 3
 if time.localtime().tm_isdst == 1:
     DST_Conversion = 4
     
+Client = M.Make_Client("10.50.0.10")
+
 while True:
 
     temp_list = [time.time()*10**3-DST_Conversion*60*60*1000]
@@ -33,12 +36,9 @@ while True:
     
     file = open("Data.txt",'a')
     file.write(str(temp_list).strip("[]")+"\n")
-    #file.write(str(temp_list).strip("[]")+"\n")
     file.close()
-    #mid_loop_time = time.time()
     with open("Data.txt", "r+") as file:
         contents = file.readlines()
-        #print(np.shape(contents)[0])
         if np.shape(contents)[0] > txt_file_length:
             file.seek(0)
             for num,j in enumerate(contents):
@@ -46,3 +46,4 @@ while True:
                     file.write(j)
             file.truncate()
     file.close()
+    time.sleep(1/3)
