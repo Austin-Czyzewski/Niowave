@@ -2,10 +2,11 @@ import GPIB_FUNCS as GPIB #Importing our GPIB communication functions for easier
 import pyvisa #import GPIB communication module
 import time #imports time to sleep program temporarily
 from tkinter import * #importing GUI library
+import tkinter
 
 RM = pyvisa.ResourceManager() #pyVISA device manager
 print(RM.list_resources()) #Printing out all detected device IDs
-SG = RM.open_resource('GPIB0::11::INSTR') #Opening the Signal generator as an object
+SG = RM.open_resource('GPIB0::10::INSTR') #Opening the Signal generator as an object
 OS = RM.open_resource('GPIB0::16::INSTR') #Opening the oscilloscope as an object
 
 running = False # Global flag, used for run status of GUI
@@ -27,11 +28,15 @@ Wait_after_step = 0.0400 #Seconds, the time waited after a step is taken, necess
 Wait_between_reads = 0.0100 #Seconds, currently not used, supplemented by GUI time between reads
 Interlock_Threshold_mv = 30 #mv, this is the amount of deviation before regulation trips off
 
+
+size = 8 #Size marker used universally between buttons
+
+Loops_Debounce = 1
 Long = False #The form that our measurement is output from the o-scope, depending on the way it is set up this can be in either a short or long form
 ## additional tweak in testing 200417
 
 Error_signal_offset = 0 # (mV) want to pulse off zero
-reset_on_start = True
+reset_on_start = False
 
 GPIB.measurement_setup(OS,IF_Channel, measurement = Measurement) #Setting up the required measurement for regulation
 
@@ -111,8 +116,10 @@ def scanning(): #Defining what is happening when scanning our GUI
             if read_value > (Error_signal_offset + Pulse_Walk_Threshold): #Checks to see if that value is outside of threshold
                 Ups += 1
                 Downs = 0
-                if Ups > 3: #Effective debounce
+                if Ups > Loops_Debounce: #Effective debounce
                     temp_freq = GPIB.freq(SG) #Gathers the current frequency
+                    GPIB.write_frequency(SG, (temp_freq + Pulse_Step_Size),"HZ") #Writes calculated frequency to the signal generator
+                    print("Raised Frequency ", i) #Shows that we took a step in frequency
                     if (temp_freq + Pulse_Step_Size) > (Start_Freq + Max_Threshold): #Sees if the new frequency is outside of bounds
                         print("Error: Broken on too many steps upward")
                         root.configure(bg = interlock_color) #Sets to the interlock color
@@ -125,8 +132,6 @@ def scanning(): #Defining what is happening when scanning our GUI
                         print("Error: Deviation too far")
                         root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False
-                    GPIB.write_frequency(SG, (temp_freq + Pulse_Step_Size),"HZ") #Writes calculated frequency to the signal generator
-                    print("Raised Frequency ", i) #Shows that we took a step in frequency
                     time.sleep(Wait_after_step) #Sleep for after step debounce time
             
             #########################################
@@ -137,8 +142,10 @@ def scanning(): #Defining what is happening when scanning our GUI
             if read_value < (Error_signal_offset - Pulse_Walk_Threshold): 
                 Downs += 1
                 Ups = 0
-                if Downs > 3:
+                if Downs > Loops_Debounce:
                     temp_freq = GPIB.freq(SG)
+                    GPIB.write_frequency(SG, (temp_freq - Pulse_Step_Size),"HZ")
+                    print("Lowered Frequency ", i)
                     if (temp_freq - Pulse_Step_Size) < (Start_Freq - Max_Threshold):
                         print("Broken on too many steps downward")
                         root.configure(bg = interlock_color)
@@ -151,8 +158,6 @@ def scanning(): #Defining what is happening when scanning our GUI
                         print("Error: Deviation too far")
                         root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False
-                    GPIB.write_frequency(SG, (temp_freq - Pulse_Step_Size),"HZ")
-                    print("Lowered Frequency ", i)
                     time.sleep(Wait_after_step)
 
             time.sleep(Wait_between_reads)
@@ -168,8 +173,10 @@ def scanning(): #Defining what is happening when scanning our GUI
             if read_value > (Error_signal_offset + Walk_Threshold):
                 Ups += 1
                 Downs = 0
-                if Ups > 3:
+                if Ups > Loops_Debounce:
                     temp_freq = GPIB.freq(SG)
+                    GPIB.write_frequency(SG, (temp_freq + Step_size),"HZ")
+                    print("Raised Frequency ", i)
                     if (temp_freq + Step_size) > (Start_Freq + Max_Threshold):
                         print("Broken on too many steps upward")
                         root.configure(bg = interlock_color)
@@ -182,8 +189,6 @@ def scanning(): #Defining what is happening when scanning our GUI
                         print("Error: Deviation too far")
                         root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False
-                    GPIB.write_frequency(SG, (temp_freq + Step_size),"HZ")
-                    print("Raised Frequency ", i)
                     time.sleep(Wait_after_step)
                     
             #########################################
@@ -193,8 +198,10 @@ def scanning(): #Defining what is happening when scanning our GUI
             if read_value < (Error_signal_offset - Walk_Threshold):
                 Downs += 1
                 Ups = 0
-                if Downs > 3:
+                if Downs > Loops_Debounce:
                     temp_freq = GPIB.freq(SG)
+                    GPIB.write_frequency(SG, (temp_freq - Step_size),"HZ")
+                    print("Lowered Frequency ", i)
                     if (temp_freq - Step_size) < (Start_Freq - Max_Threshold):
                         print("Broken on too many steps downward")
                         root.configure(bg = interlock_color)
@@ -207,8 +214,6 @@ def scanning(): #Defining what is happening when scanning our GUI
                         print("Error: Deviation too far")
                         root.configure(bg = interlock_color) #Sets to the interlock color
                         running = False
-                    GPIB.write_frequency(SG, (temp_freq - Step_size),"HZ")
-                    print("Lowered Frequency ", i)
                     time.sleep(Wait_after_step)
 
             #time.sleep(Wait_between_reads)
@@ -246,58 +251,70 @@ def pulsing_toggle():
     else:
         pulsing = True
 
+def regulation_setpoint_set():
+    global Error_signal_offset
+    global pulsing
+    if pulsing:
+        Error_signal_offset = GPIB.cursor_vbar_read_mv(OS)
+    else:
+        Error_signal_offset = GPIB.read_mv(OS, long = Long, measurement = Measurement)
+
 def pass_value():
-    """Passes the value into the label and the listbox"""
+    """Passes the value into the label, checks for proper value"""
     global Error_signal_offset
     newtext = textvar.get() #Grabs the updated value
     
     try:
         Error_signal_offset = float(newtext)
         print(Error_signal_offset)
+        label['bg'] = 'green'
         
     except:
         print("Value must be a number")
         newtext = "Warning: Value must be a integer or float in"
+        label['bg'] = 'red'
         
     label['text'] = newtext + ' (mv)'
     
     textvar.set("") # Delete the entry text
 
-textvar = tkinter.StringVar()
-
 def entry():
-	"""Creates an entry, a label and a listbox"""
-	entry = tkinter.Entry(root, textvariable=textvar)
-	entry['font'] = "Arial 12"
-	entry.focus()
-	entry.pack()
-	entry.bind("<Return>", lambda x: pass_value())
-	label = tkinter.Label(root)
-	label.pack()
-	return entry, label
+    """Creates entry and label boxes"""
+    entry = tkinter.Entry(root, textvariable=textvar, width = size * 5)
+    entry['font'] = "Arial 12"
+    entry.focus()
+    entry.grid(row = 0, column = 2, pady = size*1, ipady = size*5, sticky = "N")
+    entry.bind("<Return>", lambda x: pass_value())
+    label = tkinter.Label(root, width = size * 5)
+    label.grid(row = 0, column = 2, pady = size*10+size*5, ipady = size*5, sticky = "N")
+    return entry, label
 
-entry, label = entry()
 
 root = Tk() #Beginning the GUI object
 root.title("Regulation Window") #Title of the GUI
 root.geometry("1000x1000") #Size of the GUI
-#root.attributes('-fullscreen', True) #Swap the comments on this line and the previous to determine if the GUI is fullscreen or resizable
-
 app = Frame(root) #Application window
 app.grid() #Making this visible
-size = 10 #Size marker used universally between buttons
-start = Button(app, text="Start Regulation", command=start, activebackground="SpringGreen2", height = size, width = size*5, bg = 'Pale Green', font=('Helvetica', '20'), bd = size) #Start button configuration, same for next three lines
+
+#root.attributes('-fullscreen', True) #Swap the comments on this line and the previous to determine if the GUI is fullscreen or resizable
+
+textvar = tkinter.StringVar()
+
+entry, label = entry()
+
+#app = Frame(root) #Application window
+#app.grid() #Making this visible
+start = Button(app, text="Start Regulation", command=start, activebackground="SpringGreen2", height = size, width = size*5, bg = 'Pale Green', font=('Helvetica', '20'), bd = size) #Start button configuration, same for next lines
 stop = Button(app, text="Stop Regulation", command=stop, activebackground="firebrick1", height = size, width = size*5, bg = 'tomato', font=('Helvetica', '20'), bd = size)
 reset_button = Button(app, text="Reset Oscilloscope", command=reset_measurement, activebackground="light sky blue", height = int(size/3), width = size*5, bg = 'sky blue', font=('Helvetica', '20'), bd = size)
 Pulsing_button = Checkbutton(app, text="Pulsing", command=pulsing_toggle, activebackground="white", height = int(size/3), width = size*5, bg = 'gray', font=('Helvetica', '20'), bd = size,indicatoron=False,selectcolor='orange')
+Regulation_setpoint_button = Button(app, text="Set regulation setpoint here", command=regulation_setpoint_set, activebackground="gray", height = int(size/3), width = size*5, bg = 'lightgray', font=('Helvetica', '20'), bd = size)
 
-### May need to uncomment to visualize the entry and label boxes
-#entry.grid()
-#label.grid()
-start.grid() #put the start button on the GUI, same for next three lines
-stop.grid()
-reset_button.grid()
-Pulsing_button.grid()
+start.grid(row = 1, column = 1) #put the start button on the GUI, same for next three lines
+stop.grid(row = 2, column = 1)
+reset_button.grid(row = 3, column = 1)
+Pulsing_button.grid(row = 4, column = 1)
+Regulation_setpoint_button.grid(row = 5, column = 1)
 
 root.after(1000, scanning)  # After 1 second, call scanning
 root.mainloop()

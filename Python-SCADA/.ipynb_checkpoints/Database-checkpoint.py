@@ -26,6 +26,7 @@ if time.localtime().tm_isdst == 1:
 Client = M.Make_Client("10.50.0.10")
 
 while True:
+    start_time = time.time()
 
     temp_list = [time.time()*10**3-DST_Conversion*60*60*1000]
     
@@ -33,7 +34,7 @@ while True:
         temp_list.append(M.Read(Client,Tag))
     for Tag in Temps:
         temp_list.append(M.Read(Client,Tag))
-    
+        
     file = open("Data.txt",'a')
     file.write(str(temp_list).strip("[]")+"\n")
     file.close()
@@ -46,4 +47,6 @@ while True:
                     file.write(j)
             file.truncate()
     file.close()
-    time.sleep(1/3)
+    elapsed_time = time.time() - start_time
+    print(elapsed_time)
+    time.sleep(abs(1 - elapsed_time))

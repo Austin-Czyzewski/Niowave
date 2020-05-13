@@ -45,14 +45,14 @@ Recent Updates: Dog_Leg_V2_1
 	- Added the ability to move to the optimal point as calculated by the FWHM
 	- Added a column to the data table of the emitted current for normalization
     
-Logic Walkthrough:
+Logic Walkthrough (Not by line):
 10 - Load in the Client
 20 - Define the tags we will be moving, the parameters we will be using
 30 - Take beginning readings
 40 - Lay out the data format
 50 - Take first data point
 60 - Begin loop for user defined steps, this is moving to the right
-70 - check to see if user has broken the loop, if yes skip to ######################
+70 - check to see if user has broken the loop, if yes skip to 220
 80 - Calculate the new values for the two magnets we are moving
 90 - Write the new values for the two magnets we are moving
 100 - Take the data, store into the data list
@@ -60,7 +60,7 @@ Logic Walkthrough:
 120 - Walk quickly back to the start values using both magnets simultaneously
 130 - Take first data point
 140 - Begin loop for user defined steps, this is moving to the left
-150 - check to see if user has broken the loop, if yes skip to ######################
+150 - check to see if user has broken the loop, if yes skip to 220
 160 - Calculate the new values for the two magnets we are moving
 170 - Write the new values for the two magnets we are moving
 180 - Take the data, store into the data list
