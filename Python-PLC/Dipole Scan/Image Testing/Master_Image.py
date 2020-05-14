@@ -241,7 +241,7 @@ def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
     return
 
 
-def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
+def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25, sleep_time = 0.020, step_time = 0.25, image = False):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -321,6 +321,21 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
         if Read_Tag != "00000":
 
             collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
+            
+            if image:
+                time.sleep(step_time/2)
+                
+                
+                Camera.SnapImage()
+                image = Camera.GetImage()
+                image = cv2.flip(image, 0) # note image is saved in BGR color code
+
+                # we will save image sequences in the imgs directory
+                timestamp = datetime.now() # data acquisition time stamp. need to be moved?
+                fname = './imgs/' +  timestamp.strftime("%y%m%d_%H-%M-%S.%f") +
+                    'exp' + str(def_exp) + '-gain' + str(def_gain) + '-dipolescan.bmp'
+                cv2.imwrite(fname, image)
+                
         
         else:
             time.sleep(sleep_time * 10)

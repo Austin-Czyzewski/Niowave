@@ -22,11 +22,21 @@ from datetime import datetime
 import time
 import numpy as np
 import Master as M
+import Tag_Database as Tags
 
-Client = M.Make_Client('10.50.0.10')
+Client = M.Make_Client('192.168.1.2')
 
 
 End_Value = float(input("What is the ending amperage that you want to ramp the magnet to? (Amps)   "))
+
+Emission_Setpoint = M.Read(Client, Tags.Emission_Set)
+Emission_Actual = M.Read(Client, Tags.Emitted_Current, Average = True)
+IR_Temp = M.Read(Client, Tags.IR_Temp)
+VA_Temp = M.Read(Client, Tags.VA_Temp)
+V0_Setpoint = M.Read(Client, Tags.V0_SP)
+V0_Read = M.Read(Client, Tags.V0_Read)
+Pulsing_Status = M.Read(Client, Tags.Output_Status)
+Threshold_Percent = 0.05
 
 #Uncomment to make variable number of runs
 #Runs = int(input("How many runs do you want the Dipole to make?   "))
@@ -34,7 +44,7 @@ End_Value = float(input("What is the ending amperage that you want to ramp the m
 Runs = 1 #Number of times you want to ramp to the input value and back to the start
 Dipole_Tag = Tags.DP1 #Modbus address of the magnet we are writing to
 Step_size = .001 #Step Size, in Amps, that we are taking to reach our goal
-Read = Tags.DBA_Bypass #Modbus address of the value we want to read while we scan the magnet
+Read = Tags.DBA_Bypass #Modbus address of the value we want to Read while we scan the magnet
 count = 20 #Number of times we want to average the Read Tag value
 
 Start_Value = M.Read(Client, Dipole_Tag) #Recording the starting value of the Dipole
@@ -44,8 +54,9 @@ DP1_Values = []
 DBA_Collection = []
 colors = []
 
+print("Beginning Scan")
 for i in range(Runs):
-    
+    print("Going to target value")
     DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
     #The above function walks the magnet to the endpoint ,and returns the data
     
@@ -53,7 +64,8 @@ for i in range(Runs):
     DBA_Collection += DBA_Col 
     
     colors += ['chocolate' for i in list(range(len(DP1_Vals)))] #Appending 'chocolate' as the color for this data set
-
+    
+    print("Going to start")
     DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, Start_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
     #The above statement walks us back to the start, and returns the data
     
@@ -63,8 +75,30 @@ for i in range(Runs):
     colors += ['firebrick' for i in list(range(len(DP1_Vals)))] #Appending 'firebrick' as the color for this data set
     
     
+DP1_Values = np.array(DP1_Values)
+DBA_Collection = np.array(DBA_Collection)
+
+#Converting into millimeters
+x_mindex = np.where(DBA_Collection == min(DBA_Collection[:len(DBA_Collection//2)]))[0][0] #Gathering the peak point
+x_maxdex = np.argmin(abs(DBA_Collection) > Threshold_Percent * abs(min(DBA_Collection))) #First point higher than the threshold percent of collection
+
+mms = (max(DP1_Values[x_maxdex:x_mindex]) - DP1_Values[x_maxdex:x_mindex])/\
+    (max(DP1_Values[x_maxdex:x_mindex]) - min(DP1_Values[x_maxdex:x_mindex]))*10
+
+Percent_Collection = abs(DBA_Collection/Emission_Setpoint)*100
+
+for iteration in range(x_maxdex):
+    mms = np.insert(mms, 0, None)
+    #Percent_Collection = np.insert(Percent_Collection, 0, None)
+
+while len(DP1_Values) > len(mms):
+    mms = np.append(mms, None)
+    #Percent_Collection = np.append(Percent_Collection, None)
 
 now = datetime.today().strftime('%y%m%d_%H%M') #Grabbing the time and date in a common format to save the plot and txt file to
+Emission_String = str(int(abs(Emission_Actual)*1000))
+V0_String = str(round(V0_Setpoint,2)).replace('.', '_')
+
 plt.figure(figsize = (12,8))
 plt.scatter(DP1_Values,DBA_Collection,color = colors, alpha = 0.5)
 
@@ -77,12 +111,20 @@ plt.xlabel("Magnet Setting (A)")
 plt.title("Dipole 1 current collected over walk from {0:.3f} to {1:.3f}".format(Start_Value, End_Value))
 plt.suptitle("Orange = Ascending, Red = Descending",fontsize = 8, alpha = 0.65)
 
-plt.savefig(now + '_graph.png', dpi = 450, trasnparent = True) #Saving to the time and date as png
+plt.savefig(now + '_V0_' + V0_String + '_' +  Emission_String.zfill(4) + '_graph.png', dpi = 450, trasnparent = True) #Saving to the time and date as png
 
-save_list = M.merge(DP1_Values,DBA_Collection)
-with open(now+'.txt', 'w') as f:
-    for item in save_list:
-        f.write(str(item)+'\n')
+save_list = np.array([DP1_Values, DBA_Collection, Percent_Collection, mms])
+
+with open(now + '_V0_' + V0_String + '_' +  Emission_String.zfill(4) + 'EC.txt', 'w') as f:
+    f.write("EC_Setpoint: {:.4f}, EC_Read: {:.4f}, IR_Temp: {:.4f}, VA_Temp: {:.4f}".format(Emission_Setpoint, Emission_Actual, \
+                                                    IR_Temp, VA_Temp) + '\n')
+    f.write("V0_Set: {:.4f}, V0_Read {:.4f}, Pulse_Bool: {:.4f}, Rise_Threshold: {:.4f}".format(V0_Setpoint, V0_Read, \
+                                                    Pulsing_Status, Threshold_Percent) + '\n')
+    f.write("Raw DP1(Amps), Raw Collection(mA), Percent Collection , Conversion to mms" + '\n')
+    for row in range(len(save_list[0,:])):
+        for column in range(len(save_list[:,0])):
+            f.write(str(save_list[column,row]) + ', ')
+        f.write('\n')
     f.close()
 plt.show()
 exit()
