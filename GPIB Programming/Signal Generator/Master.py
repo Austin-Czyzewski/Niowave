@@ -13,7 +13,11 @@ Functions to be found:
         - Read the output from a modbus tag
         
     - Write to client
-        - Similar to read, however, give a new value to write to. Be careful, there is no safety in magnet step size here
+        - Similar to read; however, give a new value to write to. Be careful, there is no safety in magnet step size here
+      
+    - Write multiple to client
+        - Similar to write; however, writes to multiple registers in a row depending on the length of the list provided
+            Again, there is no compare check here so there may be large impacts from writing the wrong value.
         
     - Ramp one way
         - Select the magnet, set an end value, and define a step size and this will walk the magnet to that value
@@ -65,7 +69,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import time
 
-sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
+sleep_time = 1 #time in seconds before grabbing a consecutive data point
 
 def merge(list1, list2): 
       
@@ -185,6 +189,57 @@ def Write(Client, Tag_Number, New_Value):
     return
 
 
+def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
+    
+    '''
+    Inputs:
+        __ Client: See client
+        __ Start_Tag_Number: This is the starting tag value, this will increment
+            by two for each of the items in the New_Values_List
+        __ New_Values_List: This is a list of new values that you want to write, this
+            is typically the same number repeated once for each time that you want
+            to write to each magnet. This is done this way so that you can write
+            different values to each magnet if you want to. (Typically by a scaled
+            amount if you are doing that.)
+        
+        - Must have an established Client before running this function.
+        
+        - Outputs:
+            __ Writes to a number of user defined magnets, may, in the future,
+                allow one value to be written to a specified number of magnets.
+                
+        - Method:
+                - Set up the Client
+                - Define the start tag value, 22201 for dipole 1 for example
+                - For each dipole you want to step, you define the new value 
+                    you want written to it.
+        - Example (Writing to 8 Dipoles starting with DP1)
+        
+        List = [0.100,0.100,0.100,0.100,0.100,0.100,0.100,0.100]
+        DP1_Tag = 22201
+        
+        Client = M.Make_Client('192.168.1.2')
+        
+        M.Write_Multiple(Client, DP1_Tag, List)
+        
+            - Result: All of the Dipoles (Assuming there are 8 will be written to 0.100) 
+    
+    '''
+    
+    Tag_Number = int(Start_Tag_Number)-1
+    
+    Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
+    
+    for value in New_Value_List:
+        Builder.add_32bit_float(value)
+        
+    Payload = Builder.to_registers()
+    Payload = Builder.build()
+    
+    Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
+    
+    return
+
 
 def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
@@ -254,7 +309,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
             temp_check = Read(Client,Tag_Number)
 
             if abs(temp_check - write_value) >= 0.001:
-                exit()
+                break
         
             
         write_value = Start_Value + (Delta/Steps)*i
@@ -262,6 +317,10 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
         write_value_list.append(write_value)
 
         Write(Client, Tag_Number, write_value)
+
+        print("I JUST TOOK A STEP")
+
+        time.sleep(.05)
 
         if Read_Tag != "00000":
 
@@ -554,7 +613,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     
     return Data
 
-def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Stop = 0, Resolution = 25, sleep_time = .050):
+def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Stop = 0, Resolution = 25):
     '''
     Inputs: Client, see "Client" abov
         __ Magnet_1_Tag: The tag for the horizontal controls for the window frame we are scanning
@@ -601,7 +660,7 @@ def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Sto
         Write(Client, Magnet_1_Tag, Magnet_1_Write_Value)
         Write(Client, Magnet_2_Tag, Magnet_2_Write_Value)
 
-        time.sleep(sleep_time)
+        time.sleep(.010)
         
     return
 
@@ -649,23 +708,3 @@ def Save_and_Plot(Data, Save = True, Plot = True):
 
 
     plt.show()
-
-
-def FWHM(x,y,extras = False):
-    all_above = [abs(x) if abs(x) >= (abs(y).max())/2 else None for x in y]
-    all_below = [abs(x) if abs(x) < (abs(y).max())/2 else None for x in y]
-    
-    good_x = []
-    for i in range(len(x)):
-        if all_above[i] != None:
-            good_x.append(x[i])
-            
-    width = max(good_x)-min(good_x)
-
-    if extras == False:
-        return all_above, all_below, width
-    else:
-        good_sum = sum([abs(i) if i != None else 0 for i in all_above])
-        bad_sum = sum([abs(i) if i != None else 0 for i in all_below])
-        center = np.median(np.array([i for i in good_x if i != None]))
-        return all_above, all_below, width, center, good_sum, bad_sum

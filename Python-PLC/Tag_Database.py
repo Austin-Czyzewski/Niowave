@@ -223,3 +223,5 @@ Trek_V = 11501
 Trek_I = 11503
 V0_SP = 11311
 V0_Read = 11101
+
+Output_Status = 11111

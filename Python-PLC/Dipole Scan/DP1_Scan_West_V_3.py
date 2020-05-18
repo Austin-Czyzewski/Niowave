@@ -1,4 +1,4 @@
-''' Creator: Austin Czyzewski
+l''' Creator: Austin Czyzewski
 
 Date Created: 12/04/2019
 Date Last Updated: 01/17/2020
@@ -79,7 +79,7 @@ DP1_Values = np.array(DP1_Values)
 DBA_Collection = np.array(DBA_Collection)
 
 #Converting into millimeters
-x_mindex = np.where(DBA_Collection == min(DBA_Collection[:len(DBA_Collection//2)]))[0][0] #Gathering the peak point
+x_mindex = np.where(DBA_Collection == min(DBA_Collection[:len(DBA_Collection//(Runs*2))]))[0][0] #Gathering the peak point
 x_maxdex = np.argmin(abs(DBA_Collection) > Threshold_Percent * abs(min(DBA_Collection))) #First point higher than the threshold percent of collection
 
 mms = (max(DP1_Values[x_maxdex:x_mindex]) - DP1_Values[x_maxdex:x_mindex])/\

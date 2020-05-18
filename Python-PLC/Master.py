@@ -69,7 +69,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import time
 
-sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
+sleep_time = 1 #time in seconds before grabbing a consecutive data point
 
 def merge(list1, list2): 
       
@@ -317,6 +317,10 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
         write_value_list.append(write_value)
 
         Write(Client, Tag_Number, write_value)
+
+        print("I JUST TOOK A STEP")
+
+        time.sleep(.05)
 
         if Read_Tag != "00000":
 

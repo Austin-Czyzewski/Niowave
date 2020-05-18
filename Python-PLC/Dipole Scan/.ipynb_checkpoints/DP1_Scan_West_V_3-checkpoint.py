@@ -79,7 +79,7 @@ DP1_Values = np.array(DP1_Values)
 DBA_Collection = np.array(DBA_Collection)
 
 #Converting into millimeters
-x_mindex = np.where(DBA_Collection == min(DBA_Collection[:len(DBA_Collection//2)]))[0][0] #Gathering the peak point
+x_mindex = np.where(DBA_Collection == min(DBA_Collection[:len(DBA_Collection//(Runs*2))]))[0][0] #Gathering the peak point
 x_maxdex = np.argmin(abs(DBA_Collection) > Threshold_Percent * abs(min(DBA_Collection))) #First point higher than the threshold percent of collection
 
 mms = (max(DP1_Values[x_maxdex:x_mindex]) - DP1_Values[x_maxdex:x_mindex])/\
@@ -89,11 +89,9 @@ Percent_Collection = abs(DBA_Collection/Emission_Setpoint)*100
 
 for iteration in range(x_maxdex):
     mms = np.insert(mms, 0, None)
-    #Percent_Collection = np.insert(Percent_Collection, 0, None)
 
 while len(DP1_Values) > len(mms):
     mms = np.append(mms, None)
-    #Percent_Collection = np.append(Percent_Collection, None)
 
 now = datetime.today().strftime('%y%m%d_%H%M') #Grabbing the time and date in a common format to save the plot and txt file to
 Emission_String = str(int(abs(Emission_Actual)*1000))
