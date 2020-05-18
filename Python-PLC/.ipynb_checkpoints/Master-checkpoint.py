@@ -69,7 +69,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import time
 
-sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
+sleep_time = 1 #time in seconds before grabbing a consecutive data point
 
 def merge(list1, list2): 
       
@@ -317,6 +317,10 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
         write_value_list.append(write_value)
 
         Write(Client, Tag_Number, write_value)
+
+        print("I JUST TOOK A STEP", i)
+
+        time.sleep(.05)
 
         if Read_Tag != "00000":
 
@@ -704,3 +708,22 @@ def Save_and_Plot(Data, Save = True, Plot = True):
 
 
     plt.show()
+
+def FWHM(x,y,extras = False):
+    all_above = [abs(x) if abs(x) >= (abs(y).max())/2 else None for x in y]
+    all_below = [abs(x) if abs(x) < (abs(y).max())/2 else None for x in y]
+    
+    good_x = []
+    for i in range(len(x)):
+        if all_above[i] != None:
+            good_x.append(x[i])
+            
+    width = max(good_x)-min(good_x)
+
+    if extras == False:
+        return all_above, all_below, width
+    else:
+        good_sum = sum([abs(i) if i != None else 0 for i in all_above])
+        bad_sum = sum([abs(i) if i != None else 0 for i in all_below])
+        center = np.median(np.array([i for i in good_x if i != None]))
+        return all_above, all_below, width, center, good_sum, bad_sum
