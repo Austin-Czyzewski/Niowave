@@ -41,7 +41,7 @@ Logic walkthrough:
 
 #Establish a connection to the PLC
 
-Client = M.Make_Client('10.50.0.10')
+Client = M.Make_Client('10.50.0.20')
 
 start_time = time.time()
 #Dog Leg

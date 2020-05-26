@@ -1,6 +1,6 @@
 import os
 import time
-sleep_time = 0.25
+sleep_time = 0.10
 while True:
     os.system('mode con: cols=120 lines=40')
     os.system('color 01')

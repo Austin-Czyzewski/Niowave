@@ -1,0 +1,10 @@
+Kalamazoo County Coronavirus Data for 05/25/2020
+------------------------------------------------------------
+Total Cases = 801
+Total Deaths = 49
+Percent of Kalamazoo with COVID = 0.302%
+Percent of Kalamazoo deceased from COVID = 0.018%
+Residents per case from COVID = 330
+Residents per death from COVID = 5409.51
+------------------------------------------------------------
+------------------------------------------------------------

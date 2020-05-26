@@ -94,7 +94,7 @@ def Make_Client(IP):
 
 
 
-def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010):
+def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool = False):
     '''
         -Inputs: Client, see "Client" Above
             __ Tag_Number: which modbus to read, convention is this: input the modbus start tag number. Must have a modbus tag.
@@ -121,31 +121,34 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010):
 
     '''
     Tag_Number = int(Tag_Number)-1
-    
-    Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-    Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-    Tag_Value = Tag_Value_Bit.decode_32bit_float()
-    
-    if Average == True:
-        
-        temp_list = []
-        for i in range(count):
-            Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-            Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            Tag_Value = Tag_Value_Bit.decode_32bit_float()
-            temp_list.append(Tag_Value)
 
-            time.sleep(sleep_time)
 
-        return (sum(temp_list)/count)
+    if Bool == False:
+        Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+        Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        Tag_Value = Tag_Value_Bit.decode_32bit_float()
         
+        if Average == True:
+            
+            temp_list = []
+            for i in range(count):
+                Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+                Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+                Tag_Value = Tag_Value_Bit.decode_32bit_float()
+                temp_list.append(Tag_Value)
+
+                time.sleep(sleep_time)
+
+            return (sum(temp_list)/count)
         
+    if Bool == True:
+        Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
 
     return Tag_Value
 
 
 
-def Write(Client, Tag_Number, New_Value):
+def Write(Client, Tag_Number, New_Value, Bool = False):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -174,13 +177,20 @@ def Write(Client, Tag_Number, New_Value):
 
 
     '''
+
     Tag_Number = int(Tag_Number)-1
-    
-    Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
-    Builder.add_32bit_float(New_Value)
-    Payload = Builder.to_registers()
-    Payload = Builder.build()
-    Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
+
+    if Bool == False:
+        
+        Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
+        Builder.add_32bit_float(New_Value)
+        Payload = Builder.to_registers()
+        Payload = Builder.build()
+        Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
+
+    if Bool == True:
+        Client.write_coils(Tag_Number, [New_Value], skip_encode=False, unit=1)
+
 
     return
 

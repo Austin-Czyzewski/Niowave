@@ -224,4 +224,15 @@ Trek_I = 11503
 V0_SP = 11311
 V0_Read = 11101
 
-Output_Status = 11111
+########################################
+### Error Signal Regulation Tags
+########################################
+
+Regulation_Float = '01001'
+
+#Begin Booleans
+
+Pulsing_Output = '11014' 
+Error_Signal_Regulation = '00012' 
+Oscope_Reset = '00013' 
+Regulation_Setpoint_Reset = '00014'
