@@ -13,11 +13,7 @@ Functions to be found:
         - Read the output from a modbus tag
         
     - Write to client
-        - Similar to read; however, give a new value to write to. Be careful, there is no safety in magnet step size here
-      
-    - Write multiple to client
-        - Similar to write; however, writes to multiple registers in a row depending on the length of the list provided
-            Again, there is no compare check here so there may be large impacts from writing the wrong value.
+        - Similar to read, however, give a new value to write to. Be careful, there is no safety in magnet step size here
         
     - Ramp one way
         - Select the magnet, set an end value, and define a step size and this will walk the magnet to that value
@@ -98,7 +94,7 @@ def Make_Client(IP):
 
 
 
-def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010):
+def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool = False):
     '''
         -Inputs: Client, see "Client" Above
             __ Tag_Number: which modbus to read, convention is this: input the modbus start tag number. Must have a modbus tag.
@@ -125,31 +121,34 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010):
 
     '''
     Tag_Number = int(Tag_Number)-1
-    
-    Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-    Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-    Tag_Value = Tag_Value_Bit.decode_32bit_float()
-    
-    if Average == True:
-        
-        temp_list = []
-        for i in range(count):
-            Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-            Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            Tag_Value = Tag_Value_Bit.decode_32bit_float()
-            temp_list.append(Tag_Value)
 
-            time.sleep(sleep_time)
 
-        return (sum(temp_list)/count)
+    if Bool == False:
+        Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+        Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        Tag_Value = Tag_Value_Bit.decode_32bit_float()
         
+        if Average == True:
+            
+            temp_list = []
+            for i in range(count):
+                Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+                Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+                Tag_Value = Tag_Value_Bit.decode_32bit_float()
+                temp_list.append(Tag_Value)
+
+                time.sleep(sleep_time)
+
+            return (sum(temp_list)/count)
         
+    if Bool == True:
+        Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
 
     return Tag_Value
 
 
 
-def Write(Client, Tag_Number, New_Value):
+def Write(Client, Tag_Number, New_Value, Bool = False):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -178,70 +177,26 @@ def Write(Client, Tag_Number, New_Value):
 
 
     '''
+
     Tag_Number = int(Tag_Number)-1
-    
-    Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
-    Builder.add_32bit_float(New_Value)
-    Payload = Builder.to_registers()
-    Payload = Builder.build()
-    Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
+
+    if Bool == False:
+        
+        Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
+        Builder.add_32bit_float(New_Value)
+        Payload = Builder.to_registers()
+        Payload = Builder.build()
+        Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
+
+    if Bool == True:
+        Client.write_coils(Tag_Number, [New_Value], skip_encode=False, unit=1)
+
 
     return
 
 
-def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
-    
-    '''
-    Inputs:
-        __ Client: See client
-        __ Start_Tag_Number: This is the starting tag value, this will increment
-            by two for each of the items in the New_Values_List
-        __ New_Values_List: This is a list of new values that you want to write, this
-            is typically the same number repeated once for each time that you want
-            to write to each magnet. This is done this way so that you can write
-            different values to each magnet if you want to. (Typically by a scaled
-            amount if you are doing that.)
-        
-        - Must have an established Client before running this function.
-        
-        - Outputs:
-            __ Writes to a number of user defined magnets, may, in the future,
-                allow one value to be written to a specified number of magnets.
-                
-        - Method:
-                - Set up the Client
-                - Define the start tag value, 22201 for dipole 1 for example
-                - For each dipole you want to step, you define the new value 
-                    you want written to it.
-        - Example (Writing to 8 Dipoles starting with DP1)
-        
-        List = [0.100,0.100,0.100,0.100,0.100,0.100,0.100,0.100]
-        DP1_Tag = 22201
-        
-        Client = M.Make_Client('192.168.1.2')
-        
-        M.Write_Multiple(Client, DP1_Tag, List)
-        
-            - Result: All of the Dipoles (Assuming there are 8 will be written to 0.100) 
-    
-    '''
-    
-    Tag_Number = int(Start_Tag_Number)-1
-    
-    Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
-    
-    for value in New_Value_List:
-        Builder.add_32bit_float(value)
-        
-    Payload = Builder.to_registers()
-    Payload = Builder.build()
-    
-    Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
-    
-    return
 
-
-def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
+def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25, sleep_time = 0.020):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -309,7 +264,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
             temp_check = Read(Client,Tag_Number)
 
             if abs(temp_check - write_value) >= 0.001:
-                break
+                exit()
         
             
         write_value = Start_Value + (Delta/Steps)*i
@@ -469,7 +424,7 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
     
 
     
-def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
+def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25, sleep_time = 0.010):
     '''
     Inputs: Client, see "Client" abov
         __ WFH_Tag: The tag for the horizontal controls for the window frame we are scanning
@@ -510,7 +465,6 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     Delta_V = Vertical_Delta/Resolution
     
     Averaging_Number = 25 #Number of times we read the Read tags for averaging, recommended about 25 if pulsing, 10 if CW
-    Sleep_Time = .010 #Sleep time between reads
     Chunks = 4 #Inverse number of chunks, we use Resolution/Chunks, thus, the maximum value allowable is Resolution
     Chunk_rest_factor = 10 #Multiple of Sleep_Time to allow PLC to catch up.
     
@@ -530,7 +484,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag) #Storing the Horizontal Value
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) #Storing the Vertical Value
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time) #Storing the Read_Tag averaged value
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time) #Storing the Read_Tag averaged value
         
         #This loop is being repeated with some minor changes being made in the Write_values sections these
             #Are to reflect the changes in direction. Otherwise, refer to documentation in this loop for help.
@@ -547,7 +501,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         Write(Client, WFH_Tag, WFH_Write_Value) #Writing the values, notice no data is being collected here
         Write(Client, WFV_Tag, WFV_Write_Value)
         
-        time.sleep(Sleep_Time*Chunk_rest_factor)
+        time.sleep(sleep_Time*Chunk_rest_factor)
     
     #####
     #Now moving right to center center
@@ -561,7 +515,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) 
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
         
         
     #####
@@ -576,7 +530,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
         
     #####
     #Now moving Center Bottom
@@ -589,7 +543,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         Write(Client, WFH_Tag, WFH_Write_Value)
         Write(Client, WFV_Tag, WFV_Write_Value)
 
-        time.sleep(Sleep_Time*Chunk_rest_factor)
+        time.sleep(sleep_Time*Chunk_rest_factor)
     
     #####
     #Now Moving Center Bottom to Center Center again
@@ -603,13 +557,13 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
         
             
     
     return Data
 
-def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Stop = 0, Resolution = 25):
+def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Stop = 0, Resolution = 25, sleep_time = .050):
     '''
     Inputs: Client, see "Client" abov
         __ Magnet_1_Tag: The tag for the horizontal controls for the window frame we are scanning
@@ -656,7 +610,7 @@ def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Sto
         Write(Client, Magnet_1_Tag, Magnet_1_Write_Value)
         Write(Client, Magnet_2_Tag, Magnet_2_Write_Value)
 
-        time.sleep(.010)
+        time.sleep(sleep_time)
         
     return
 
@@ -704,3 +658,23 @@ def Save_and_Plot(Data, Save = True, Plot = True):
 
 
     plt.show()
+
+
+def FWHM(x,y,extras = False):
+    all_above = [abs(x) if abs(x) >= (abs(y).max())/2 else None for x in y]
+    all_below = [abs(x) if abs(x) < (abs(y).max())/2 else None for x in y]
+    
+    good_x = []
+    for i in range(len(x)):
+        if all_above[i] != None:
+            good_x.append(x[i])
+            
+    width = max(good_x)-min(good_x)
+
+    if extras == False:
+        return all_above, all_below, width
+    else:
+        good_sum = sum([abs(i) if i != None else 0 for i in all_above])
+        bad_sum = sum([abs(i) if i != None else 0 for i in all_below])
+        center = np.median(np.array([i for i in good_x if i != None]))
+        return all_above, all_below, width, center, good_sum, bad_sum

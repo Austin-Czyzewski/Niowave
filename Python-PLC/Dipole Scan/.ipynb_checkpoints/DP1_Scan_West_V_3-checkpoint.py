@@ -1,4 +1,4 @@
-''' Creator: Austin Czyzewski
+l''' Creator: Austin Czyzewski
 
 Date Created: 12/04/2019
 Date Last Updated: 01/17/2020
@@ -29,13 +29,37 @@ Client = M.Make_Client('192.168.1.2')
 
 End_Value = float(input("What is the ending amperage that you want to ramp the magnet to? (Amps)   "))
 
+#Grabbing all of our data for the system snapshot
+#################################################
+Pulsing_Status = bool(M.Read(Client, Tags.Output_Status, Bool = True))
 Emission_Setpoint = M.Read(Client, Tags.Emission_Set)
-Emission_Actual = M.Read(Client, Tags.Emitted_Current, Average = True)
+
+if Pulsing_Status:
+    Emission_Actual = M.Read(Client, Tags.Emitted_Current, Average = True, count = 50, sleep_time = 0.025)
+else:
+    Emission_Actual = M.Read(Client, Tags.Emitted_Current, Average = True, count = 20, sleep_time = 0.010)
+    
 IR_Temp = M.Read(Client, Tags.IR_Temp)
 VA_Temp = M.Read(Client, Tags.VA_Temp)
 V0_Setpoint = M.Read(Client, Tags.V0_SP)
 V0_Read = M.Read(Client, Tags.V0_Read)
-Pulsing_Status = M.Read(Client, Tags.Output_Status)
+Cathode_V = M.Read(Client, Tags.Voltage_Read)
+Cathode_I = M.Read(Client, Tags.Current_Read)
+Cathode_Z = M.Read(Client, Tags.Impedance_Read)
+Cathode_P = M.Read(Client, Tags.Power_Read)
+CU_Gun_Pf = M.Read(Client, Tags.CU_Pf)
+CU_Gun_Pr = M.Read(Client, Tags.CU_Pr)
+CU_Gun_Pt = M.Read(Client, Tags.CU_Pt)
+CU_Gun_V = M.Read(Client, Tags.CU_V)
+BH_Gun_Pf = M.Read(Client, Tags.BH_Pf)
+BH_Gun_Pr = M.Read(Client, Tags.BH_Pr)
+BH_Gun_Pt = M.Read(Client, Tags.BH_Pt)
+SRF_Pf = M.Read(Client, Tags.SRF_Pf)
+SRF_Pr = M.Read(Client, Tags.SRF_Pr)
+SRF_Pt = M.Read(Client, Tags.SRF_Pt)
+Pulse_Freq = M.Read(Client, Tags.Pulse_Frequency)
+Pulse_Duty = M.Read(Client, Tags.Pulse_Duty)
+
 Threshold_Percent = 0.05
 
 #Uncomment to make variable number of runs
@@ -46,6 +70,7 @@ Dipole_Tag = Tags.DP1 #Modbus address of the magnet we are writing to
 Step_size = .001 #Step Size, in Amps, that we are taking to reach our goal
 Read = Tags.DBA_Bypass #Modbus address of the value we want to Read while we scan the magnet
 count = 20 #Number of times we want to average the Read Tag value
+pulsing_count = 50 #number of times we want to average the Read Tag value if pulsing
 
 Start_Value = M.Read(Client, Dipole_Tag) #Recording the starting value of the Dipole
 print("Started at {0:.3f} Amps".format(Start_Value))
@@ -57,7 +82,11 @@ colors = []
 print("Beginning Scan")
 for i in range(Runs):
     print("Going to target value")
-    DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
+    
+    if Pulsing_Status:
+        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = pulsing_count)
+    else:
+        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
     #The above function walks the magnet to the endpoint ,and returns the data
     
     DP1_Values += DP1_Vals #Adding the recorded data to the lists
@@ -66,7 +95,11 @@ for i in range(Runs):
     colors += ['chocolate' for i in list(range(len(DP1_Vals)))] #Appending 'chocolate' as the color for this data set
     
     print("Going to start")
-    DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, Start_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
+    
+    if Pulsing_Status:
+        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = pulsing_count)
+    else:
+        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
     #The above statement walks us back to the start, and returns the data
     
     DP1_Values += DP1_Vals
@@ -118,6 +151,15 @@ with open(now + '_V0_' + V0_String + '_' +  Emission_String.zfill(4) + 'EC.txt',
                                                     IR_Temp, VA_Temp) + '\n')
     f.write("V0_Set: {:.4f}, V0_Read {:.4f}, Pulse_Bool: {:.4f}, Rise_Threshold: {:.4f}".format(V0_Setpoint, V0_Read, \
                                                     Pulsing_Status, Threshold_Percent) + '\n')
+    
+    f.write("Cathode Voltage: {:.4f}, Cathode Current: {:.4f}, Cathode Impedance: {:.4f}, Cathode Power: {:.4f}".format(Cathode_V, Cathode_I, \
+                                                    Cathode_Z, Cathode_P) + '\n')
+    f.write("Cu Gun Pf: {:.4f}, Cu Gun Pr: {:.4f}, Cu Gun Pt: {:.4f}, Cu Gun V: {:.4f}".format(CU_Gun_Pf, CU_Gun_Pr, \
+                                                    CU_Gun_Pt, CU_Gun_V) + '\n')
+    f.write("BH Pf: {:.4f}, BH Pr: {:.4f}, BH Pt: {:.4f}, Pulse Frequency: {:.4f}".format(BH_Gun_Pf, BH_Gun_Pr, \
+                                                    BH_Gun_Pt, Pulse_Freq) + '\n')
+    f.write("SRF Pf: {:.4f}, SRF Pr: {:.4f}, SRF Pt: {:.4f}, Pulse Duty: {:.4f}".format(SRF_Pf, SRF_Pr, \
+                                                    SRF_Pt, Pulse_Duty) + '\n')
     f.write("Raw DP1(Amps), Raw Collection(mA), Percent Collection , Conversion to mms" + '\n')
     for row in range(len(save_list[0,:])):
         for column in range(len(save_list[:,0])):

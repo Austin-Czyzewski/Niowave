@@ -196,7 +196,7 @@ def Write(Client, Tag_Number, New_Value, Bool = False):
 
 
 
-def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
+def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25, sleep_time = 0.020):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -424,7 +424,7 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
     
 
     
-def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
+def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25, sleep_time = 0.010):
     '''
     Inputs: Client, see "Client" abov
         __ WFH_Tag: The tag for the horizontal controls for the window frame we are scanning
@@ -465,7 +465,6 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     Delta_V = Vertical_Delta/Resolution
     
     Averaging_Number = 25 #Number of times we read the Read tags for averaging, recommended about 25 if pulsing, 10 if CW
-    Sleep_Time = .010 #Sleep time between reads
     Chunks = 4 #Inverse number of chunks, we use Resolution/Chunks, thus, the maximum value allowable is Resolution
     Chunk_rest_factor = 10 #Multiple of Sleep_Time to allow PLC to catch up.
     
@@ -485,7 +484,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag) #Storing the Horizontal Value
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) #Storing the Vertical Value
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time) #Storing the Read_Tag averaged value
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time) #Storing the Read_Tag averaged value
         
         #This loop is being repeated with some minor changes being made in the Write_values sections these
             #Are to reflect the changes in direction. Otherwise, refer to documentation in this loop for help.
@@ -502,7 +501,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         Write(Client, WFH_Tag, WFH_Write_Value) #Writing the values, notice no data is being collected here
         Write(Client, WFV_Tag, WFV_Write_Value)
         
-        time.sleep(Sleep_Time*Chunk_rest_factor)
+        time.sleep(sleep_Time*Chunk_rest_factor)
     
     #####
     #Now moving right to center center
@@ -516,7 +515,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) 
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
         
         
     #####
@@ -531,7 +530,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
         
     #####
     #Now moving Center Bottom
@@ -544,7 +543,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         Write(Client, WFH_Tag, WFH_Write_Value)
         Write(Client, WFV_Tag, WFV_Write_Value)
 
-        time.sleep(Sleep_Time*Chunk_rest_factor)
+        time.sleep(sleep_Time*Chunk_rest_factor)
     
     #####
     #Now Moving Center Bottom to Center Center again
@@ -558,7 +557,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
         
             
     
