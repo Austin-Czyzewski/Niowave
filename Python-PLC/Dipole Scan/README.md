@@ -18,7 +18,10 @@ Some things you may need to change in this software, without the assistance of m
 'Read': This is the read tag, it is in quotes in case you want to read a value that starts with 0, this is the modbus we are collecting through the scan.
 
 'count': This is the amount of time that the read tag is read and averaged over, the starting value is 20, this is a good median value.
-	Increasing this number will increase the amount of time that the script takes to run, but you may want to do so if pulsing beam.
+	Increasing this number will increase the amount of time that the script takes to run.
+
+'pulsing_count': Similar to count, this is the amount of data points gathered that we average over. This is only when we are pulsing.
+	The script knows when the system is pulsing.
 
 ##############################
 Moving far down the script now
@@ -27,13 +30,11 @@ Moving far down the script now
 *Naming Section*
 
 plt.ylabel: Change the text here to change the y axis label
-plt.xlabel: Change the text here to change the x axis label\
+plt.xlabel: Change the text here to change the x axis label
 plt.title: change the name of the plot, the {} brackets indicate the variable they are reading in the .format section of that string
-	If you are really confused, grab thine creator or google, "Python string formatting"
+	If you are really confused, grab thine creator or google "Python string formatting"
 plt.suptitle: Instead of a legend, I am using a smaller title to indicate that the colors represent differences in the direction of the run
 
-Clean_DP1: In this, we are rounding the txt file to 3 significant figures, if this is too restrictive, either change the 3 to a higher value,
-	or you can get entirely rid of this section
-Clean_DBA: Same thing applies as above, this is the more likely to restrict rounding. The difference here is that the default is 4 sig figs.
+For the table you can either figure it out or grab Austin. If he is not around. Then you must figure it out.
 
 Farewell, and safe travels.

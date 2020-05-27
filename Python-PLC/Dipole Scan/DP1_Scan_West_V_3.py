@@ -1,11 +1,13 @@
-l''' Creator: Austin Czyzewski
+''' Creator: Austin Czyzewski
 
 Date Created: 12/04/2019
-Date Last Updated: 01/17/2020
+Date Last Updated: 05/27/2020
+Tested and Approved: 05/27/2020
 
 Purpose: Move the first dipole up and down while taking data of collected current
 
 Route: Gather user input for changes to dipole 1 to be made
+    - Take a system snapshot before the scan
     - Define the parameters of data gathering
     - Read the value, perform safety checks
     - Write new Dipole one setting
@@ -13,7 +15,7 @@ Route: Gather user input for changes to dipole 1 to be made
     - Repeat in ascending order
     - Repeat in descending order until reaching starting value
     - Plot
-    - Save plot and txt file
+    - Save plot and txt file w/ snapshot as header
 
 '''
 
@@ -31,7 +33,7 @@ End_Value = float(input("What is the ending amperage that you want to ramp the m
 
 #Grabbing all of our data for the system snapshot
 #################################################
-Pulsing_Status = bool(M.Read(Client, Tags.Output_Status, Bool = True))
+Pulsing_Status = bool(M.Read(Client, Tags.Pulsing_Output, Bool = True))
 Emission_Setpoint = M.Read(Client, Tags.Emission_Set)
 
 if Pulsing_Status:
@@ -97,9 +99,9 @@ for i in range(Runs):
     print("Going to start")
     
     if Pulsing_Status:
-        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = pulsing_count)
+        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, Start_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = pulsing_count)
     else:
-        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
+        DP1_Vals, DBA_Col = M.Ramp_One_Way(Client, Dipole_Tag, Start_Value, Max_Step = Step_size, Return = "Y", Read_Tag = Read, count = count)
     #The above statement walks us back to the start, and returns the data
     
     DP1_Values += DP1_Vals
