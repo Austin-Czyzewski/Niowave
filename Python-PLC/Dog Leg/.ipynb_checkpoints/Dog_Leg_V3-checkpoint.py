@@ -71,6 +71,21 @@ Delta_7 = 0.228*Scale_Factor/Zoom_In_Factor #Change in Window Frame 7 Values thr
 ####################################################
 Emission_Setpoint = M.Read(Client, Tags.Emission_Set)
 Emission_Actual = M.Read(Client, Tags.Emitted_Current, Average = True, count = count, sleep_time = sleep_time)
+WF1H = M.Read(Client, Tags.WF1H)
+WF1V = M.Read(Client, Tags.WF1V)
+WF2H = M.Read(Client, Tags.WF2H)
+WF2V = M.Read(Client, Tags.WF2V)
+WF3H = M.Read(Client, Tags.WF3H)
+WF3V = M.Read(Client, Tags.WF3V)
+WF4H = M.Read(Client, Tags.WF4H)
+WF4V = M.Read(Client, Tags.WF4V)
+WF5H = M.Read(Client, Tags.WF5H)
+WF5V = M.Read(Client, Tags.WF5V)
+DP1 = M.Read(Client, Tags.DP1)
+DP2 = M.Read(Client, Tags.DP2)
+Sol1 = M.Read(Client, Tags.Sol1)
+Sol2 = M.Read(Client, Tags.Sol2)
+Sol3 = M.Read(Client, Tags.Sol3)
 WF6H_Start = M.Read(Client,Tags.WF6H)
 WF7H_Start = M.Read(Client,Tags.WF7H)
 WF6V_Start = M.Read(Client,Tags.WF6V)
@@ -96,6 +111,9 @@ SRF_Pt = M.Read(Client, Tags.SRF_Pt)
 Pulse_Freq = M.Read(Client, Tags.Pulse_Frequency)
 Pulse_Duty = M.Read(Client, Tags.Pulse_Duty)
 EC = M.Read(Client, Tags.Emitted_Current)
+Cu_Gun_Temp = M.Read(Client, Tags.Cu_Gun_Temp)
+BH_OC_Temp = M.Read(Client, Tags.BH_OC_Temp)
+DBA_Dump_CHWS = M.Read(Client, Tags.DBA_Dump_CHWS)
 
 #Summing the start current of the two dumps
 Start_Current = (M.Read(Client, Tags.Recirculator_Halfway, Average = True, count = count,sleep_time = sleep_time) + \
@@ -112,9 +130,10 @@ WF7V_Tag = Tags.WF7V
 print("Right Displacement")
 
 ## Each of these are adding our data to a list as instantiated above. These will appear at each data gathering point
-Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
 for Right_Steps in range(1, Read_Steps + 1):
+    a = time.time()
     if Right_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
         #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
         if abs(M.Read(Client,WF6H_Tag) - WF6H_Write_Value) or abs(M.Read(Client,WF7H_Tag) - WF7H_Write_Value) >= 0.001: #WF6H Check
@@ -128,16 +147,17 @@ for Right_Steps in range(1, Read_Steps + 1):
     M.Write(Client, WF6H_Tag, WF6H_Write_Value) #Writing to 6h
     M.Write(Client, WF7H_Tag, WF7H_Write_Value) #Writing to 7h
     
-    Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+    Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
     if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
         break
+    print(time.time()-a)
 print("Moving to center")
 
 M.Ramp_Two(Client, WF6H_Tag, WF7H_Tag, Magnet_1_Stop = WF6H_Start, Magnet_2_Stop = WF7H_Start, Resolution = Right_Steps//2, sleep_time = sleep_time) #Moves back to the start in hald of the same # of steps taken
 
 print("Left Displacement")
 
-Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
 for Left_Steps in range(1, Read_Steps + 1):
     if H_Broken or V_Broken == True:
@@ -155,7 +175,7 @@ for Left_Steps in range(1, Read_Steps + 1):
     M.Write(Client, WF6H_Tag, WF6H_Write_Value)
     M.Write(Client, WF7H_Tag, WF7H_Write_Value)
     
-    Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+    Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
     
     if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
         break
@@ -166,7 +186,7 @@ M.Ramp_Two(Client, WF6H_Tag, WF7H_Tag, Magnet_1_Stop = WF6H_Start, Magnet_2_Stop
 
 print("Upward Displacement")
 
-Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
 for Upward_Steps in range(1, Read_Steps + 1):
     if H_Broken or V_Broken == True:
@@ -184,7 +204,7 @@ for Upward_Steps in range(1, Read_Steps + 1):
     M.Write(Client, WF6V_Tag, WF6V_Write_Value)
     M.Write(Client, WF7V_Tag, WF7V_Write_Value)
     
-    Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+    Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
     
     if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
         break
@@ -195,7 +215,7 @@ M.Ramp_Two(Client, WF6V_Tag, WF7V_Tag, Magnet_1_Stop = WF6V_Start, Magnet_2_Stop
 
 print("Downward Displacement")
 
-Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
 for Downward_Steps in range(1, Read_Steps + 1):
     if H_Broken or V_Broken == True:
@@ -213,7 +233,7 @@ for Downward_Steps in range(1, Read_Steps + 1):
     M.Write(Client, WF6V_Tag, WF6V_Write_Value)
     M.Write(Client, WF7V_Tag, WF7V_Write_Value)
     
-    Full_Data_Set.append(M.Gather(Client, Full_Data_Set, Tag_List, count = count, sleep_time = sleep_time))
+    Full_Data_Set.append(M.Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
     
     if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
         break
@@ -226,19 +246,20 @@ now = datetime.today().strftime('%y%m%d_%H%M') #Taking the current time in YYMMD
 
 
 with open(now + ".txt",'w') as f: #Opening a file with the current date and time
-    f.write("EC_Setpoint: {:.4f}, EC_Read: {:.4f}, IR_Temp: {:.4f}, VA_Temp: {:.4f}".format(Emission_Setpoint, Emission_Actual, \
-                                                    IR_Temp, VA_Temp) + '\n')
-    f.write("V0_Set: {:.4f}, V0_Read {:.4f}, Pulse_Bool: {:.4f}, Rise_Threshold: {:.4f}".format(V0_Setpoint, V0_Read, \
-                                                    Pulsing_Status, Threshold_Percent) + '\n')
-    
-    f.write("Cathode Voltage: {:.4f}, Cathode Current: {:.4f}, Cathode Impedance: {:.4f}, Cathode Power: {:.4f}".format(Cathode_V, Cathode_I, \
-                                                    Cathode_Z, Cathode_P) + '\n')
-    f.write("Cu Gun Pf: {:.4f}, Cu Gun Pr: {:.4f}, Cu Gun Pt: {:.4f}, Cu Gun V: {:.4f}".format(CU_Gun_Pf, CU_Gun_Pr, \
-                                                    CU_Gun_Pt, CU_Gun_V) + '\n')
-    f.write("BH Pf: {:.4f}, BH Pr: {:.4f}, BH Pt: {:.4f}, Pulse Frequency: {:.4f}".format(BH_Gun_Pf, BH_Gun_Pr, \
-                                                    BH_Gun_Pt, Pulse_Freq) + '\n')
-    f.write("SRF Pf: {:.4f}, SRF Pr: {:.4f}, SRF Pt: {:.4f}, Pulse Duty: {:.4f}".format(SRF_Pf, SRF_Pr, \
-                                                    SRF_Pt, Pulse_Duty) + '\n')
+    f.write("EC_Setpoint: {:.4f}, EC_Read: {:.4f}, IR_Temp: {:.4f}, VA_Temp: {:.4f}, WF1H: {:.3f}, WF1V: {:.3f}".format(Emission_Setpoint, Emission_Actual, \
+                                                    IR_Temp, VA_Temp, WF1H, WF1V) + '\n')
+    f.write("V0_Set: {:.4f}, V0_Read {:.4f}, Pulse_Bool: {:.4f}, Rise_Threshold: {:.4f}, WF2H: {:.3f}, WF2V: {:.3f}".format(V0_Setpoint, V0_Read, \
+                                                    Pulsing_Status, Threshold_Percent, WF2H, WF2V) + '\n')
+    f.write("Cathode Voltage: {:.4f}, Cathode Current: {:.4f}, Cathode Impedance: {:.4f}, Cathode Power: {:.4f}, WF3H: {:.3f}, WF3V: {:.3f}".format(Cathode_V, Cathode_I, \
+                                                    Cathode_Z, Cathode_P, WF3H, WF3V) + '\n')
+    f.write("Cu Gun Pf: {:.4f}, Cu Gun Pr: {:.4f}, Cu Gun Pt: {:.4f}, Cu Gun V: {:.4f}, WF4H: {:.3f}, WF4V: {:.3f}".format(CU_Gun_Pf, CU_Gun_Pr, \
+                                                    CU_Gun_Pt, CU_Gun_V, WF4H, WF4V) + '\n')
+    f.write("BH Pf: {:.4f}, BH Pr: {:.4f}, BH Pt: {:.4f}, Pulse Frequency: {:.4f}, WF5H: {:.3f}, WF5V: {:.3f}".format(BH_Gun_Pf, BH_Gun_Pr, \
+                                                    BH_Gun_Pt, Pulse_Freq, WF5H, WF5V) + '\n')
+    f.write("SRF Pf: {:.4f}, SRF Pr: {:.4f}, SRF Pt: {:.4f}, Pulse Duty: {:.4f}, DP1: {:.3f}, DP2: {:.3f}".format(SRF_Pf, SRF_Pr, \
+                                                    SRF_Pt, Pulse_Duty, DP1, DP2) + '\n')
+    f.write("Sol 1: {:.3f}, Sol2: {:.3f}, Sol3: {:.3f}, Cu Gun T: {:.4f}, BH OC T: {:.4f}, DBA CHWS: {:.4f}".format(Sol1, Sol2, Sol3, Cu_Gun_Temp, \
+                                                    BH_OC_Temp, DBA_Dump_CHWS) + '\n')
     f.write("WF6H (A), WF7H(A), WF6V(A), WF7V(A), Avg'd Emitted Current(mA), Avg'd Loop Mid(mA), Avg'd Loop Bypass(mA), ")
     f.write("Cu Gun (kV), SRF Pt (dBm)" + '\n')
     for line in Full_Data_Set:

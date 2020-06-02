@@ -146,7 +146,7 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
             Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
             Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
             Tag_Value = Tag_Value_Bit.decode_32bit_float()
-            return bool(Tag_Value)
+            return Tag_Value
         
     if Bool == True:
         Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
