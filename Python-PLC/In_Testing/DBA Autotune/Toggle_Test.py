@@ -11,3 +11,4 @@ def Toggle(Client, Tag_Number):
     M.Write(Client, Tag_Number, (M.Read(Client,Tag_Number) == False))
     
     return
+

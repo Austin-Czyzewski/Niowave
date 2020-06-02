@@ -18,12 +18,15 @@ variables = variables[start:]
 #variables = variables[variables[:,1].argsort()]
 Tag_List = []
 for item in variables:
-    Tag_List.append([item[1], True])
+    if "Emitted_Current" in item[0]:
+        Tag_List.append([item[1], True])
+    else:
+        Tag_List.append([item[1], False])
     
 while True:
     temp_list = []
     a = time.time()
-    temp_list.append(M.Gather(Client, Tag_List, count = 1, sleep_time = 0.001))
+    temp_list.append(M.Gather(Client, Tag_List, count = 20, sleep_time = 0.010))
     os.system('cls')
     print(time.time()-a)
     for item in range(len(temp_list[0])):
