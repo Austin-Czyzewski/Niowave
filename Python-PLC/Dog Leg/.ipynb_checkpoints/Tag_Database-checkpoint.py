@@ -228,36 +228,8 @@ V0_Read = 11101
 ### Error Signal Regulation Tags
 ########################################
 
-Regulation_Float = '01001'
-
-#Begin Booleans
-
 Pulsing_Output = '11014' 
-Error_Signal_Regulation = '00012' 
-Oscope_Reset = '00013' 
-Regulation_Setpoint_Reset = '00014'
-#######################################
-### Temps and Vacuums
-#######################################
-
-Gun_Vac = 31101
-Gun_Cross = 31103
-SRF_Cavity_Vac = 31105
-HE_Sraight_Vac = 31107
-Insulating_Vac = 31121
-E_Station_Vac = 31125
-BH_OC_Temp = 30101
-DBA_Pipe_Temp = 30105
-Cu_Gun_Temp = 30103
-HE_Straight_Col = 30111
-DBA_Dump_CHWR = 30311
-DBA_Dump_CHWS = 30309
-Tuner_Plate_Temp = 30109
-Gate_Valve_Downstream_Temp = 30267
-Gate_Valve_Upstream_Temp = 30263
-Loop_Bypass_CHWS = 30297
-Loop_Bypass_CHWR = 30299
-DBA_Coupler = 30261
-Coupler_Shoulder = 30211
-Solenoid_4_Temp = 30269
-Solenoid_5_Temp = 30271
+Error_Signal_Regulation = '00020' 
+Oscope_Reset = '00021' 
+Regulation_Setpoint_Reset = '00022'
+Regulation_Float = '01001'

@@ -36,7 +36,6 @@ Logic walkthrough:
     - Plot and produce txt file with Magnet settings in the left column and current readbacks in the right
     - Analyze the data and output the middle of the FWHM
     - Give the user the option to ramp to the optimal values
-
 '''
 
 #Establish a connection to the PLC

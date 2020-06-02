@@ -64,3 +64,58 @@ Residents per death from COVID = 11696.24
 Percent chance at least one employee has COVID = 14.522%
 ------------------------------------------------------------
 ------------------------------------------------------------
+Ingham County Coronavirus Data for 05/27/2020
+------------------------------------------------------------
+Total Cases = 717
+Total Deaths = 25
+Percent of Ingham with COVID = 0.245%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 407
+Residents per death from COVID = 11696.24
+Percent chance at least one employee has COVID = 14.750%
+------------------------------------------------------------
+------------------------------------------------------------
+Ingham County Coronavirus Data for 05/28/2020
+------------------------------------------------------------
+Total Cases = 729
+Total Deaths = 25
+Percent of Ingham with COVID = 0.249%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 401
+Residents per death from COVID = 11696.24
+Percent chance at least one employee has COVID = 14.978%
+------------------------------------------------------------
+------------------------------------------------------------
+Ingham County Coronavirus Data for 05/29/2020
+------------------------------------------------------------
+Total Cases = 734
+Total Deaths = 25
+Percent of Ingham with COVID = 0.251%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 398
+Residents per death from COVID = 11696.24
+Percent chance at least one employee has COVID = 15.072%
+------------------------------------------------------------
+------------------------------------------------------------
+Ingham County Coronavirus Data for 05/31/2020
+------------------------------------------------------------
+Total Cases = 738
+Total Deaths = 26
+Percent of Ingham with COVID = 0.252%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 396
+Residents per death from COVID = 11246.385
+Percent chance at least one employee has COVID = 15.148%
+------------------------------------------------------------
+------------------------------------------------------------
+Ingham County Coronavirus Data for 06/01/2020
+------------------------------------------------------------
+Total Cases = 740
+Total Deaths = 26
+Percent of Ingham with COVID = 0.253%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 395
+Residents per death from COVID = 11246.385
+Percent chance at least one employee has COVID = 15.186%
+------------------------------------------------------------
+------------------------------------------------------------

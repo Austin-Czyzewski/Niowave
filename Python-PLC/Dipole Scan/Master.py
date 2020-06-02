@@ -1,6 +1,7 @@
 ''' Creator: Austin Czyzewski
 
 Date: 12/04/2019
+Last Updated: 06/01/2020
 
 Purpose: Define functions to make code more modular and add functionality
     - Set up the code in a way that we have functions that can be used with imports and make easy code to write
@@ -64,6 +65,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 import time
+import concurrent.futures
 
 sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
 
@@ -124,9 +126,6 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
 
 
     if Bool == False:
-        Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-        Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-        Tag_Value = Tag_Value_Bit.decode_32bit_float()
         
         if Average == True:
             
@@ -140,11 +139,43 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
                 time.sleep(sleep_time)
 
             return (sum(temp_list)/count)
+        else:
+            Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+            Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+            Tag_Value = Tag_Value_Bit.decode_32bit_float()
+            return Tag_Value
         
     if Bool == True:
         Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
 
     return Tag_Value
+
+
+def Gather(Client, tag_list, count = 20, sleep_time = 0.010):
+    """
+    Inputs: Client, see "Client" Above
+        __ tag_list: a list of tags and whether or not to average them. The list must be in the following format: [[Tag#, True],[Tag#, False],[Tag#, True]]
+                    where True and False indicate whether you want the Read to be averaged.
+        __ count: how many reads to average over, see "Read" above
+        __ sleep_time: how long to sleep between each averaged read, see "Read" above
+        
+    Method:
+        - Build an empty list we will add to later
+        - Import the threading tool, start up a threaded executor
+        - Build workers, have them work. Store values in order as executed
+        - When all are finished, add the results to the list
+        - Output list
+    """
+    
+    temp_list = [] #initialize temporary list
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        
+        results = [executor.submit(Read, Client = Client, Tag_Number = tag, Average = avg, count = count, sleep_time=sleep_time) for tag,avg in tag_list]
+        
+        for f in results:
+            temp_list.append(f.result())
+            
+    return temp_list
 
 
 
@@ -196,7 +227,7 @@ def Write(Client, Tag_Number, New_Value, Bool = False):
 
 
 
-def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25, sleep_time = 0.020):
+def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -424,7 +455,7 @@ def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
     
 
     
-def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25, sleep_time = 0.010):
+def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
     '''
     Inputs: Client, see "Client" abov
         __ WFH_Tag: The tag for the horizontal controls for the window frame we are scanning
@@ -465,6 +496,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
     Delta_V = Vertical_Delta/Resolution
     
     Averaging_Number = 25 #Number of times we read the Read tags for averaging, recommended about 25 if pulsing, 10 if CW
+    Sleep_Time = .010 #Sleep time between reads
     Chunks = 4 #Inverse number of chunks, we use Resolution/Chunks, thus, the maximum value allowable is Resolution
     Chunk_rest_factor = 10 #Multiple of Sleep_Time to allow PLC to catch up.
     
@@ -484,7 +516,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag) #Storing the Horizontal Value
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) #Storing the Vertical Value
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time) #Storing the Read_Tag averaged value
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time) #Storing the Read_Tag averaged value
         
         #This loop is being repeated with some minor changes being made in the Write_values sections these
             #Are to reflect the changes in direction. Otherwise, refer to documentation in this loop for help.
@@ -501,7 +533,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         Write(Client, WFH_Tag, WFH_Write_Value) #Writing the values, notice no data is being collected here
         Write(Client, WFV_Tag, WFV_Write_Value)
         
-        time.sleep(sleep_Time*Chunk_rest_factor)
+        time.sleep(Sleep_Time*Chunk_rest_factor)
     
     #####
     #Now moving right to center center
@@ -515,7 +547,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag) 
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
         
         
     #####
@@ -530,7 +562,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
         
     #####
     #Now moving Center Bottom
@@ -543,7 +575,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         Write(Client, WFH_Tag, WFH_Write_Value)
         Write(Client, WFV_Tag, WFV_Write_Value)
 
-        time.sleep(sleep_Time*Chunk_rest_factor)
+        time.sleep(Sleep_Time*Chunk_rest_factor)
     
     #####
     #Now Moving Center Bottom to Center Center again
@@ -557,7 +589,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         
         Data[i + Resolution * Loop_Number, 0] = Read(Client, WFH_Tag)
         Data[i + Resolution * Loop_Number, 1] = Read(Client, WFV_Tag)
-        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = sleep_Time)
+        Data[i + Resolution * Loop_Number, 2] = Read(Client, Read_Tag, Average = True, count = Averaging_Number, sleep_time = Sleep_Time)
         
             
     

@@ -1,6 +1,7 @@
 ''' Creator: Austin Czyzewski
 
 Date: 12/04/2019
+Last Updated: 06/01/2020
 
 Purpose: Define functions to make code more modular and add functionality
     - Set up the code in a way that we have functions that can be used with imports and make easy code to write
@@ -64,6 +65,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 import time
+import concurrent.futures
 
 sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
 
@@ -124,9 +126,6 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
 
 
     if Bool == False:
-        Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-        Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-        Tag_Value = Tag_Value_Bit.decode_32bit_float()
         
         if Average == True:
             
@@ -140,11 +139,43 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
                 time.sleep(sleep_time)
 
             return (sum(temp_list)/count)
+        else:
+            Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+            Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+            Tag_Value = Tag_Value_Bit.decode_32bit_float()
+            return Tag_Value
         
     if Bool == True:
         Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
 
     return Tag_Value
+
+
+def Gather(Client, tag_list, count = 20, sleep_time = 0.010):
+    """
+    Inputs: Client, see "Client" Above
+        __ tag_list: a list of tags and whether or not to average them. The list must be in the following format: [[Tag#, True],[Tag#, False],[Tag#, True]]
+                    where True and False indicate whether you want the Read to be averaged.
+        __ count: how many reads to average over, see "Read" above
+        __ sleep_time: how long to sleep between each averaged read, see "Read" above
+        
+    Method:
+        - Build an empty list we will add to later
+        - Import the threading tool, start up a threaded executor
+        - Build workers, have them work. Store values in order as executed
+        - When all are finished, add the results to the list
+        - Output list
+    """
+    
+    temp_list = [] #initialize temporary list
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        
+        results = [executor.submit(Read, Client = Client, Tag_Number = tag, Average = avg, count = count, sleep_time=sleep_time) for tag,avg in tag_list]
+        
+        for f in results:
+            temp_list.append(f.result())
+            
+    return temp_list
 
 
 
