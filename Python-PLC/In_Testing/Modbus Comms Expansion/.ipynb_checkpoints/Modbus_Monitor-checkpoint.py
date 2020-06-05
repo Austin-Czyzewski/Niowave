@@ -30,6 +30,9 @@ while True:
     os.system('cls')
     print(time.time()-a)
     for item in range(len(temp_list[0])):
-        print("{}: {:.3f}".format(variables[item,0], temp_list[0][item]))
+        if "Vac" in variables[item,0]:
+            print("{}: {:.3E}".format(variables[item,0], temp_list[0][item]))
+        else:
+            print("{}: {:.3f}".format(variables[item,0], temp_list[0][item]))
     #Client.close()
     time.sleep(5)

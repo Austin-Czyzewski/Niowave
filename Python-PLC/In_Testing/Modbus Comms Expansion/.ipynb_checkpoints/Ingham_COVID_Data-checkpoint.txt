@@ -108,3 +108,47 @@ Residents per death from COVID = 11246.385
 Percent chance at least one employee has COVID = 15.148%
 ------------------------------------------------------------
 ------------------------------------------------------------
+Ingham County Coronavirus Data for 06/01/2020
+------------------------------------------------------------
+Total Cases = 740
+Total Deaths = 26
+Percent of Ingham with COVID = 0.253%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 395
+Residents per death from COVID = 11246.385
+Percent chance at least one employee has COVID = 15.186%
+------------------------------------------------------------
+------------------------------------------------------------
+Ingham County Coronavirus Data for 06/02/2020
+------------------------------------------------------------
+Total Cases = 745
+Total Deaths = 27
+Percent of Ingham with COVID = 0.255%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 392
+Residents per death from COVID = 10829.852
+Percent chance at least one employee has COVID = 15.280%
+------------------------------------------------------------
+------------------------------------------------------------
+Ingham County Coronavirus Data for 06/03/2020
+------------------------------------------------------------
+Total Cases = 746
+Total Deaths = 27
+Percent of Ingham with COVID = 0.255%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 391
+Residents per death from COVID = 10829.852
+Percent chance at least one employee has COVID = 15.299%
+------------------------------------------------------------
+------------------------------------------------------------
+Ingham County Coronavirus Data for 06/04/2020
+------------------------------------------------------------
+Total Cases = 755
+Total Deaths = 27
+Percent of Ingham with COVID = 0.258%
+Percent of Ingham deceased from COVID = 0.009%
+Residents per case from COVID = 387
+Residents per death from COVID = 10829.852
+Percent chance at least one employee has COVID = 15.469%
+------------------------------------------------------------
+------------------------------------------------------------
