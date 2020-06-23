@@ -1,0 +1,15 @@
+EC_Setpoint, EC_Read, IR_Temp, VA_Temp, WF1H, WF1V
+V0_Set, V0_Read, Pulse_Bool, Rise_Threshold, WF2H, WF2V
+Cathode Voltage, Cathode Current, Cathode Impedance, Cathode Power, WF3H, WF3V
+Cu Gun Pf, Cu Gun Pr, Cu Gun Pt, Cu Gun V, WF4H, WF4V
+BH Pf, BH Pr, BH Pt, Pulse Frequency, WF5H, WF5V
+SRF Pf, SRF Pr, SRF Pt, Pulse Duty, DP1, DP2
+Sol 1, Sol2, Sol3, Cu Gun T, BH OC T, DBA CHWS
+WF6H (A), WF7H(A), WF6V(A), WF7V(A), Avg'd Emitted Current(mA), Avg'd Loop Mid(mA), Avg'd Loop Bypass(mA), Cu Gun (V), SRF Pt (dBm)
+0.1000, 0.0996, 1606.7635, 1489.2103, 0.393, 0.064
+3.5000, 3.4995, 0.0000, 0.0000, 0.000, 0.000
+2.4891, 1.5706, 1.5850, 3.9090, -1.330, 0.000
+2138.8076, 625.8570, 5.2219, 119.9776, 1.330, 0.000
+99.6231, 3.1855, 1.5247, 0.0000, 0.000, 0.000
+39.5880, 37.9169, -37.2727, 0.0000, 0.484, 0.499
+0.000, 0.000, 0.000, 43.1695, 43.7328, 21.2696

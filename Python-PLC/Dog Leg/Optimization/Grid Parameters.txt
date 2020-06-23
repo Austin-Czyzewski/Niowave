@@ -1,0 +1,7 @@
+The following conditions were used for this grid:
+Steps in either direction: 40
+5 X 5 grid (25 total)
+perturbation per step: 0.035 A
+count per average: 10
+time between count: 0.010 seconds
+Avg run time per dog leg: 61.2 seconds

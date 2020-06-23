@@ -246,22 +246,21 @@ now = datetime.today().strftime('%y%m%d_%H%M') #Taking the current time in YYMMD
 
 
 with open(now + ".txt",'w') as f: #Opening a file with the current date and time
-    f.write("EC_Setpoint: {:.4f}, EC_Read: {:.4f}, IR_Temp: {:.4f}, VA_Temp: {:.4f}, WF1H: {:.3f}, WF1V: {:.3f}".format(Emission_Setpoint, Emission_Actual, \
-                                                    IR_Temp, VA_Temp, WF1H, WF1V) + '\n')
-    f.write("V0_Set: {:.4f}, V0_Read {:.4f}, Pulse_Bool: {:.4f}, Rise_Threshold: {:.4f}, WF2H: {:.3f}, WF2V: {:.3f}".format(V0_Setpoint, V0_Read, \
-                                                    Pulsing_Status, Threshold_Percent, WF2H, WF2V) + '\n')
-    f.write("Cathode Voltage: {:.4f}, Cathode Current: {:.4f}, Cathode Impedance: {:.4f}, Cathode Power: {:.4f}, WF3H: {:.3f}, WF3V: {:.3f}".format(Cathode_V, Cathode_I, \
-                                                    Cathode_Z, Cathode_P, WF3H, WF3V) + '\n')
-    f.write("Cu Gun Pf: {:.4f}, Cu Gun Pr: {:.4f}, Cu Gun Pt: {:.4f}, Cu Gun V: {:.4f}, WF4H: {:.3f}, WF4V: {:.3f}".format(CU_Gun_Pf, CU_Gun_Pr, \
-                                                    CU_Gun_Pt, CU_Gun_V, WF4H, WF4V) + '\n')
-    f.write("BH Pf: {:.4f}, BH Pr: {:.4f}, BH Pt: {:.4f}, Pulse Frequency: {:.4f}, WF5H: {:.3f}, WF5V: {:.3f}".format(BH_Gun_Pf, BH_Gun_Pr, \
-                                                    BH_Gun_Pt, Pulse_Freq, WF5H, WF5V) + '\n')
-    f.write("SRF Pf: {:.4f}, SRF Pr: {:.4f}, SRF Pt: {:.4f}, Pulse Duty: {:.4f}, DP1: {:.3f}, DP2: {:.3f}".format(SRF_Pf, SRF_Pr, \
-                                                    SRF_Pt, Pulse_Duty, DP1, DP2) + '\n')
-    f.write("Sol 1: {:.3f}, Sol2: {:.3f}, Sol3: {:.3f}, Cu Gun T: {:.4f}, BH OC T: {:.4f}, DBA CHWS: {:.4f}".format(Sol1, Sol2, Sol3, Cu_Gun_Temp, \
-                                                    BH_OC_Temp, DBA_Dump_CHWS) + '\n')
-    f.write("WF6H (A), WF7H(A), WF6V(A), WF7V(A), Avg'd Emitted Current(mA), Avg'd Loop Mid(mA), Avg'd Loop Bypass(mA), ")
-    f.write("Cu Gun (kV), SRF Pt (dBm)" + '\n')
+    f.write("EC_Setpoint, EC_Read, IR_Temp, VA_Temp, WF1H, WF1V\n")
+    f.write("V0_Set, V0_Read, Pulse_Bool, Rise_Threshold, WF2H, WF2V\n")
+    f.write("Cathode Voltage, Cathode Current, Cathode Impedance, Cathode Power, WF3H, WF3V\n")
+    f.write("Cu Gun Pf, Cu Gun Pr, Cu Gun Pt, Cu Gun V, WF4H, WF4V\n")
+    f.write("BH Pf, BH Pr, BH Pt, Pulse Frequency, WF5H, WF5V\n")
+    f.write("SRF Pf, SRF Pr, SRF Pt, Pulse Duty, DP1, DP2\n")
+    f.write("Sol 1, Sol2, Sol3, Cu Gun T, BH OC T, DBA CHWS\n")
+    f.write("WF6H (A), WF7H(A), WF6V(A), WF7V(A), Avg'd Emitted Current(mA), Avg'd Loop Mid(mA), Avg'd Loop Bypass(mA), Cu Gun (V), SRF Pt (dBm)\n")
+    f.write("{:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.3f}, {:.3f}\n".format(Emission_Setpoint, Emission_Actual, IR_Temp, VA_Temp, WF1H, WF1V))
+    f.write("{:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.3f}, {:.3f}\n".format(V0_Setpoint, V0_Read, Pulsing_Status, Threshold_Percent, WF2H, WF2V))
+    f.write("{:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.3f}, {:.3f}\n".format(Cathode_V, Cathode_I, Cathode_Z, Cathode_P, WF3H, WF3V))
+    f.write("{:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.3f}, {:.3f}\n".format(CU_Gun_Pf, CU_Gun_Pr, CU_Gun_Pt, CU_Gun_V, WF4H, WF4V))
+    f.write("{:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.3f}, {:.3f}\n".format(BH_Gun_Pf, BH_Gun_Pr, BH_Gun_Pt, Pulse_Freq, WF5H, WF5V))
+    f.write("{:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.3f}, {:.3f}\n".format(SRF_Pf, SRF_Pr, SRF_Pt, Pulse_Duty, DP1, DP2))
+    f.write("{:.3f}, {:.3f}, {:.3f}, {:.4f}, {:.4f}, {:.4f}\n".format(Sol1, Sol2, Sol3, Cu_Gun_Temp, BH_OC_Temp, DBA_Dump_CHWS))
     for line in Full_Data_Set:
         f.write(str(line).strip("([])")+'\n') #Writing each line in that file
     f.close() #Closing the file to save it

@@ -229,9 +229,9 @@ V0_SP = 11311
 #######################################
 
 Gun_Vac = 31101
-Gun_Cross = 31103
+Gun_Cross = 37121
 SRF_Cavity_Vac = 31105
-HE_Sraight_Vac = 31107
+HE_Sraight_Vac = 37123
 Insulating_Vac = 31121
 E_Station_Vac = 31125
 

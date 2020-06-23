@@ -301,7 +301,7 @@ def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
     return
 
 
-def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = None, count = 25, sleep_time = 0.020, step_time = 0.25, image = False):
+def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = None, count = 25, sleep_time = 0.020, step_time = 0.25, Image = False):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -382,7 +382,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
 
             collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
             
-            if image:
+            if Image:
                 time.sleep(step_time/2)
                 
                 snap(Camera)

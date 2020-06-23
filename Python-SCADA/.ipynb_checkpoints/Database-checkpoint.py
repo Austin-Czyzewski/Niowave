@@ -4,7 +4,7 @@ from Tag_Database import *
 import Master as M
 
 # Parameters
-txt_file_length = 1000
+txt_file_length = 1800
 
 #############################################
 # Don't touch it
@@ -31,8 +31,6 @@ while True:
     temp_list = [time.time()*10**3-DST_Conversion*60*60*1000]
     
     for Tag in Vacuums:
-        temp_list.append(M.Read(Client,Tag))
-    for Tag in Temps:
         temp_list.append(M.Read(Client,Tag))
         
     file = open("Data.txt",'a')

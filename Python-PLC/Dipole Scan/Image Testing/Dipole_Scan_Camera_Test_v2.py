@@ -29,6 +29,7 @@ from pymodbus.payload import BinaryPayloadBuilder
 from pymodbus.constants import Endian
 import matplotlib.pyplot as plt
 from datetime import datetime
+import Tag_Database as Tags
 import time
 
 Client = Make_Client('192.168.1.2')
@@ -36,9 +37,9 @@ Client = Make_Client('192.168.1.2')
 End_Value = float(input("What is the ending amperage that you want to ramp the magnet to? (Amps)   "))
 
 Runs = 1 #Number of times you want to ramp to the input value and back to the start
-Dipole_Tag = 22201 #Modbus address of the magnet we are writing to
+Dipole_Tag = Tags.Sol1 #Modbus address of the magnet we are writing to
 Step_size = .001 #Step Size, in Amps, that we are taking to reach our goal
-Read = 11109 #Modbus address of the value we want to read while we scan the magnet
+Read = Tags.DBA_Bypass #Modbus address of the value we want to read while we scan the magnet
 count = 20 #Number of times we want to average the Read Tag value
 
 Start_Value = Read(Client, Dipole_Tag) #Recording the starting value of the Dipole

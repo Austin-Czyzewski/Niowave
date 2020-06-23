@@ -33,12 +33,6 @@ from Tag_Database import *
 Vacuums = [Gun_Vac, Gun_Cross, SRF_Cavity_Vac, HE_Sraight_Vac, # All of the vacuum tags that we currently have, in order
            Insulating_Vac, E_Station_Vac]
 
-Temps = [BH_OC_Temp, DBA_Pipe_Temp, Cu_Gun_Temp, HE_Straight_Col, #All of the Temp tags that we currently have
-         DBA_Dump_CHWR, DBA_Dump_CHWS, Tuner_Plate_Temp, 
-         Gate_Valve_Downstream_Temp, Gate_Valve_Upstream_Temp, 
-         Loop_Bypass_CHWS, Loop_Bypass_CHWR, DBA_Coupler, 
-         Coupler_Shoulder, Solenoid_4_Temp, Solenoid_5_Temp]
-
 DST_Conversion = 3
 if time.localtime().tm_isdst == 1:
     DST_Conversion = 4
@@ -81,30 +75,21 @@ for num,line in enumerate(lines[1:]):
     lines[num+1] = line.strip("\nr").split(",")
 data = np.array(lines[1:]).astype(float)
 
-r1 = p.line(list(data[:,0]), list(data[:,7]), color = 'white', line_width=line_width, y_range_name = "temps")
-r2 = p.line(list(data[:,0]), list(data[:,8]), color = Turbo256[17], line_width=line_width, y_range_name = "temps")
-r3 = p.line(list(data[:,0]), list(data[:,9]), color = Turbo256[34], line_width=line_width, y_range_name = "temps")
-r4 = p.line(list(data[:,0]), list(data[:,10]), color = Turbo256[51], line_width=line_width, y_range_name = "temps")
-r5 = p.line(list(data[:,0]), list(data[:,11]), color = Turbo256[68], line_width=line_width, y_range_name = "temps")
-r6 = p.line(list(data[:,0]), list(data[:,12]), color = Turbo256[85], line_width=line_width, y_range_name = "temps")
-r7 = p.line(list(data[:,0]), list(data[:,13]), color = Turbo256[102], line_width=line_width, y_range_name = "temps")
-r8 = p.line(list(data[:,0]), list(data[:,14]), color = Turbo256[119], line_width=line_width, y_range_name = "temps")
-r9 = p.line(list(data[:,0]), list(data[:,15]), color = Turbo256[136], line_width=line_width, y_range_name = "temps")
-r10 = p.line(list(data[:,0]), list(data[:,16]), color = Turbo256[153], line_width=line_width, y_range_name = "temps")
-r11 = p.line(list(data[:,0]), list(data[:,17]), color = Turbo256[170], line_width=line_width, y_range_name = "temps")
-r12 = p.line(list(data[:,0]), list(data[:,18]), color = Turbo256[187], line_width=line_width, y_range_name = "temps")
-r13 = p.line(list(data[:,0]), list(data[:,19]), color = Turbo256[204], line_width=line_width, y_range_name = "temps")
-r14 = p.line(list(data[:,0]), list(data[:,20]), color = Turbo256[221], line_width=line_width, y_range_name = "temps")
-r15 = p.line(list(data[:,0]), list(data[:,21]), color = Turbo256[255], line_width=line_width, y_range_name = "temps")
+r1 = p.line(list(data[:,0]), list(data[:,1]), color = 'white', line_width=line_width, y_range_name = "temps")
+r2 = p.line(list(data[:,0]), list(data[:,2]), color = Turbo256[43], line_width=line_width, y_range_name = "temps")
+r3 = p.line(list(data[:,0]), list(data[:,3]), color = Turbo256[86], line_width=line_width, y_range_name = "temps")
+r4 = p.line(list(data[:,0]), list(data[:,4]), color = Turbo256[129], line_width=line_width, y_range_name = "temps")
+r5 = p.line(list(data[:,0]), list(data[:,5]), color = Turbo256[172], line_width=line_width, y_range_name = "temps")
+r6 = p.line(list(data[:,0]), list(data[:,6]), color = Turbo256[210], line_width=line_width, y_range_name = "temps")
 
 #print('\n'*5, r1.data_source.properties_with_values()['data']['x'], '\n'*5)
 data = False
 ## For each new range add it here
 p.extra_y_ranges = {"temps": DataRange1d(only_visible = True, 
-                                         renderers = [r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15],
+                                         renderers = [r1,r2,r3,r4,r5,r6],
                                          range_padding_units = 'percent',range_padding = range_scale)}
 
-p.add_layout(LinearAxis(y_range_name="temps", axis_label = "Temps"), 'left')
+p.add_layout(LinearAxis(y_range_name="temps", axis_label = "Pressures"), 'left')
 
 #p.yaxis.formatter = BasicTickFormatter(precision = 2)
 
@@ -116,21 +101,12 @@ p.grid.grid_line_alpha = 0.4
 #Add data here
 #################################
 
-legend = Legend(items=[("BH OC" , [r1]),
-                       ("DBA Pipe" ,  [r2]), 
-                       ("Copper Gun", [r3]),
-                       ("HE Straight Collimator", [r4]),
-                       ("DBA Dump CHWR", [r5]),
-                       ("DBA Dump CHWS", [r6]),
-                       ("Tuner Plate", [r7]),
-                       ("Gate Valve Downstream", [r8]),
-                       ("Gate Valve Upstream", [r9]),
-                       ("Loop Bypass CHWS", [r10]),
-                       ("Loop Bypass CHWR", [r11]),
-                       ("DBA Coupler", [r12]),
-                       ("Coupler Shoulder", [r13]),
-                       ("Solenoid 4", [r14]),
-                       ("Solenoid 5", [r15]),
+legend = Legend(items=[("Gun Vac" , [r1]),
+                       ("Gun Cross Vac" ,  [r2]), 
+                       ("SRF Cavity Vac", [r3]),
+                       ("HE Straight Vac", [r4]),
+                       ("Insulatin Vac", [r5]),
+                       ("E-Station Vac", [r6]),
                       ],
                 location="center", click_policy = "hide")
 
@@ -143,15 +119,6 @@ ds3 = r3.data_source
 ds4 = r4.data_source
 ds5 = r5.data_source
 ds6 = r6.data_source
-ds7 = r7.data_source
-ds8 = r8.data_source
-ds9 = r9.data_source
-ds10 = r10.data_source
-ds11 = r11.data_source
-ds12 = r12.data_source
-ds13 = r13.data_source
-ds14 = r14.data_source
-ds15 = r15.data_source
 
 run = True
 
@@ -185,65 +152,29 @@ def update(step):
     
     if run:
         ds1.data['x'].append(temp_list[0])
-        ds1.data['y'].append(temp_list[7])
+        ds1.data['y'].append(temp_list[1])
 
         ds2.data['x'].append(temp_list[0])
-        ds2.data['y'].append(temp_list[8])
+        ds2.data['y'].append(temp_list[2])
 
         ds3.data['x'].append(temp_list[0])
-        ds3.data['y'].append(temp_list[9])
+        ds3.data['y'].append(temp_list[3])
         
         ds4.data['x'].append(temp_list[0])
-        ds4.data['y'].append(temp_list[10])
+        ds4.data['y'].append(temp_list[4])
 
         ds5.data['x'].append(temp_list[0])
-        ds5.data['y'].append(temp_list[11])
+        ds5.data['y'].append(temp_list[5])
 
         ds6.data['x'].append(temp_list[0])
-        ds6.data['y'].append(temp_list[12])
+        ds6.data['y'].append(temp_list[6])
         
-        ds7.data['x'].append(temp_list[0])
-        ds7.data['y'].append(temp_list[13])
-
-        ds8.data['x'].append(temp_list[0])
-        ds8.data['y'].append(temp_list[14])
-
-        ds9.data['x'].append(temp_list[0])
-        ds9.data['y'].append(temp_list[15])
-        
-        ds10.data['x'].append(temp_list[0])
-        ds10.data['y'].append(temp_list[16])
-
-        ds11.data['x'].append(temp_list[0])
-        ds11.data['y'].append(temp_list[17])
-
-        ds12.data['x'].append(temp_list[0])
-        ds12.data['y'].append(temp_list[18]) 
-        
-        ds13.data['x'].append(temp_list[0])
-        ds13.data['y'].append(temp_list[19])
-
-        ds14.data['x'].append(temp_list[0])
-        ds14.data['y'].append(temp_list[20])
-
-        ds15.data['x'].append(temp_list[0])
-        ds15.data['y'].append(temp_list[21]) 
-
         ds1.trigger('data', ds1.data, ds1.data)
         ds2.trigger('data', ds2.data, ds2.data)
         ds3.trigger('data', ds3.data, ds3.data)
         ds4.trigger('data', ds4.data, ds4.data)
         ds5.trigger('data', ds5.data, ds5.data)
         ds6.trigger('data', ds6.data, ds6.data)
-        ds7.trigger('data', ds7.data, ds7.data)
-        ds8.trigger('data', ds8.data, ds8.data)
-        ds9.trigger('data', ds9.data, ds9.data)
-        ds10.trigger('data', ds10.data, ds10.data)
-        ds11.trigger('data', ds11.data, ds11.data)
-        ds12.trigger('data', ds12.data, ds12.data)
-        ds13.trigger('data', ds13.data, ds13.data)
-        ds14.trigger('data', ds14.data, ds14.data)
-        ds15.trigger('data', ds15.data, ds15.data)
 
         last_time = temp_list[0]
 

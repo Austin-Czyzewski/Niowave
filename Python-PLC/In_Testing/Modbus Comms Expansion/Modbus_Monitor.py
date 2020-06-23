@@ -10,7 +10,7 @@ M.Read(Client,Tags.CU_V)
 
 start = 134
 
-os.system("Color 8a")
+os.system("Color 8b")
 variables = vars(Tags)
 variables = np.array(list(variables.items()))
 variables = variables[start:]
