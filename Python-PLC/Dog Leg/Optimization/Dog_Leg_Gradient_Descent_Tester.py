@@ -29,11 +29,11 @@ WF6V_Start = M.Read(Client, Tags.WF6V)
 WF7V_Start = M.Read(Client, Tags.WF7V)
 
 Perturbation_Step = 0.025 #Amps, once upward and once downward
-
-WF6H_Dog_Legs = [WF6H_Start, WF6H_Start, WF6H_Start + Perturbation_Step]
-WF7H_Dog_Legs = [WF7H_Start, WF7H_Start, WF7H_Start]
-WF6V_Dog_Legs = [WF6V_Start, WF6V_Start + Perturbation_Step, WF6V_Start]
-WF7V_Dog_Legs = [WF7V_Start, WF7V_Start, WF7V_Start]
+def peturb(blah):
+    WF6H_Dog_Legs = [WF6H_Start, WF6H_Start, WF6H_Start + Perturbation_Step]
+    WF7H_Dog_Legs = [WF7H_Start, WF7H_Start, WF7H_Start]
+    WF6V_Dog_Legs = [WF6V_Start, WF6V_Start + Perturbation_Step, WF6V_Start]
+    WF7V_Dog_Legs = [WF7V_Start, WF7V_Start, WF7V_Start]
 
 for iteration in range(len(WF6H_Dog_Legs)):
     M.Dog_Leg(Client, Tags.WF6H, Tags.WF6V, Tags.WF7H, Tags.WF7V, \

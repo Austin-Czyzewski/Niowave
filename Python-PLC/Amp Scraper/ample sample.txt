@@ -1,0 +1,426 @@
+Microsoft Windows [Version 10.0.18363.535]
+(c) 2019 Microsoft Corporation. All rights reserved.
+
+C:\WINDOWS\system32>ping 169.254.1.1
+
+Pinging 169.254.1.1 with 32 bytes of data:
+Reply from 169.254.1.1: bytes=32 time=101ms TTL=100
+Reply from 169.254.1.1: bytes=32 time=33ms TTL=100
+Reply from 169.254.1.1: bytes=32 time=5ms TTL=100
+Reply from 169.254.1.1: bytes=32 time=17ms TTL=100
+
+Ping statistics for 169.254.1.1:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 5ms, Maximum = 101ms, Average = 39ms
+
+C:\WINDOWS\system32>curl 169.254.1.1
+401 Unauthorized: Password required
+
+C:\WINDOWS\system32>curl -u admin:admin 169.254.1.1
+
+<title>Niowave Web Interface</title><script src="/mchp.js" type="text/javascript"></script>
+<style>
+body {
+  margin: 0px auto;
+  padding: 0 0 0px;
+  background: #5b5b5b;
+  font-family: Verdana,Arial,sans-serif;
+}
+#page {
+  border-style: 1px solid solid;
+  border-color: -moz-use-text-color #333333 #333333;
+  border-width: 0 0px 0px;
+  padding: 10px;
+  background: #ffffff none repeat scroll 0%;
+  font-size: 10pt;
+}
+#title {
+  padding: 4px;
+  background: #2b60de none repeat scroll 0%;
+  font-weight: bold;
+  color: #ffffff;
+  height: 15px;
+  text-align: right;
+}
+#identification {
+  border-bottom: 2px solid #2b60de;
+  margin-bottom: 170px
+  font-size: 10pt;
+}
+#status {
+  border: 2px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 190px;
+  height: 460px;
+  font-size: 10pt;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+#flags {
+  border: 0px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 20px;
+  height: 190px;
+  margin-top: 0px;
+  font-size: 10pt;
+  margin-right: 4px;
+  font-weight: 900;
+}
+#flagnames {
+  border: 0px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 110px;
+  height: 190px;
+  font-size: 10pt;
+  margin-right: 4px;
+}
+#performance {
+  border: 2px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 520px;
+  height: 460px;
+  font-size: 10pt;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+#readings {
+  border: 0px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 140px;
+  height: 190px;
+  font-size: 10pt;
+  margin-right: 4px;
+}
+#display {
+  border: 0px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 80px;
+  height: 190px;
+  font-size: 10pt;
+  margin-right: 0px;
+}
+#units {
+  border: 0px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 70px;
+  height: 190px;
+  font-size: 10pt;
+  margin-right: 4px;
+}
+#control {
+  border: 2px solid #2b60de;
+  padding: 6px;
+  background: #ffffff none repeat scroll 0%;
+  float: left;
+  width: 160px;
+  height: 460px;
+  font-size: 10pt;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+.spacer {
+  clear: both;
+}
+
+#footer {
+  border-top: 2px solid #2b60de;
+  margin: 0px
+  font-size: 0.8em;
+  color: #666666;
+  text-align: center;
+  padding-top: 4px;
+}
+
+</style></head>
+
+
+<body>
+<div id="page">
+<div style="padding: 0pt 0pt 5px 5px;"><img src="/Niowave_logo.gif" alt="Company Logo" /></div>
+<div class="spacer">&nbsp;</div>
+<div id="title">BROADCAST WEB INTERFACE</div>
+<div id="identification">
+<p>                              </p>
+<a href="/index.htm">Main</a>
+<a href="/protect/config.htm">Network Configuration</a>
+<a href="/protect/snmpconfig.htm">SNMP Configuration</a>
+<a href="/password.htm">Password Configuration</a></p>
+</br>
+</div>
+
+<div class="spacer">&nbsp;</div>
+</br></br>
+
+<p><strong>Model Number:</strong><span id=mod>TAU-5000</span>&nbsp;<br /><strong>Serial Number:</strong>&nbsp;11041181
+<p></p>
+
+<div id="status">
+<p><strong>Status Flags:</strong></p>
+        <div id="flags">
+                <p id="StsCarrier">&bull;</p>
+                <p id="StsOverdrive">&bull;</p>
+                <p id="StsVSWR">&bull;</p>
+                <p id="StsVolatge">&bull;</p>
+                <p id="StsRfIn">&bull;</p>
+                <p id="StsTemp">&bull;</p>
+                <p id="StsAGC">&bull;</p>
+        </div>
+        <div id="flagnames"
+                <br>
+                <p>Carrier On/Off</p>
+                <p>RF Overdrive</p>
+                <p>VSWR</p>
+                <p>Pallet Voltage</p>
+                <p>RF In Level</p>
+                <p>Temperature</p>
+                <p>AGC Mode</p>
+        </div>
+</div>
+
+<div id="performance">
+        <p><strong>Performance:</strong></p>
+        <div id="readings">
+                <br><br>
+                <p>Forward RF Level</p>
+                <p>Reflected RF Level</p>
+                <p>DC Pallet Voltage</p>
+                <p>RF Input Level</p>
+                <p>Temperature</p>
+                <p>Driver Current</p>
+                <p>Final 1 Current</p>
+                <p>Final 2 Current</p>
+                <p>Final 3 Current</p>
+                <p>AGC Set Point</p>
+        </div>
+        <div id="loading" style="display:none">Error:Connection<br />to board was lost.
+        </div>
+
+        <div id="display">
+                <p>Combined</p>
+                <p><span id="MeasuredFWD">?</span></p>
+                <p><span id="MeasuredRFL">?</span></p>
+                <p><span id="MeasuredVolts">?</span></p>
+                <p>-</p>
+                <p><span id="measuredtemp">?</span></p>
+                <p>-</p>
+                <p>-</p>
+                <p>-</p>
+                <p>-</p>
+                <p><span id="AGCSetPt">?</span></p>
+        </div>
+        <div id="loading" style="display:none">Error: Connection<br />to board was lost.
+        </div>
+
+        <div id="display">
+                <p>PA 1</p>
+                <p><span id="MeasuredFWDPA1">?</span></p>
+                <p><span id="MeasuredRFLPA1">?</span></p>
+                <p><span id="MeasuredVoltsPA1">?</span></p>
+                <p><span id="MeasuredRfInPA1">?</span></p>
+                <p><span id="measuredtempPA1">?</span></p>
+                <p><span id="MeasuredDrv1PA1">?</span></p>
+                <p><span id="MeasuredFnl1PA1">?</span></p>
+                <p><span id="MeasuredFnl2PA1">?</span></p>
+                <p><span id="MeasuredFnl3PA1">?</span></p>
+        </div>
+        <div id="loading" style="display:none">Error:<br />Connection<br />to board was lost.
+        </div>
+
+        <div id="display">
+                <p>PA 2</p>
+                <p><span id="MeasuredFWDPA2">?</span></p>
+                <p><span id="MeasuredRFLPA2">?</span></p>
+                <p><span id="MeasuredVoltsPA2">?</span></p>
+                <p><span id="MeasuredRfInPA2">?</span></p>
+                <p><span id="measuredtempPA2">?</span></p>
+                <p><span id="MeasuredDrv1PA2">?</span></p>
+                <p><span id="MeasuredFnl1PA2">?</span></p>
+                <p><span id="MeasuredFnl2PA2">?</span></p>
+                <p><span id="MeasuredFnl3PA2">?</span></p>
+        </div>
+        <div id="loading" style="display:none">Error:<br />Connection<br />to board was lost.
+        </div>
+
+        <div id="units">
+                <br><br>
+                <p>% FS</p>
+                <p>% FS</p>
+                <p>Volts</p>
+                <p>% FS</p>
+                <p>Celcius</p>
+                <p>A</p>
+                <p>A</p>
+                <p>A</p>
+                <p>A</p>
+        </div>
+</div>
+
+
+<div id="control">
+        <p><strong>Control:</strong></p>
+        <p><button style="width:145" id="CAROFF"   onclick="newAJAXCommand('remote.cgi?remote=1');">CARRIER</button></p>
+        <p><button style="width:145" id="CARUP"    onclick="newAJAXCommand('remote.cgi?remote=2');">AGC TARGET +1</button></p>
+        <p><button style="width:145" id="CARDOWN"  onclick="newAJAXCommand('remote.cgi?remote=3');">AGC TARGET -1</button></p>
+        <p><button style="width:145" id="CARUP10"    onclick="newAJAXCommand('remote.cgi?remote=8');">AGC TARGET +10</button></p>
+        <p><button style="width:145" id="CARDOWN10"  onclick="newAJAXCommand('remote.cgi?remote=9');">AGC TARGET -10</button></p>
+        <p><button style="width:145" id="AGCONOFF" onclick="newAJAXCommand('remote.cgi?remote=4');">AGC</button></p>
+        <p><form method="post" action="index.htm" name="reset">
+        <div><input style="width:145" type="submit" class="sm" value="RESET" /></div>
+
+</form></p>
+</div>
+
+
+<div class="spacer">&nbsp;</div>
+
+<script type="text/javascript">
+<!--
+// Parses the xmlResponse from status.xml and updates the status box
+function updateStatus(xmlData) {
+        // Check if a timeout occurred
+        if(!xmlData)
+        {
+                document.getElementById('display').style.display = 'none';
+                document.getElementById('loading').style.display = 'inline';
+                return;
+        }
+
+                //Get Status Flags
+                if(getXMLValue(xmlData,'StsCarrier') == '1')
+                {
+                        document.getElementById('StsCarrier').style.color = '#090';
+                        replaceButtonText('CAROFF', 'TURN CARRIER OFF');
+                }
+                else
+                {
+                        document.getElementById('StsCarrier').style.color = '#F00';
+                        replaceButtonText('CAROFF', 'TURN CARRIER ON');
+                }
+                if(getXMLValue(xmlData,'StsAGC') == '1')
+                {
+                        document.getElementById('StsAGC').style.color = '#090';
+                        replaceButtonText('AGCONOFF', 'TURN AGC OFF');
+                }
+                else
+                {
+                        document.getElementById('StsAGC').style.color = '#F00';
+                        replaceButtonText('AGCONOFF', 'TURN AGC ON');
+                }
+
+
+
+                if(getXMLValue(xmlData,'StsOverdrive') == '1')
+                        document.getElementById('StsOverdrive').style.color = '#090';
+                else
+                        document.getElementById('StsOverdrive').style.color = '#F00';
+
+                if(getXMLValue(xmlData,'StsVSWR') == '1')
+                        document.getElementById('StsVSWR').style.color = '#090';
+                else
+                        document.getElementById('StsVSWR').style.color = '#F00';
+
+                if(getXMLValue(xmlData,'StsVolatge') == '1')
+                        document.getElementById('StsVolatge').style.color = '#090';
+                else
+                        document.getElementById('StsVolatge').style.color = '#F00';
+
+                if(getXMLValue(xmlData,'StsRfIn') == '1')
+                        document.getElementById('StsRfIn').style.color = '#090';
+                else
+                        document.getElementById('StsRfIn').style.color = '#F00';
+
+                if(getXMLValue(xmlData,'StsTemp') == '1')
+                        document.getElementById('StsTemp').style.color = '#090';
+
+                else
+                        document.getElementById('StsTemp').style.color = '#F00';
+
+
+
+
+
+        // Make sure we're displaying the status display
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('display').style.display = 'inline';
+
+        document.getElementById('MeasuredFWD').innerHTML = getXMLValue(xmlData, 'MeasuredFWD');
+        document.getElementById('MeasuredRFL').innerHTML = getXMLValue(xmlData, 'MeasuredRFL');
+        document.getElementById('MeasuredVolts').innerHTML = getXMLValue(xmlData, 'MeasuredVolts');
+        document.getElementById('measuredtemp').innerHTML = getXMLValue(xmlData, 'measuredtemp');
+        document.getElementById('AGCSetPt').innerHTML = getXMLValue(xmlData, 'AGCSetPt');
+
+        document.getElementById('MeasuredFWDPA1').innerHTML = getXMLValue(xmlData, 'MeasuredFWDPA1');
+        document.getElementById('MeasuredRFLPA1').innerHTML = getXMLValue(xmlData, 'MeasuredRFLPA1');
+        document.getElementById('MeasuredVoltsPA1').innerHTML = getXMLValue(xmlData, 'MeasuredVoltsPA1');
+        document.getElementById('MeasuredRfInPA1').innerHTML = getXMLValue(xmlData, 'MeasuredRfInPA1');
+        document.getElementById('measuredtempPA1').innerHTML = getXMLValue(xmlData, 'measuredtempPA1');
+        document.getElementById('MeasuredDrv1PA1').innerHTML = getXMLValue(xmlData, 'MeasuredDrv1PA1');
+        document.getElementById('MeasuredFnl1PA1').innerHTML = getXMLValue(xmlData, 'MeasuredFnl1PA1');
+        document.getElementById('MeasuredFnl2PA1').innerHTML = getXMLValue(xmlData, 'MeasuredFnl2PA1');
+        document.getElementById('MeasuredFnl3PA1').innerHTML = getXMLValue(xmlData, 'MeasuredFnl3PA1');
+
+        document.getElementById('MeasuredFWDPA2').innerHTML = getXMLValue(xmlData, 'MeasuredFWDPA2');
+        document.getElementById('MeasuredRFLPA2').innerHTML = getXMLValue(xmlData, 'MeasuredRFLPA2');
+        document.getElementById('MeasuredVoltsPA2').innerHTML = getXMLValue(xmlData, 'MeasuredVoltsPA2');
+        document.getElementById('MeasuredRfInPA2').innerHTML = getXMLValue(xmlData, 'MeasuredRfInPA2');
+        document.getElementById('measuredtempPA2').innerHTML = getXMLValue(xmlData, 'measuredtempPA2');
+        document.getElementById('MeasuredDrv1PA2').innerHTML = getXMLValue(xmlData, 'MeasuredDrv1PA2');
+        document.getElementById('MeasuredFnl1PA2').innerHTML = getXMLValue(xmlData, 'MeasuredFnl1PA2');
+        document.getElementById('MeasuredFnl2PA2').innerHTML = getXMLValue(xmlData, 'MeasuredFnl2PA2');
+        document.getElementById('MeasuredFnl3PA2').innerHTML = getXMLValue(xmlData, 'MeasuredFnl3PA2');
+
+
+}
+
+setTimeout("newAJAXCommand('status.xml', updateStatus, true)",500);
+//-->
+</script>
+
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+function replaceButtonText(buttonId, text)
+{
+  if (document.getElementById)
+  {
+    var button=document.getElementById(buttonId);
+    if (button)
+    {
+      if (button.childNodes[0])
+      {
+        button.childNodes[0].nodeValue=text;
+      }
+      else if (button.value)
+      {
+        button.value=text;
+      }
+      else //if (button.innerHTML)
+      {
+        button.innerHTML=text;
+      }
+    }
+  }
+}
+//-->
+</SCRIPT>
+
+
+</br></br>
+<div id="footer">Copyright 2016 Niowave Ltd.<br/>www.niowaveinc.com</div>
+</div>
+</body></html>
+C:\WINDOWS\system32>
