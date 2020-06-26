@@ -31,6 +31,7 @@ import Master as M #importing the PLC communications library
 ## Connect to PLC, define Modbus addresses
 #############################
 PLC_IP = "10.1.2.100"
+Amp_IP = '10.1.2.125'
 Sleep_Check_Time = 10 #Seconds
 
 try:
@@ -66,9 +67,11 @@ while True:
     #Amp_Response = os.popen("curl -u admin:admin http://169.254.1.1/status.xml") #5KW off network
     
     #Amp_Response = os.popen("curl -u admin:admin http://10.50.0.21/status.xml") #West Tunnel
-    
-    Amp_Response = os.popen("curl -u admin:admin http://10.1.2.125/status.xml")
+    try:
+        Amp_Response = os.popen("curl -u admin:admin http://{}/status.xml".format(Amp_IP))
         #Above grabs data from xml file
+    except:
+        print("Failed to connect to the amplifier")
         
     amp = list() #Create an empty list 
     
