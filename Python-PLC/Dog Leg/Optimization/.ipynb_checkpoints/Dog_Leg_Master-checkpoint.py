@@ -990,4 +990,4 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
 
     print("This DogLeg took {0:.1f} Seconds to run".format(time.time() - start_time)) #Printing the amount of time the dog leg took
     
-    return ((H_Width)**2 + (V_Width)**2)
+    return -1 * ((H_Width)**2 + (V_Width)**2)

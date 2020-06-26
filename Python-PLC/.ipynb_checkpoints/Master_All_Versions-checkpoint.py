@@ -1,13 +1,13 @@
 ''' Creator: Austin Czyzewski
 
 Date: 12/04/2019
-Last Updated: 06/01/2020
+Last Updated: 06/25/2020
 
 Purpose: Define functions to make code more modular and add functionality
     - Set up the code in a way that we have functions that can be used with imports and make easy code to write
 
 Functions to be found:
-    - Establish client
+    - Establish client (Make_Client)
         - Set an IP address and save to act for functions
         
     - Read from client
@@ -52,9 +52,6 @@ if Dipole_1_After == Dipole_1_Before:
 else:
     print("False")
 
-
-
-
 '''
 
 from pymodbus.client.sync import ModbusTcpClient
@@ -69,12 +66,60 @@ import concurrent.futures
 
 sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
 
+UseCamera = False
+
+if UseCamera:
+    resolution = '1920x1080'
+    def_exp, def_gain = 0.01, 480  # exp in units of sec, gain in units of 1/10 dB
+
+    # Access CCD data and grab initial frame
+    Camera = IC.TIS_CAM()
+    Camera.ShowDeviceSelectionDialog() 
+
+    if Camera.IsDevValid() == 1:
+
+        # Set a video format
+        temp = "RGB32 (" + resolution + ")"
+        Camera.SetVideoFormat(temp); del temp
+        Camera.SetPropertyAbsoluteValue("Exposure","Value", def_exp)
+        Camera.SetPropertyValue("Gain","Value", def_gain)
+
+        # Communicate with camera
+        Camera.StartLive(1)
+
+        # Initial image snap
+        Camera.SnapImage()
+
+        # Get image
+        init_img = Camera.GetImage()
+        init_img = cv2.flip(init_img, 0)
+        init_img = cv2.cvtColor(init_img, cv2.COLOR_BGR2RGB)
+
+    else:
+        Camera.StopLive()
+        exit()
+
+    ''' At this point we have successfully communicated with the camera. Camera is 
+    now actively in standby mode and can take image snapshot upon request.'''
+
+def snap(Camera, def_exp = 0.01, def_gain = 480):
+    def_exp = def_exp
+    def_gain = def_gain  # exp in units of sec, gain in units of 1/10 dB
+    
+    Camera.SnapImage()
+    image = Camera.GetImage()
+    image = cv2.flip(image, 0) # note image is saved in BGR color code
+
+                # we will save image sequences in the imgs directory
+    timestamp = datetime.now() # data acquisition time stamp. need to be moved?
+    fname = './imgs/' +  timestamp.strftime("%y%m%d_%H-%M-%S.%f") + \
+        'exp' + str(def_exp) + '-gain' + str(def_gain) + '-dipolescan.bmp'
+    cv2.imwrite(fname, image)
+
 def merge(list1, list2): 
       
     merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))] 
     return merged_list
-
-
 
 def Make_Client(IP):
     '''
@@ -222,7 +267,58 @@ def Write(Client, Tag_Number, New_Value, Bool = False):
     if Bool == True:
         Client.write_coils(Tag_Number, [New_Value], skip_encode=False, unit=1)
 
+    return
 
+
+def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
+    
+    '''
+    Inputs:
+        __ Client: See client
+        __ Start_Tag_Number: This is the starting tag value, this will increment
+            by two for each of the items in the New_Values_List
+        __ New_Values_List: This is a list of new values that you want to write, this
+            is typically the same number repeated once for each time that you want
+            to write to each magnet. This is done this way so that you can write
+            different values to each magnet if you want to. (Typically by a scaled
+            amount if you are doing that.)
+        
+        - Must have an established Client before running this function.
+        
+        - Outputs:
+            __ Writes to a number of user defined magnets, may, in the future,
+                allow one value to be written to a specified number of magnets.
+                
+        - Method:
+                - Set up the Client
+                - Define the start tag value, 22201 for dipole 1 for example
+                - For each dipole you want to step, you define the new value 
+                    you want written to it.
+        - Example (Writing to 8 Dipoles starting with DP1)
+        
+        List = [0.100,0.100,0.100,0.100,0.100,0.100,0.100,0.100]
+        DP1_Tag = 22201
+        
+        Client = M.Make_Client('192.168.1.2')
+        
+        M.Write_Multiple(Client, DP1_Tag, List)
+        
+            - Result: All of the Dipoles (Assuming there are 8 will be written to 0.100) 
+    
+    '''
+    
+    Tag_Number = int(Start_Tag_Number)-1
+    
+    Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
+    
+    for value in New_Value_List:
+        Builder.add_32bit_float(value)
+        
+    Payload = Builder.to_registers()
+    Payload = Builder.build()
+    
+    Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
+    
     return
 
 
@@ -249,7 +345,8 @@ def Snapshot(Client, filename, start = 8):
         f.close() #Closing the file to save it
 
 
-def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
+def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = None, \
+                 count = 25, sleep_time = 0.020, step_time = 0.25, Image = False):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -317,7 +414,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
             temp_check = Read(Client,Tag_Number)
 
             if abs(temp_check - write_value) >= 0.001:
-                exit()
+                break
         
             
         write_value = Start_Value + (Delta/Steps)*i
@@ -326,9 +423,15 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
 
         Write(Client, Tag_Number, write_value)
 
-        if Read_Tag != "00000":
+        if Read_Tag != None:
 
             collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
+            
+            if Image:
+                time.sleep(step_time/2)
+                
+                snap(Camera)
+                
         
         else:
             time.sleep(sleep_time * 10)
@@ -733,6 +836,7 @@ def FWHM(x,y,extras = False):
         center = np.median(np.array([i for i in good_x if i != None]))
         return all_above, all_below, width, center, good_sum, bad_sum
 
+    
 def convert_to_mms(locs, Delta_1): #Converting the xlabels to mm
     new_list = []
     for i in locs:
