@@ -4,34 +4,37 @@ Hello Traveler,
 
 You have come far and I can see that you are tired. Let me offer you some assistance.
 
-In this directory you will find the following items as of 01/21/2020 (that's in mm/dd/yyyy):
+In this directory you will find the following items as of 06/29/2020 (that's in mm/dd/yyyy):	
+	
+A folder titled: Amp Scraper
+	This project is intended to do a simple web scrape of a GUI output of a technologix
+	amplifier. This program reads the values from the XML file that the amplifier outputs
+	and pushes them to a PLC where ladder logic takes over and controls interlocks and 
+	reports relevant values
 
-A file labeled Master, this is a python file and acts as a library for other programs
-	listed in the files below. In this file you will find the functions called in other
-	programs. If you would like to add to this folder, please note that nothing will
-	be harmed by adding a new function, only by editing or deleting the other ones. 
-	It is important to note that since this file gets uploaded into other programs, 
-	it is imparitive to have a good idea of exactly how many versions are using each function,
-	and that if you really need to change one of these, consider the change to the functionality,
-	look at the other programs and test them, or just make a new function.
-	The purpose of these functions is to make further programming more comprehensible and easier to write.
+A folder titled: DeGuass
+	This is a simple script to degauss magnets in the system. This is to offset inconsistancies
+	caused by magnet hysteresis. This program walks all the magnets connected to the PLC through 
+	a decaying sin function until reaching zero. 
 	
-	
-A folder titled: Dipole Test
-	This folder is for taking Dipole 1 and scanning it to a new value and collecting
-	the current collected while doing so. The intended use here is to scan across
-	the aperture and measure the current collected on the DBA dump while doing so. 
-	
+A folder titled: Dipole Scan
+	Dipole Scans are a useful diagnostic for our accelerator injector. This program takes 
+	advantage of our system design that uses our injector as an energy filter. This script
+	sweeps the current of a magnet down and back up and records the collected beam at the 
+	end of our injector setup. This has become a daily tool for operation.
+
 A folder titled: Dog Leg
-	This folder is intended to automate dog legs. The current state of these is to replicate
-	how a human would perform a dog leg. Future plans may take a shape that could be more useful
-	than the scanning method currently used.
+	Dog Legs are another diagnostic created to take advantage of the Geometry of our system. 
+	This script sweeps two magnets concurrently in opposite directions to move our electron
+	beam parallel through the superconducting cavity. This gives us an idea of how parallel
+	and centered our beam is through the cavity axis.
 	
-A folder titled: Magnet Saves
-	This folder holds a dear place in my heart, and this is where this whole project began. This 
-	started with an impromptu way to save magnet settings for a quick fix and the potential grew.
-	Hopefully, months down the road, this folder gets hard to find because it is surrounded by so
-	many great programs to make beamwork more precise.
+A folder titled: East Tunnel
+	An adaption of most of the daily scripts to run on our second system that has some minor design variations.
+	
+A folder titled: In_Testing
+	This folder contains various scripts that are in the testing phase. This is primarily used
+	for troubleshooting and the beginnings of version improvements.
 	
 A folder titled: Magnet Ramping
 	This folder contains a project that stood in only for a few weeks. This was a temporary fix
@@ -40,17 +43,26 @@ A folder titled: Magnet Ramping
 	to load in a magnet save and ramp the magnets to the new values, it still took some time but saved
 	many man-hours.
 	
-A folder titled: Scripts
-	This is a folder of scripts that were tested but never quite found a use, there are files in here that
-	may be useful in the future, for automated tuning of the beamline. But that project is quite a bit down 
-	the line, so here are the scripts in all their glory. 
+A folder titled: Magnet Saves
+	This folder holds a dear place in my heart, and this is where this whole project began. This 
+	started with an impromptu way to save magnet settings as a quick fix and the potential grew.
 	
-A folder titled: Degauss
-	This is a program designed to degauss the magnets in our system. This is used for more consistent testing
-	and production runs. This currently uses a decaying cosine function to degauss the magnets.
+	
+A python file named Master:
+	This is a python file and acts as a library for other programs
+	listed in the files below. In this file you will find the functions called in other
+	programs. The purpose of these functions is to make the code modular and easier to adapt.
+	
+A python file named Master_All_Versions:
+	Similar to Master, this contains functions from different versions of testing and minor
+	side projects. This file is here to act as a quick reference for the continuation of
+	long forgotten work.
+
+A pytho file named Tag_Database:
+	This simple script contains the modbus address for all commonly used tags in our system.
+	The introduction of this script is to make the code more modular, future-proof, and readable.
+	This document is update with changes in the PLCs and additions of new functionality (see Amp_Scraper.py).
 	
 A word document titled: future projects
 	This document contains ramblings and ideas about future ideas with python as a modbus communicator.
 
-A Document named: Tag_Database.py
-	This script is designed to have one place for the Modbus addresses for minor future-proofing. This will help if addresses change or the style changes overall so that changes can be made in one place.
