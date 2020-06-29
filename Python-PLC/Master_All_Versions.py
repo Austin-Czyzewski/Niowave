@@ -614,6 +614,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         __ Horizontal_Delta (Amps): How far we want to scan in the magnet frame space with the horizontal tag
         __ Vertical_Delta (Amps): How far we want to scan in the vertical magnet space
         __ Resolution: For each leg of the scan from the center, how many points do we want to collect
+        
     Outputs: A window frame scan in which a quick sweep is performed with no regard to data collection. This is done for data gathering.
     Starting at the center. The scan is done in the following order:
         -- Move Upward, taking *Resolution* number of data points
