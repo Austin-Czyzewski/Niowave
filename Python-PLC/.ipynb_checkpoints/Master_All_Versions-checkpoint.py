@@ -63,6 +63,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import time
 import concurrent.futures
+#import tisgrabber as IC
+#import cv2
 
 sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
 
@@ -74,7 +76,7 @@ if UseCamera:
 
     # Access CCD data and grab initial frame
     Camera = IC.TIS_CAM()
-    Camera.ShowDeviceSelectionDialog() 
+    Camera.ShowDeviceSelectionDialog() #Brings up camera catalog for selection
 
     if Camera.IsDevValid() == 1:
 
@@ -88,7 +90,7 @@ if UseCamera:
         Camera.StartLive(1)
 
         # Initial image snap
-        Camera.SnapImage()
+        Camera.SnapImage() #Take an image
 
         # Get image
         init_img = Camera.GetImage()
@@ -99,12 +101,31 @@ if UseCamera:
         Camera.StopLive()
         exit()
 
-    ''' At this point we have successfully communicated with the camera. Camera is 
-    now actively in standby mode and can take image snapshot upon request.'''
+    # At this point we have successfully communicated with the camera. Camera is 
+    # now actively in standby mode and can take image snapshot upon request.
 
 def snap(Camera, def_exp = 0.01, def_gain = 480):
-    def_exp = def_exp
-    def_gain = def_gain  # exp in units of sec, gain in units of 1/10 dB
+    '''
+    Inputs:
+        __ Camera: The camera that we are connected to through TIS
+        __ def_exp: The exposure time of the image that we want
+        __ def_gain: Gain of the image that we want
+    
+    Outputs:
+        A .bmp file with the name that contains the time at which the image is taken
+        
+    Required imports:
+        - datetime
+        - cv2
+        - tisgrabber
+        
+    Example: 
+        Camera = IC.TIS_CAM()
+        snap(Camera, def_exp = 1/3, def_gain = 0)
+        
+    '''
+    def_exp = def_exp #exposure (seconds)
+    def_gain = def_gain  # gain in units of 1/10 dB
     
     Camera.SnapImage()
     image = Camera.GetImage()
@@ -117,7 +138,15 @@ def snap(Camera, def_exp = 0.01, def_gain = 480):
     cv2.imwrite(fname, image)
 
 def merge(list1, list2): 
-      
+    '''
+    Inputs:
+        Two lists of equal length
+    
+    Outputs:
+        One list that contains a list of the zipped values from the
+        two lists
+    
+    '''
     merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))] 
     return merged_list
 
@@ -130,7 +159,7 @@ def Make_Client(IP):
         -Required imports
         from pymodbus.client.sync import ModbusTcpClient
 
-        -example:
+        -Example:
         Client = Make_Client('192.168.1.2')
 
     '''
@@ -323,6 +352,23 @@ def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
 
 
 def Snapshot(Client, filename, start = 8):
+    '''
+    Inputs:
+        __ Client: See Make_Client
+        __ filename: What you want the filename to be
+        __ start: the starting value of the indexing from the Tag_Database
+        the defualt is 8 since that is the first defined variable 
+        in the tag database. This will change if you do not want any magnets
+        
+    Outputs:
+        A .txt file with the filename and the Read value of each magnet in 
+        the Tag_Database. A quick and easy way to get and store a system snapshot
+        
+    Requirements:
+        Tag_Database to be in the same folder as the file that this call is made in
+        
+    '''
+    
     import Tag_Database as Tags
     
     Read(Client,Tags.CU_V)
@@ -558,27 +604,6 @@ def Ramp_Two_Way(Client, Tag_Number, End_Value = 0, Runs = 1, Max_Step = 0.010, 
             return write_value_list, collected_list
         else:
             return write_value_list
-        
-
-        
-def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
-    '''
-        Plots the X_list and the Y_list
-        Names on the X_axis and the Y_axis
-    '''
-    plt.figure(figsize = (9,6))
-    plt.scatter(X_list, Y_list)
-    plt.ylabel(Y_axis)
-    plt.xlabel(Y_axis)
-    plt.grid(True)
-    plt.title(Title)
-
-    if Save != "N":
-        now = datetime.today().strftime('%y%m%d_%H%M')
-        plt.savefig(now+".png")
-    plt.show()
-    
-
     
 def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
     '''
