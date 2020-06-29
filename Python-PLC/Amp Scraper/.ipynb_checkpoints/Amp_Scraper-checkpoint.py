@@ -67,19 +67,25 @@ while True:
     #Amp_Response = os.popen("curl -u admin:admin http://169.254.1.1/status.xml") #5KW off network
     
     #Amp_Response = os.popen("curl -u admin:admin http://10.50.0.21/status.xml") #West Tunnel
+    
+    ######################################################################
+    ## Note:
+    ## This is where things get slowed down the most. 
+    ## Unfortunately, web scraping is not the quickest
+    ######################################################################
+    
     try:
         Amp_Response = os.popen("curl -u admin:admin http://{}/status.xml".format(Amp_IP))
         #Above grabs data from xml file
     except:
         print("Failed to connect to the amplifier")
-        
+    #print(len())
     amp = list() #Create an empty list 
     
     for line in Amp_Response: #iterate over each value of the Amp Response
         
         amp.append(line.split('>')) #Split into two lines at the '>' in 
                                 #<Name>Value<Name> format, creates 2 pieces
-
     Names = list() #Create empty lists of the names and values of each tag as 
     Values = list() #defined above
     
@@ -109,19 +115,18 @@ while True:
                 
         except: #If our format is not in Value<Name then we add 
             Values.append('NaN') #this arbitrary string as filler
-            
-    Values[-1] = str(round(float(Values[8]) * Conversion_Rate,3)) #Adding the converted
-                                                        # FWD Power value
-    Names[-1] = "MeasuredFWDWatts"
     
-#     for it in range(len(Names)):
-#         print(Names[it], Values[it])
-#         if "!DEF" in Values[it]:
-#             Values[it] = 'Nan'
-            
+    try:
+        Values[-1] = str(round(float(Values[8]) * Conversion_Rate,3)) #Adding the converted
+                                                        # FWD Power value
+        Names[-1] = "MeasuredFWDWatts"
         
-    os.system('cls') #Clears the print screen to save on memory 
-                        #(Not needed if only writing to PLCs)
+    except:
+        print("Error grabbing data from {}".format(Amp_IP))
+        print("Detected Names: {} Detected Values: {}".format(len(Values), len(Names)))
+        
+        continue
+            
 
     #############################
     ## Write to the PLC
@@ -142,16 +147,18 @@ while True:
         except:
             print("Write to PLC failed after {} second wait".format(Sleep_Check_Time/10))
         
+        
+    os.system('cls') #Clears the print screen to save on memory 
+                        #(Not needed if only writing to PLCs)
+        
     for Name, Value in zip(Names[1:], Values): #Here is filler for when we want 
                                             #to write these values to the PLC
             
-    #    M.Write(Client, Tag_Num, float(Value)) #Writes to the Tag in Tag_List
         print(Name, Value)
         continue #Avoid parsing error with empty function for testing
         
-    print("{:.3f} ms to run".format(1000* (time.time() - start_time))) 
+    print("{:.1f} ms to run".format(1000* (time.time() - start_time))) 
     #Taking the current time and comparing to the start time. 
         #Printing the difference in ms
     
     #time.sleep(1) #sleep for designated amount of time in seconds
-    
