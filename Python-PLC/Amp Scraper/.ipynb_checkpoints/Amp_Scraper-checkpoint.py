@@ -75,33 +75,31 @@ while True:
     except:
         print("Failed to connect to the amplifier")
     #print(len())
-    amp = list()
+    Amp_Readout = list()
     
     for line in Amp_Response:
         
-        amp.append(line.split('>')) #Splits <Name>Value<Name> into <Name, Value<Name
+        Amp_Readout.append(line.split('>')) #Splits <Name>Value<Name> into <Name, Value<Name
 
     Names = list()
     Values = list() 
     
-    for num, i in enumerate(amp):  
+    for num, i in enumerate(Amp_Readout):  
                                    
             
-        amp[num][0] = amp[num][0].strip('<') #<Name to Name ##aesthetic##
+        Amp_Readout[num][0] = Amp_Readout[num][0].strip('<') #<Name to Name ##aesthetic##
         
-        Names.append(amp[num][0]) 
+        Names.append(Amp_Readout[num][0]) 
             
         try: #This try-except is to handle the non-data lines of our html
-                
-            temp = i[1].split('<') #Value<Name to [Value, <Name]
-                
-            amp[num][1] = temp 
+                                
+            Amp_Readout[num][1] = i[1].split('<') #Value<Name to [Value, <Name]
             
-            if "!DEF" in amp[num][1]: #!DEF is bad, we like NaNs
+            if "!DEF" in Amp_Readout[num][1]: #!DEF is bad, we like NaNs
                 Values.append("NaN")
                 
             else:
-                Values.append(amp[num][1][0]) #who cares about <Name anymore?
+                Values.append(Amp_Readout[num][1][0]) #who cares about <Name anymore?
                 
         except: 
             
