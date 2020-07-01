@@ -1,7 +1,8 @@
 ###############################################################################
 ###############################################################################
 # Author: Austin Czyzewski
-# Date: 06/25/2020; Date Tested: 06/25/2020
+
+# Date: 06/25/2020; Version Date: 07/01/2020
 #
 # Purpose: Take amplifier status data and push into PLC. Reduce need for 
 #           conversions, have more readily accessible data, etc.
