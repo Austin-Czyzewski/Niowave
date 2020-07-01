@@ -746,10 +746,79 @@ def Delta1_2(locs, Delta_1, Delta_2): #Converting the 1 values to the same displ
     return new_list
 
 def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
-            Target_2_Tag, Tag_List, WF1H_Start, WF2H_Start, WF1V_Start, WF2V_Start, Read_Steps = 40, \
+            Target_2_Tag, Tag_List, WF1H_Start = None, WF2H_Start = None, \
+            WF1V_Start = None, WF2V_Start = None, Read_Steps = 40, \
             Delta_1 = 0.384, Delta_2 = 0.228, Threshold_Percent = 20, count = 20, sleep_time = 0.010, \
             Deviation_Check = 0.001, Zoom_In_Factor = 1, Scale_Factor = 0.91, ):
 
+    '''
+    Inputs:
+        __ Client: Modbus TCP client that hosts PLCs
+        __ WF1H_Tag: The modbus start address for the first horizontal window frame we are controlling
+        __ WF2H_Tag, WF1V_Tag, WF2V_Tag: Horizontal and vertical window frame modbus address
+        __ Target_1_Tag, Target_2_Tag: The modbus address for the beam target current dumps
+        __ Tag_List: See Gather above, list of lists with tag values and wether or not they are
+            averaged. These will be the tags grabbed at each step
+        __ WF1H_Start, WF2H_Start, WF1V_Start, WF2V_Start: Our starting value for each of these magnets
+            If default of None remains, then the dog leg is taken from the starting point
+        __ Read_Steps: The amount of steps, in each direction, that we will attempt to take the Dog Leg
+            This values divides the delta by this number, so step size will change as this value changes.
+        __ Delta_1, Delta_2: The amount that the first window frame and second window frames will move
+            the ratio of these is determined by the distance and relative strength of the two window 
+            frames; float: 0 < Delta
+        __ Threshold_Percent: This is the percent of the starting collection required to keep the dog leg
+            moving in the current direction that it is. Once the dog leg falls below this threshold, the 
+            dog leg will break out of a loop and go back to the starting point; 
+            float:  0 <= Threshold_Percent <= 1
+        __ count: This is the number of points that will be averaged at each Dog Leg iteration;
+            integer: 1 <= count
+        __ sleep_time: time, in seconds, to wait between each averaged point in count;
+            float: 0 <= sleep_time
+        __ Deviation_Check: Threshold, in Amps, that the magnet value setpoint must deviate from the
+            last written point for the program to go back to the start and end. This is to ensure
+            that if there is any human intervention, the dog leg will go back to the start and return
+            control to the operator; float: 0 < Deviation_Check
+        __ Zoom_In_Factor: This exists to adjust scaling on the output graph. This is primarily used when
+            changing the magnets that are being Dog Legged
+        __ Scale_Factor: Similar to Zoom_In_Factor, truly a relic
+    
+    Outputs:
+        A graph named (current time)_graph.svg that contains a graph and table of the dog leg data taken
+        A txt file containing a snapshot of the system at the end of the dog leg named 
+            (current time)_snapshot.txt containing all of the read values for each magnet we have listed 
+            in our tag database (Tag_Database.py)
+        A txt file containing all of the Dog Leg data gathered from the Tag List throughout the run
+            named (current time).txt
+        
+        returns a figure of merit for dog leg optimization. This is the FWHM for each axis squared and flipped
+            in sign (to make minimization problems more intuitive)
+            
+    Requirements:
+        Tag_Database must be in the same directory folder as this Master file.
+        This function must be contained within the Master file (do not copy and paste out of this file)
+        
+        imports:
+            from pymodbus.client.sync import ModbusTcpClient
+            from pymodbus.payload import BinaryPayloadDecoder
+            from pymodbus.payload import BinaryPayloadBuilder
+            from pymodbus.constants import Endian
+            numpy
+            matplotlib.pyplot
+            from datetime import datetime
+            time
+            concurrent.futures
+    
+    Logic:
+        Ramp to our starting point
+        Take data Read_Steps to the right by moving mag 1 to the right and mag 2 to the left
+        Move to start
+        Take data Read_Steps to the left, upward, and downward
+        Move to start between each
+        Take the Full width half max of the horizontal and vertically produced lines
+        Output files
+    '''
+    
+    
     import Tag_Database as Tags
 
     start_time = time.time()
@@ -759,6 +828,18 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
     EC = Read(Client, Tags.Emitted_Current, Average = True, count = count)
     
     #Move to our starting point
+    
+    #If no starting values are provided, we take a dog leg from the current position
+    
+    if WF1H_Start == None:
+        WF1H_Start = Read(Client, WF1H_Tag)
+    if WF2H_Start == None:
+        WF2H_Start = Read(Client, WF2H_Tag)
+    if WF1V_Start == None:
+        WF1V_Start = Read(Client, WF1V_Tag)
+    if WF2V_Start == None:
+        WF2V_Start = Read(Client, WF2V_Tag)
+    
     Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Read_Steps, sleep_time = sleep_time)
     Ramp_Two(Client, WF1V_Tag, WF2V_Tag, Magnet_1_Stop = WF1V_Start, Magnet_2_Stop = WF2V_Start, Resolution = Read_Steps, sleep_time = sleep_time)
     
@@ -792,8 +873,8 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
         if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
             break
     print("Moving to center")
-
-    Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Right_Steps//2, sleep_time = sleep_time) #Moves back to the start in hald of the same # of steps taken
+    
+    Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Right_Steps//2, sleep_time = sleep_time) #Moves back to the start in half of the same # of steps taken
 
     print("Left Displacement")
 
@@ -892,7 +973,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
     
     Controlled_Magnets = []
     
-    Moved_Magnets = [WF1H_Tag, WF1V_Tag, WF2H_Tag, WF2V_Tag]
+    Moved_Magnets = [WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag]
     variables = vars(Tags)
     for Mag_Tag in Moved_Magnets:
         for item in variables.items():
