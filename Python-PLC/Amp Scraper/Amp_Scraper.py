@@ -22,14 +22,15 @@
 ## imports
 #############################
 
-import time #import our time module to allow us to wait
-import os #allow us to interface with command line prompts like curl
-import numpy as np #math functions
+import time 
+import os
+import numpy as np
 import Master as M #importing the PLC communications library
 
 #############################
 ## Connect to PLC, define Modbus addresses
 #############################
+
 PLC_IP = "10.1.2.100"
 Amp_IP = '10.1.2.125'
 Sleep_Check_Time = 10 #Seconds
@@ -47,27 +48,20 @@ except:
         time.sleep(10)
         exit()
         
-Conversion_Rate = 50 #Convert amp forward power from percent to Watts
+#Convert amp forward power from percent to Watts        
+Conversion_Rate = 50 
 
-filler = 1001 #Temporary puppy
-Tag_List = np.arange(50001,50100,2) #List of tags in order of writing
-                                    #Only one really needed
+#modbus addresses
+Tag_List = np.arange(50001,50100,2)
            
 #############################
-## Begin reading loop
+## Runtime loop
 #############################
-while True:
-    start_time = time.time() #taking the time to evaluate how long the process 
-                                #takes to run
-                                
-    #############################
-    ## Grab the data from the amplifier; make more usable
-    #############################
 
-    #Amp_Response = os.popen("curl -u admin:admin http://169.254.1.1/status.xml") #5KW off network
-    
-    #Amp_Response = os.popen("curl -u admin:admin http://10.50.0.21/status.xml") #West Tunnel
-    
+while True:
+    start_time = time.time()
+                            
+
     ######################################################################
     ## Note:
     ## This is where things get slowed down the most. 
@@ -76,47 +70,45 @@ while True:
     
     try:
         Amp_Response = os.popen("curl -u admin:admin http://{}/status.xml".format(Amp_IP))
-        #Above grabs data from xml file
+        #Above grabs data from amp output xml file
     except:
         print("Failed to connect to the amplifier")
     #print(len())
-    amp = list() #Create an empty list 
+    amp = list()
     
-    for line in Amp_Response: #iterate over each value of the Amp Response
+    for line in Amp_Response:
         
-        amp.append(line.split('>')) #Split into two lines at the '>' in 
-                                #<Name>Value<Name> format, creates 2 pieces
-    Names = list() #Create empty lists of the names and values of each tag as 
-    Values = list() #defined above
+        amp.append(line.split('>')) #Splits <Name>Value<Name> into <Name, Value<Name
+
+    Names = list()
+    Values = list() 
     
-    for num, i in enumerate(amp): #For the index and each value in the list 
-                                    #of responses
+    for num, i in enumerate(amp):  
+                                   
             
-        amp[num][0] = amp[num][0].strip('<') #Get rid of the '<' in the Name 
-                                                #value for aesthetic
+        amp[num][0] = amp[num][0].strip('<') #<Name to Name ##aesthetic##
+        
+        Names.append(amp[num][0]) 
             
-        Names.append(amp[num][0]) #Add the now beautified name to the list 
-                                    #of Names
-            
-        try: #Here we are going to try to do the following function but 
-                #since some lines contain incorrect format, we have 
-                #error handling in this form
+        try: #This try-except is to handle the non-data lines of our html
                 
-            temp = i[1].split('<') #Split the second part of the string going 
-                                    #from Value<Name to [Value, <Name]
+            temp = i[1].split('<') #Value<Name to [Value, <Name]
                 
-            amp[num][1] = temp #Replace the Value<Name with list of 
-                                #value and name
-            if "!DEF" in amp[num][1]:
+            amp[num][1] = temp 
+            
+            if "!DEF" in amp[num][1]: #!DEF is bad, we like NaNs
                 Values.append("NaN")
-            else:
-                Values.append(amp[num][1][0]) #Only append the first value in the 
-                                            #list [Value, <Name] to get Value
                 
-        except: #If our format is not in Value<Name then we add 
-            Values.append('NaN') #this arbitrary string as filler
+            else:
+                Values.append(amp[num][1][0]) #who cares about <Name anymore?
+                
+        except: 
+            
+            Values.append('NaN') 
     
-    try:
+    try: #This try-except is to add a converted value and to act as a check that we are 
+            #actually getting data
+            
         Values[-1] = str(round(float(Values[8]) * Conversion_Rate,3)) #Adding the converted
                                                         # FWD Power value
         Names[-1] = "MeasuredFWDWatts"
@@ -136,29 +128,28 @@ while True:
     
     
     try:
+        
         M.Write_Multiple(Client, Tag_List[0], Values) #Writing all of the values to the PLC
+        
     except:
+        
         print("Write to PLC failed...")
         print("Waiting...")
         time.sleep(Sleep_Check_Time/10)
-        try:
+        
+        try: #Try again with fresh connection
             M.Make_Client(PLC_IP)
             M.Write_Multiple(Client, Tag_List[0], Values)
-        except:
-            print("Write to PLC failed after {} second wait".format(Sleep_Check_Time/10))
-        
-        
-    os.system('cls') #Clears the print screen to save on memory 
-                        #(Not needed if only writing to PLCs)
-        
-    for Name, Value in zip(Names[1:], Values): #Here is filler for when we want 
-                                            #to write these values to the PLC
             
-        print(Name, Value)
-        continue #Avoid parsing error with empty function for testing
+        except:
+            print("Write to PLC failed after {:.2f} second wait".format(Sleep_Check_Time/10))
         
-    print("{:.1f} ms to run".format(1000* (time.time() - start_time))) 
-    #Taking the current time and comparing to the start time. 
-        #Printing the difference in ms
+        
+    os.system('cls') #clear print screen
+        
+    for Name, Value in zip(Names[1:], Values): 
+        print(Name, Value)
+        
+    print("{:.1f} ms pull-push".format(1000* (time.time() - start_time))) 
     
-    #time.sleep(1) #sleep for designated amount of time in seconds
+    #time.sleep(1) #This is already slow enough. We don't need to waste any more time
