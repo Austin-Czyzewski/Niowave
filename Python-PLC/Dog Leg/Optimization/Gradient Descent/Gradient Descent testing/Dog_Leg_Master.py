@@ -1,13 +1,13 @@
 ''' Creator: Austin Czyzewski
 
 Date: 12/04/2019
-Last Updated: 06/25/2020
+Last Updated: 06/01/2020
 
 Purpose: Define functions to make code more modular and add functionality
     - Set up the code in a way that we have functions that can be used with imports and make easy code to write
 
 Functions to be found:
-    - Establish client (Make_Client)
+    - Establish client
         - Set an IP address and save to act for functions
         
     - Read from client
@@ -52,6 +52,9 @@ if Dipole_1_After == Dipole_1_Before:
 else:
     print("False")
 
+
+
+
 '''
 
 from pymodbus.client.sync import ModbusTcpClient
@@ -63,92 +66,15 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import time
 import concurrent.futures
-#import tisgrabber as IC
-#import cv2
 
 sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
 
-UseCamera = False
-
-if UseCamera:
-    resolution = '1920x1080'
-    def_exp, def_gain = 0.01, 480  # exp in units of sec, gain in units of 1/10 dB
-
-    # Access CCD data and grab initial frame
-    Camera = IC.TIS_CAM()
-    Camera.ShowDeviceSelectionDialog() #Brings up camera catalog for selection
-
-    if Camera.IsDevValid() == 1:
-
-        # Set a video format
-        temp = "RGB32 (" + resolution + ")"
-        Camera.SetVideoFormat(temp); del temp
-        Camera.SetPropertyAbsoluteValue("Exposure","Value", def_exp)
-        Camera.SetPropertyValue("Gain","Value", def_gain)
-
-        # Communicate with camera
-        Camera.StartLive(1)
-
-        # Initial image snap
-        Camera.SnapImage() #Take an image
-
-        # Get image
-        init_img = Camera.GetImage()
-        init_img = cv2.flip(init_img, 0)
-        init_img = cv2.cvtColor(init_img, cv2.COLOR_BGR2RGB)
-
-    else:
-        Camera.StopLive()
-        exit()
-
-    # At this point we have successfully communicated with the camera. Camera is 
-    # now actively in standby mode and can take image snapshot upon request.
-
-def snap(Camera, def_exp = 0.01, def_gain = 480):
-    '''
-    Inputs:
-        __ Camera: The camera that we are connected to through TIS
-        __ def_exp: The exposure time of the image that we want
-        __ def_gain: Gain of the image that we want
-    
-    Outputs:
-        A .bmp file with the name that contains the time at which the image is taken
-        
-    Required imports:
-        - datetime
-        - cv2
-        - tisgrabber
-        
-    Example: 
-        Camera = IC.TIS_CAM()
-        snap(Camera, def_exp = 1/3, def_gain = 0)
-        
-    '''
-    def_exp = def_exp #exposure (seconds)
-    def_gain = def_gain  # gain in units of 1/10 dB
-    
-    Camera.SnapImage()
-    image = Camera.GetImage()
-    image = cv2.flip(image, 0) # note image is saved in BGR color code
-
-                # we will save image sequences in the imgs directory
-    timestamp = datetime.now() # data acquisition time stamp. need to be moved?
-    fname = './imgs/' +  timestamp.strftime("%y%m%d_%H-%M-%S.%f") + \
-        'exp' + str(def_exp) + '-gain' + str(def_gain) + '-dipolescan.bmp'
-    cv2.imwrite(fname, image)
-
 def merge(list1, list2): 
-    '''
-    Inputs:
-        Two lists of equal length
-    
-    Outputs:
-        One list that contains a list of the zipped values from the
-        two lists
-    
-    '''
+      
     merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))] 
     return merged_list
+
+
 
 def Make_Client(IP):
     '''
@@ -159,7 +85,7 @@ def Make_Client(IP):
         -Required imports
         from pymodbus.client.sync import ModbusTcpClient
 
-        -Example:
+        -example:
         Client = Make_Client('192.168.1.2')
 
     '''
@@ -296,79 +222,11 @@ def Write(Client, Tag_Number, New_Value, Bool = False):
     if Bool == True:
         Client.write_coils(Tag_Number, [New_Value], skip_encode=False, unit=1)
 
-    return
 
-
-def Write_Multiple(Client, Start_Tag_Number, New_Value_List):
-    
-    '''
-    Inputs:
-        __ Client: See client
-        __ Start_Tag_Number: This is the starting tag value, this will increment
-            by two for each of the items in the New_Values_List
-        __ New_Values_List: This is a list of new values that you want to write, this
-            is typically the same number repeated once for each time that you want
-            to write to each magnet. This is done this way so that you can write
-            different values to each magnet if you want to. (Typically by a scaled
-            amount if you are doing that.)
-        
-        - Must have an established Client before running this function.
-        
-        - Outputs:
-            __ Writes to a number of user defined magnets, may, in the future,
-                allow one value to be written to a specified number of magnets.
-                
-        - Method:
-                - Set up the Client
-                - Define the start tag value, 22201 for dipole 1 for example
-                - For each dipole you want to step, you define the new value 
-                    you want written to it.
-        - Example (Writing to 8 Dipoles starting with DP1)
-        
-        List = [0.100,0.100,0.100,0.100,0.100,0.100,0.100,0.100]
-        DP1_Tag = 22201
-        
-        Client = M.Make_Client('192.168.1.2')
-        
-        M.Write_Multiple(Client, DP1_Tag, List)
-        
-            - Result: All of the Dipoles (Assuming there are 8 will be written to 0.100) 
-    
-    '''
-    
-    Tag_Number = int(Start_Tag_Number)-1
-    
-    Builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
-    
-    for value in New_Value_List:
-        Builder.add_32bit_float(value)
-        
-    Payload = Builder.to_registers()
-    Payload = Builder.build()
-    
-    Client.write_registers(Tag_Number, Payload, skip_encode=True, unit=1)
-    
     return
 
 
 def Snapshot(Client, filename, start = 8):
-    '''
-    Inputs:
-        __ Client: See Make_Client
-        __ filename: What you want the filename to be
-        __ start: the starting value of the indexing from the Tag_Database
-        the defualt is 8 since that is the first defined variable 
-        in the tag database. This will change if you do not want any magnets
-        
-    Outputs:
-        A .txt file with the filename and the Read value of each magnet in 
-        the Tag_Database. A quick and easy way to get and store a system snapshot
-        
-    Requirements:
-        Tag_Database to be in the same folder as the file that this call is made in
-        
-    '''
-    
     import Tag_Database as Tags
     
     Read(Client,Tags.CU_V)
@@ -391,8 +249,7 @@ def Snapshot(Client, filename, start = 8):
         f.close() #Closing the file to save it
 
 
-def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = None, \
-                 count = 25, sleep_time = 0.020, step_time = 0.25, Image = False):
+def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
     '''  -Future: input a safety method to make sure we aren't drastically changing values
 
         Inputs: Client, see "Client" Above
@@ -460,7 +317,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
             temp_check = Read(Client,Tag_Number)
 
             if abs(temp_check - write_value) >= 0.001:
-                break
+                exit()
         
             
         write_value = Start_Value + (Delta/Steps)*i
@@ -469,15 +326,9 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
 
         Write(Client, Tag_Number, write_value)
 
-        if Read_Tag != None:
+        if Read_Tag != "00000":
 
             collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
-            
-            if Image:
-                time.sleep(step_time/2)
-                
-                snap(Camera)
-                
         
         else:
             time.sleep(sleep_time * 10)
@@ -604,6 +455,27 @@ def Ramp_Two_Way(Client, Tag_Number, End_Value = 0, Runs = 1, Max_Step = 0.010, 
             return write_value_list, collected_list
         else:
             return write_value_list
+        
+
+        
+def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
+    '''
+        Plots the X_list and the Y_list
+        Names on the X_axis and the Y_axis
+    '''
+    plt.figure(figsize = (9,6))
+    plt.scatter(X_list, Y_list)
+    plt.ylabel(Y_axis)
+    plt.xlabel(Y_axis)
+    plt.grid(True)
+    plt.title(Title)
+
+    if Save != "N":
+        now = datetime.today().strftime('%y%m%d_%H%M')
+        plt.savefig(now+".png")
+    plt.show()
+    
+
     
 def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
     '''
@@ -614,7 +486,6 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
         __ Horizontal_Delta (Amps): How far we want to scan in the magnet frame space with the horizontal tag
         __ Vertical_Delta (Amps): How far we want to scan in the vertical magnet space
         __ Resolution: For each leg of the scan from the center, how many points do we want to collect
-        
     Outputs: A window frame scan in which a quick sweep is performed with no regard to data collection. This is done for data gathering.
     Starting at the center. The scan is done in the following order:
         -- Move Upward, taking *Resolution* number of data points
@@ -862,7 +733,6 @@ def FWHM(x,y,extras = False):
         center = np.median(np.array([i for i in good_x if i != None]))
         return all_above, all_below, width, center, good_sum, bad_sum
 
-    
 def convert_to_mms(locs, Delta_1): #Converting the xlabels to mm
     new_list = []
     for i in locs:
@@ -879,7 +749,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
             Target_2_Tag, Tag_List, WF1H_Start = None, WF2H_Start = None, \
             WF1V_Start = None, WF2V_Start = None, Read_Steps = 40, \
             Delta_1 = 0.384, Delta_2 = 0.228, Threshold_Percent = 20, count = 20, sleep_time = 0.010, \
-            Deviation_Check = 0.001, Zoom_In_Factor = 1, Scale_Factor = 0.91, iterator = None):
+            Deviation_Check = 0.001, Zoom_In_Factor = 1, Scale_Factor = 0.91, iteration = None):
 
     '''
     Inputs:
@@ -1099,11 +969,11 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
 
     Ramp_Two(Client, WF1V_Tag, WF2V_Tag, Magnet_1_Stop = WF1V_Start, Magnet_2_Stop = WF2V_Start, Resolution = Downward_Steps//2, sleep_time = sleep_time)
     
-    if iterator == None:
+    if iteration == None:
         now = datetime.today().strftime('%y%m%d_%H%M%S') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
     else:
-        now = datetime.today().strftime('%y%m%d_%H%M%S') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
-        now += str(iterator)
+        now = datetime.today().strftime('%y%m%d_%H%M%S__') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
+        now += str(iteration)
         
     Controlled_Magnets = []
     

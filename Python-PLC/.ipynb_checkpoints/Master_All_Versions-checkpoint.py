@@ -879,7 +879,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
             Target_2_Tag, Tag_List, WF1H_Start = None, WF2H_Start = None, \
             WF1V_Start = None, WF2V_Start = None, Read_Steps = 40, \
             Delta_1 = 0.384, Delta_2 = 0.228, Threshold_Percent = 20, count = 20, sleep_time = 0.010, \
-            Deviation_Check = 0.001, Zoom_In_Factor = 1, Scale_Factor = 0.91, ):
+            Deviation_Check = 0.001, Zoom_In_Factor = 1, Scale_Factor = 0.91, iterator = None):
 
     '''
     Inputs:
@@ -1099,11 +1099,15 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
 
     Ramp_Two(Client, WF1V_Tag, WF2V_Tag, Magnet_1_Stop = WF1V_Start, Magnet_2_Stop = WF2V_Start, Resolution = Downward_Steps//2, sleep_time = sleep_time)
     
-    now = datetime.today().strftime('%y%m%d_%H%M%S') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
-    
+    if iterator == None:
+        now = datetime.today().strftime('%y%m%d_%H%M%S') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
+    else:
+        now = datetime.today().strftime('%y%m%d_%H%M%S') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
+        now += str(iterator)
+        
     Controlled_Magnets = []
     
-    Moved_Magnets = [WF1H_Tag, WF1V_Tag, WF2H_Tag, WF2V_Tag]
+    Moved_Magnets = [WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag]
     variables = vars(Tags)
     for Mag_Tag in Moved_Magnets:
         for item in variables.items():
