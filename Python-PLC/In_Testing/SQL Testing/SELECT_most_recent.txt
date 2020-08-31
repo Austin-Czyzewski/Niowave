@@ -1,0 +1,6 @@
+SELECT [Time_Stamp], [Cu Gun Voltage]
+FROM (
+	SELECT TOP 10 [Time_Stamp], [Cu Gun Voltage] 
+	FROM [NiowaveDB].[dbo].[Amplifiers] 
+	ORDER BY [Time_Stamp] DESC
+) TAB ORDER BY [Time_Stamp]

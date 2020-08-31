@@ -68,9 +68,9 @@ colors = []
 resolution = '1920x1080'
 def_exp, def_gain = 0.01, 480  # exp in units of sec, gain in units of 1/10 dB
 
-# Access CCD data and grab initial frame
-Camera = IC.TIS_CAM()
-Camera.ShowDeviceSelectionDialog() 
+# # Access CCD data and grab initial frame
+# Camera = IC.TIS_CAM()
+# Camera.ShowDeviceSelectionDialog() 
 
 ###############################################################################
 # Access CCD data to get initial image
