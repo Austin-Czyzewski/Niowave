@@ -104,7 +104,7 @@ if UseCamera:
     # At this point we have successfully communicated with the camera. Camera is 
     # now actively in standby mode and can take image snapshot upon request.
 
-def snap(Camera, def_exp = 0.01, def_gain = 480):
+def snap(Camera, def_exp = 0.01, def_gain = 480, fname = None):
     '''
     Inputs:
         __ Camera: The camera that we are connected to through TIS
@@ -133,8 +133,9 @@ def snap(Camera, def_exp = 0.01, def_gain = 480):
 
                 # we will save image sequences in the imgs directory
     timestamp = datetime.now() # data acquisition time stamp. need to be moved?
-    fname = './imgs/' +  timestamp.strftime("%y%m%d_%H-%M-%S.%f") + \
-        'exp' + str(def_exp) + '-gain' + str(def_gain) + '-dipolescan.bmp'
+    if fname == None:
+        fname = './imgs/' +  timestamp.strftime("%y%m%d_%H-%M-%S.%f") + \
+            'exp' + str(def_exp) + '-gain' + str(def_gain) + '-dipolescan.bmp'
     cv2.imwrite(fname, image)
 
 def merge(list1, list2): 
@@ -366,6 +367,7 @@ def Snapshot(Client, filename, start = 8):
         
     Requirements:
         Tag_Database to be in the same folder as the file that this call is made in
+        
         
     '''
     
