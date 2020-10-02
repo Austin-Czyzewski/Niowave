@@ -1,4 +1,4 @@
-# import Master as M
+import Master as M
 import Tag_Database as Tags
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,6 +6,10 @@ import time
 
 Client = M.Make_Client("10.50.0.10")
 M.Read(Client, Tags.WF1H) #Arbitrary read to establish trust (I think this part is weird to me)
+
+################################################################
+### Initialize #################################################
+################################################################
 
 V0_resolution = 0.01 #Resolution of steps taken in both cutoff measurements
 Num_sawtooths_1 = 20 #number of points taken in the first cutoff
