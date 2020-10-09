@@ -273,3 +273,4 @@ Regulation_Setpoint_Reset = '00014'
 ########################################
 
 BH_VVA_SP = '00201'
+BH_VVA_Reg_SW = '00001'
