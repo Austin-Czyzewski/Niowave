@@ -96,5 +96,8 @@ def vertical_marker_pulsing(Device, channel):
     return
 
 def cursor_vbar_read_mv(Device, Cursor = 1):
-    value = 1000*float(Device.query("CURS:VBA:HPOS{}?".format(Cursor)).split(" ")[1])
+    try:
+        value = 1000*float(Device.query("CURS:VBA:HPOS{}?".format(Cursor)).split(" ")[1])
+    except:
+        value = 1000*float(Device.query("CURS:VBA:HPOS{}?".format(Cursor)).split(" ")[0])
     return value

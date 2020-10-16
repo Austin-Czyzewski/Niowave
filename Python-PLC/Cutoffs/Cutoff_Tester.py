@@ -30,7 +30,7 @@ M.Read(Client, Tags.WF1H) #Arbitrary read to establish trust (I think this part 
 ### Initialize #################################################
 ################################################################
 
-V0_resolution = 0.01 #Resolution of steps taken in both cutoff measurements
+V0_resolution = 50 #Resolution of steps taken in both cutoff measurements
 Num_sawtooths_1 = 1 #number of points taken in the first cutoff
 Num_sawtooths_2 = 1 #second cutoff
 
@@ -55,12 +55,10 @@ V0_4 = 4.1
 
 #(Sorry for the stupid double list format. I wrote Gather() before I knew how often I'd use it)
 
-Tag_List = [[Tags.CU_Pf, False], [Tags.CU_Pr, False], [Tags.CU_Pt, False], [Tags.CU_V, False], \
-            [Tags.BH_Pf, False], [Tags.BH_Pr, False], [Tags.BH_Pt, False], \
-            [Tags.HV_Bias, False], [Tags.V0_SP, False], [Tags.V0_Read, False], \
-#            [Tags.Gun_Vac, False], [Tags.IR_Temp, False], [Tags.VA_Temp, False], [Tags.Heater_Amps_Set, False], \
-#            [Tags.Temperature_Set, False], [Tags.Emission_Set, False], [Tags.Voltage_Read, False], \
-            [Tags.Current_Read, False], [Tags.Impedance_Read, False], [Tags.Power_Read, False]]
+Tag_List = [[Tags.CU_Pt, False], [Tags.CU_V, False],[Tags.BH_Pt, False], \
+            [Tags.V0_Read, False], [Tags.Emitted_Current, False], \
+            [Tags.Cu_Gun_Temp, False], [Tags.Power_Read, False],\
+            [Tags.BH_OC_Temp, False], [Tags.CU_Gun_CHWR_Ave, False]]
 
 Full_Data_Set = list()
 
@@ -68,8 +66,11 @@ Full_Data_Set = list()
 ### Set up the lists to run and then run the loop ##############
 ################################################################
 
-V0_List_1 = np.arange(V0_1, V0_2 + V0_resolution, V0_resolution)
-V0_List_2 = np.arange(V0_3, V0_4 + V0_resolution, V0_resolution)
+# V0_List_1 = np.arange(V0_1, V0_2 + V0_resolution, V0_resolution)
+# V0_List_2 = np.arange(V0_3, V0_4 + V0_resolution, V0_resolution)
+
+V0_List_1 = np.linspace(V0_1, V0_2, number_of_points)
+V0_List_2 = np.linspace(V0_3, V0_4, number_of_points)
 
 
 #sleep_time = 0 #Don't take plateau data first run through

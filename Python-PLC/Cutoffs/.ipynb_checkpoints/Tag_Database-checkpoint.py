@@ -243,6 +243,7 @@ BH_OC_Temp = 30101
 DBA_Pipe_Temp = 30105
 Cu_Gun_Temp = 30103
 HE_Straight_Col = 30111
+CU_Gun_CHWR_Ave = 32143
 DBA_Dump_CHWR = 30311
 DBA_Dump_CHWS = 30309
 Tuner_Plate_Temp = 30109
@@ -273,3 +274,4 @@ Regulation_Setpoint_Reset = '00014'
 ########################################
 
 BH_VVA_SP = '00201'
+BH_VVA_Reg_SW = '00001'

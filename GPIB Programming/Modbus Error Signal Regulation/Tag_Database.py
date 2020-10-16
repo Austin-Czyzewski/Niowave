@@ -229,7 +229,7 @@ V0_Read = 11101
 ########################################
 
 Pulsing_Output = '11014' 
-Error_Signal_Regulation = '00012' 
-Oscope_Reset = '00013' 
-Regulation_Setpoint_Reset = '00014'
+Error_Signal_Regulation = '00020' 
+Oscope_Reset = '00022'
+Regulation_Setpoint_Reset = '00021'
 Regulation_Float = '01001'

@@ -35,22 +35,26 @@ print("OS \n",OS.query("*IDN?"))
 
 SG.control_ren(6)
 
+End_Freq = 350.11* 10 ** 6
 
 freq = float(SG.query("Freq:CW?"))
-while float(SG.query("Freq:CW?")) > 350.09* 10 ** 6:
+
+while float(SG.query("Freq:CW?")) > End_Freq:
     Pr = M.Read(Client, Tags.CU_Pr)
-    if Pr > 325:
-        if Pr > 900:
-            freq -= 1000
+    if Pr > 290:
+        if Pr > 500:
+            freq -= 3000
             time.sleep(0.1)
         else:
-            freq -= 100
+            freq -= 350
         SG.write("freq:cw {} Hz".format(freq))
         print(freq)
         time.sleep(.025)
     else:
         time.sleep(0.250)
+        
+SG.write("freq:cw {} Hz".format(End_Freq))
 
-print("All done here you go")
+print("All done here's your controls back")
 SG.control_ren(6)
                
