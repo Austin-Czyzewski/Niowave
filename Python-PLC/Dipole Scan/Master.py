@@ -710,3 +710,36 @@ def FWHM(x,y,extras = False):
         bad_sum = sum([abs(i) if i != None else 0 for i in all_below])
         center = np.median(np.array([i for i in good_x if i != None]))
         return all_above, all_below, width, center, good_sum, bad_sum
+
+def config_reader(file, config_type):
+    Lines = []
+    with open(file, 'r') as f:
+        for line in f:
+            Lines.append(line)
+            
+    if config_type == "Dipole Scan":
+        LOI = Lines[2:10]
+        Parameters = []
+        for param in LOI:
+            if param == "\n":
+                continue
+            print(param)
+            try:
+                Parameters.append(float(param.strip("\n").replace(" ","").split(":")[1]))
+            except:
+                Parameters.append(param.strip("\n").replace(" ","").split(":")[1])
+        return Parameters
+    
+    if config_type == "Dog Leg":
+        return
+    
+    if config_type == "IF Regulation":
+        return
+    
+    if config_type == "Cutoffs":
+        return
+    
+    if config_type == "Gun Walker":
+        return
+    
+    return

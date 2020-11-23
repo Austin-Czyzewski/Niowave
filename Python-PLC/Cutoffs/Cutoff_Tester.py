@@ -39,15 +39,15 @@ Num_sawtooths_2 = 1 #second cutoff
 ### Grab the operator input of V0 ranges #######################
 ################################################################
 
-##V0_1 = float(input("V0 Setpoint 1  "))
-##V0_2 = float(input("V0 Setpoint 2  "))
-##V0_3 = float(input("V0 Setpoint 3  "))
-##V0_4 = float(input("V0 Setpoint 4  "))
+V0_1 = float(input("V0 Low Cutoff 2  "))
+V0_2 = float(input("V0 High Cutoff  2  "))
+V0_3 = float(input("V0 Low Cutoff 1  "))
+V0_4 = float(input("V0 High Cutoff 1  "))
 
-V0_1 = 3.5
-V0_2 = 4
-V0_3 = 3.6
-V0_4 = 4.1
+#V0_1 = 3.5
+#V0_2 = 4
+#V0_3 = 3.6
+#V0_4 = 4.1
 
 ################################################################
 ### List of tags to read at every step #########################
@@ -158,5 +158,3 @@ with open("Testing_Cutoffs.txt",'w') as f:
 Full_Data_Array = np.array(Full_Data_Set) #Put data analysis after this line!
 
 print(time.time() - time_1)
-
-time.sleep(120)
