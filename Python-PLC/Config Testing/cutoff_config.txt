@@ -1,0 +1,27 @@
+Welcome to Dog Leg Config file.
+
+Current Tunnel: West
+PLC IP: 10.50.0.10
+
+V0_Resolution: 50
+Num_sawtooths_1: 6
+Num_sawtooths_2: 6
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+Parameter descriptions:
+Current Tunnel: The name of the tunnel (West, Test, East)
+PLC IP: The IP address of the PLC controlling the magnets. Can be found in productivity suite at the bottom of the screen.
+V0_Resolution: This is the amount of points that will be taken between the two user input V0 settings. This is always the same
+                between cutoff 1 and 2.
+Num_sawtooths_1: This is the amount of "Ups and downs" that each cutoff will take, Num_sawtooths_1 is for cutoff 2 but is first
+                 chronological order.
+Num_sawtooths_2: This is the amount of "Ups and downs" that each cutoff will take, Num_sawtooths_2 is for cutoff 1 but is second
+                 chronological order.

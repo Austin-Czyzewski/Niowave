@@ -54,10 +54,14 @@ def Writes(Client,Tags,Values):
 ## Connect to PLC, define Modbus addresses
 #############################
 import os
-datadir = 'ampdata'
+now = datetime.today().strftime('%y%m%d_%H%M%S.%f')
+year = now[:2]
+month = now[2:4]
+day = now[4:6]
+datadir = "AmpData/" + year + '/' + month + '/' + day
 
 try:
-    os.mkdir(datadir)
+    os.makedirs(datadir)
 except:
     pass
 
@@ -93,7 +97,9 @@ Tag_List = np.arange(50001,50100,2)
 ## Runtime loop
 #############################
 Name_it = True
+_ = 0
 while True:
+    _ += 1
     Client = M.Make_Client(PLC_IP)
     start_time = time.time()
                             
@@ -164,15 +170,36 @@ while True:
     Modbus = [50015,50063,50065,50075,50077,50079,50081,50083,50085,50087,50089]
     
     Values = np.array([float(Value) for Value in Values[1:]])
-    
-    if Name_it:
+    try:
+        if Name_it:
+            with open(filename,'w') as file:
+                file.write("YYMMDD_HHMMSS.ssssss, ")
+                for Name in Names[1:]:
+                    file.write(str(Name) + ', ')
+                file.write('\n')
+                file.close()
+    except:
+        now = datetime.today().strftime('%y%m%d_%H%M%S.%f')
+        # filename = '{}/Amp_data_{}.csv'.format(datadir, datetime.today().strftime('%y%m%d_%H%M'))
+        year = now[:2]
+        month = now[2:4]
+        day = now[4:6]
+        datadir =  "AmpData/" + year + '/' + month + '/' + day
+        print(filename[-11:-9])
+        if now[4:6] == filename[-11:-9]:
+            filename = '{}/Amp_data_{}.csv'.format(datadir, datetime.today().strftime('%y%m%d_%H%M'))
+            try:
+                os.makedirs(datadir)
+            except:
+                print('Directory structure already exists')
+                pass
         with open(filename,'w') as file:
             file.write("YYMMDD_HHMMSS.ssssss, ")
             for Name in Names[1:]:
                 file.write(str(Name) + ', ')
             file.write('\n')
             file.close()
-    
+
     
     try:
         append_to_file(filename, datetime.today().strftime('%y%m%d_%H%M%S.%f') + ', ', newline = False)
@@ -183,6 +210,7 @@ while True:
     except:
         print("Write to Excel failed")
         filename = '{}/Amp_data_{}.csv'.format(datadir, datetime.today().strftime('%y%m%d_%H%M'))
+            
 #         M.Write_Multiple(Client, Tag_List[0], Values) #Writing all of the values to the PLC
 #         Writes(Client, [],[])
 
@@ -214,3 +242,5 @@ while True:
     time.sleep(point_time-pull_push) #This is already slow enough. We don't need to waste any more time
     Name_it = False
     #os.system('cls')
+    if _ > 45:
+        break
