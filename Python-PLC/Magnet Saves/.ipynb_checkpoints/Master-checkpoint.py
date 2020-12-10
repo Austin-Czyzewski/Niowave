@@ -1,6 +1,7 @@
 ''' Creator: Austin Czyzewski
 
 Date: 12/04/2019
+Last Updated: 06/01/2020
 
 Purpose: Define functions to make code more modular and add functionality
     - Set up the code in a way that we have functions that can be used with imports and make easy code to write
@@ -64,6 +65,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 import time
+import concurrent.futures
 
 sleep_time = 0.020 #time in seconds before grabbing a consecutive data point
 
@@ -124,9 +126,6 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
 
 
     if Bool == False:
-        Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-        Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-        Tag_Value = Tag_Value_Bit.decode_32bit_float()
         
         if Average == True:
             
@@ -140,11 +139,43 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
                 time.sleep(sleep_time)
 
             return (sum(temp_list)/count)
+        else:
+            Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+            Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+            Tag_Value = Tag_Value_Bit.decode_32bit_float()
+            return Tag_Value
         
     if Bool == True:
         Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
 
     return Tag_Value
+
+
+def Gather(Client, tag_list, count = 20, sleep_time = 0.010):
+    """
+    Inputs: Client, see "Client" Above
+        __ tag_list: a list of tags and whether or not to average them. The list must be in the following format: [[Tag#, True],[Tag#, False],[Tag#, True]]
+                    where True and False indicate whether you want the Read to be averaged.
+        __ count: how many reads to average over, see "Read" above
+        __ sleep_time: how long to sleep between each averaged read, see "Read" above
+        
+    Method:
+        - Build an empty list we will add to later
+        - Import the threading tool, start up a threaded executor
+        - Build workers, have them work. Store values in order as executed
+        - When all are finished, add the results to the list
+        - Output list
+    """
+    
+    temp_list = [] #initialize temporary list
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        
+        results = [executor.submit(Read, Client = Client, Tag_Number = tag, Average = avg, count = count, sleep_time=sleep_time) for tag,avg in tag_list]
+        
+        for f in results:
+            temp_list.append(f.result())
+            
+    return temp_list
 
 
 
@@ -290,7 +321,139 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
         else:
             return write_value_list
         
+
+        
+def Ramp_Two_Way(Client, Tag_Number, End_Value = 0, Runs = 1, Max_Step = 0.010, Return = "N", Read_Tag = "00000", count = 25):
+    '''  -Future: input a safety method to make sure we aren't drastically changing values
+
+        Inputs: Client, see "Client" Above
+            __ Tag_Number: which modbus to read, convention is this: input the modbus start tag number. Must have a modbus tag.
+            __ End_Value: End value which you want the modbus to ramp the magnet to
+            __ Max_Step: The maximum change in amerage you want the magnet to be able to move, default 10 mA
+            __ Return: "N" if you don't want the data in a list, "Y" if you do want the data in a list. Default "N"
+            __ Read_Tag: Which value do you want to be recording, if "00000" no value is recorded, otherwise it reads that tag. Default "00000"
+            __ count: how many datapoints do you want to average over for the Read_Tag function. Default is 25
+
+        -Must have established client before attempting to write to the client
+        
+        -Outputs: Writes to the specified magnet, outputs either a list of the written values,
+            or a list of the written values with a list of the collected Read_Tag values merged with written mag values.
+
+        Method:
+                - Define the start and end value, take the difference between the two
+                - Define the number of steps needed to safely walk to that value
+                - Check that there hasn't been any human intervention
+                - Write a new value to PLC (see Write())
+                - Record both written value and the value of a selected tag
+                - Check if there is a requested save
+                - Save, or exit
+        
+        -Required imports
+        from pymodbus.client.sync import ModbusTcpClient
+        from pymodbus.payload import BinaryPayloadDecoder
+        from pymodbus.constants import Endian
+
+        -example:
+        Client = Make_Client('192.168.1.2')
+        DBA_Collection_Through_Aperture = Ramp_One_Way(Client, 22201, .450,.010,"Y","11109")
+
+        #User plotting choice:
+        plot(DBA_Collection_Through_Aperture[0],DBA_Collection_Through_Aperture[1])
+
+
+    '''
     
+    Start_Value = Read(Client,Tag_Number)
+    
+    Delta = End_Value-Start_Value
+
+    Steps = 10
+
+    #Insures that we are making step sizes with the appropriate scaling
+    while abs(Delta/Steps) >= Max_Step:
+        Steps += 1
+
+    #print("Difference between start and end value: {0:.3f} Amps".format(Delta))
+
+    write_value_list = []
+    collected_list = []
+
+
+    for _ in range(Runs):
+        
+        for i in range(Steps + 1):
+
+            #This is to enforce that any human intervention will break the program and prevent it from running further
+            #Note that we are using the write value from the last run in the loop to check that the value is the same as the loop left it
+            if i != 0:
+                temp_check = Read(Client,Tag_Number)
+
+                if abs(temp_check - write_value) >= 0.001:
+                    exit()
+            
+                
+            write_value = Start_Value + (Delta/Steps)*i
+
+            write_value_list.append(write_value)
+
+            Write(Client, Tag_Number, write_value)
+
+            if Read_Tag != "00000":
+
+                collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
+
+        max_spot = write_value
+        #Same loop as above, removed spacing
+        for i in range(Steps + 1):
+            
+            if i != 0:
+                
+                temp_check = Read(Client,Tag_Number)
+                
+                if abs(temp_check - write_value) >= 0.001:
+                    
+                    exit()
+                    
+            write_value = max_spot - (Delta/Steps)*i #Only difference is the subtraction instead of addition
+            
+            write_value_list.append(write_value)
+            
+            Write(Client, Tag_Number, write_value)
+            
+            if Read_Tag != "00000":
+                
+                collected_list.append(Read(Client,Read_Tag,Average = True,count = count))
+                
+            
+
+    if Return == "N":
+        return
+    if Return == "Y":
+        if Read_Tag != "00000":
+            return write_value_list, collected_list
+        else:
+            return write_value_list
+        
+
+        
+def Plot(X_list, Y_list, X_axis, Y_axis, Title,Save = "N"):
+    '''
+        Plots the X_list and the Y_list
+        Names on the X_axis and the Y_axis
+    '''
+    plt.figure(figsize = (9,6))
+    plt.scatter(X_list, Y_list)
+    plt.ylabel(Y_axis)
+    plt.xlabel(Y_axis)
+    plt.grid(True)
+    plt.title(Title)
+
+    if Save != "N":
+        now = datetime.today().strftime('%y%m%d_%H%M')
+        plt.savefig(now+".png")
+    plt.show()
+    
+
     
 def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Vertical_Delta = 0, Resolution = 25):
     '''
@@ -547,363 +710,3 @@ def FWHM(x,y,extras = False):
         bad_sum = sum([abs(i) if i != None else 0 for i in all_below])
         center = np.median(np.array([i for i in good_x if i != None]))
         return all_above, all_below, width, center, good_sum, bad_sum
-
-def convert_to_mms(locs, Delta_1): #Converting the xlabels to mm
-    new_list = []
-    for i in locs:
-        new_list.append(round(i/Delta_1*12,2)) #Our conversion formula
-    return new_list
-
-def Delta1_2(locs, Delta_1, Delta_2): #Converting the 1 values to the same displacement in 2
-    new_list = []
-    for i in locs:
-        new_list.append(round(i/Delta_1*Delta_2,2))
-    return new_list
-    
-def Delta2_1(locs, Delta_1, Delta_2): #Converting the 1 values to the same displacement in 2
-    new_list = []
-    for i in locs:
-        new_list.append(round(-1*i/Delta_1*Delta_2,2))
-    return new_list
-
-
-def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
-            Target_2_Tag, Tag_List, WF1H_Start = None, WF2H_Start = None, \
-            WF1V_Start = None, WF2V_Start = None, Read_Steps = 40, \
-            Delta_1 = 0.384, Delta_2 = 0.228, Threshold_Percent = 20, count = 20, sleep_time = 0.010, \
-            Deviation_Check = 0.001, Zoom_In_Factor = 1, Scale_Factor = 0.91, iteration = None, move_to_center = False):
-
-    '''
-    Inputs:
-        __ Client: Modbus TCP client that hosts PLCs
-        __ WF1H_Tag: The modbus start address for the first horizontal window frame we are controlling
-        __ WF2H_Tag, WF1V_Tag, WF2V_Tag: Horizontal and vertical window frame modbus address
-        __ Target_1_Tag, Target_2_Tag: The modbus address for the beam target current dumps
-        __ Tag_List: See Gather above, list of lists with tag values and wether or not they are
-            averaged. These will be the tags grabbed at each step
-        __ WF1H_Start, WF2H_Start, WF1V_Start, WF2V_Start: Our starting value for each of these magnets
-            If default of None remains, then the dog leg is taken from the starting point
-        __ Read_Steps: The amount of steps, in each direction, that we will attempt to take the Dog Leg
-            This values divides the delta by this number, so step size will change as this value changes.
-        __ Delta_1, Delta_2: The amount that the first window frame and second window frames will move
-            the ratio of these is determined by the distance and relative strength of the two window 
-            frames; float: 0 < Delta
-        __ Threshold_Percent: This is the percent of the starting collection required to keep the dog leg
-            moving in the current direction that it is. Once the dog leg falls below this threshold, the 
-            dog leg will break out of a loop and go back to the starting point; 
-            float:  0 <= Threshold_Percent <= 1
-        __ count: This is the number of points that will be averaged at each Dog Leg iteration;
-            integer: 1 <= count
-        __ sleep_time: time, in seconds, to wait between each averaged point in count;
-            float: 0 <= sleep_time
-        __ Deviation_Check: Threshold, in Amps, that the magnet value setpoint must deviate from the
-            last written point for the program to go back to the start and end. This is to ensure
-            that if there is any human intervention, the dog leg will go back to the start and return
-            control to the operator; float: 0 < Deviation_Check
-        __ Zoom_In_Factor: This exists to adjust scaling on the output graph. This is primarily used when
-            changing the magnets that are being Dog Legged
-        __ Scale_Factor: Similar to Zoom_In_Factor, truly a relic
-    
-    Outputs:
-        A graph named (current time)_graph.svg that contains a graph and table of the dog leg data taken
-        A txt file containing a snapshot of the system at the end of the dog leg named 
-            (current time)_snapshot.txt containing all of the read values for each magnet we have listed 
-            in our tag database (Tag_Database.py)
-        A txt file containing all of the Dog Leg data gathered from the Tag List throughout the run
-            named (current time).txt
-        
-        returns a figure of merit for dog leg optimization. This is the FWHM for each axis squared and flipped
-            in sign (to make minimization problems more intuitive)
-            
-    Requirements:
-        Tag_Database must be in the same directory folder as this Master file.
-        This function must be contained within the Master file (do not copy and paste out of this file)
-        
-        imports:
-            from pymodbus.client.sync import ModbusTcpClient
-            from pymodbus.payload import BinaryPayloadDecoder
-            from pymodbus.payload import BinaryPayloadBuilder
-            from pymodbus.constants import Endian
-            numpy
-            matplotlib.pyplot
-            from datetime import datetime
-            time
-            concurrent.futures
-    
-    Logic:
-        Ramp to our starting point
-        Take data Read_Steps to the right by moving mag 1 to the right and mag 2 to the left
-        Move to start
-        Take data Read_Steps to the left, upward, and downward
-        Move to start between each
-        Take the Full width half max of the horizontal and vertically produced lines
-        Output files
-    '''
-    
-    
-    import Tag_Database as Tags
-
-    start_time = time.time()
-
-    Pulsing_Status = bool(Read(Client, Tags.Pulsing_Output, Bool = True))
-
-    EC = Read(Client, Tags.Emitted_Current, Average = True, count = count)
-    
-    #Move to our starting point
-    
-    #If no starting values are provided, we take a dog leg from the current position
-    
-    if WF1H_Start == None:
-        WF1H_Start = Read(Client, WF1H_Tag)
-    if WF2H_Start == None:
-        WF2H_Start = Read(Client, WF2H_Tag)
-    if WF1V_Start == None:
-        WF1V_Start = Read(Client, WF1V_Tag)
-    if WF2V_Start == None:
-        WF2V_Start = Read(Client, WF2V_Tag)
-    
-    Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Read_Steps, sleep_time = sleep_time)
-    Ramp_Two(Client, WF1V_Tag, WF2V_Tag, Magnet_1_Stop = WF1V_Start, Magnet_2_Stop = WF2V_Start, Resolution = Read_Steps, sleep_time = sleep_time)
-    
-    Full_Data_Set = list()
-    H_Broken = V_Broken = False #Creating the check tag for the dog leg, starting out as false as no errors could have been raised yet
-    Start_Current = (Read(Client, Target_1_Tag, Average = True, count = count,sleep_time = sleep_time) + \
-                 Read(Client, Target_2_Tag, Average = True, count = count,sleep_time = sleep_time))
-    
-    print("Right Displacement")
-
-    ## Each of these are adding our data to a list as instantiated above. These will appear at each data gathering point
-    Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-
-    for Right_Steps in range(1, Read_Steps + 1):
-        if Right_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
-            #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-            if abs(Read(Client,WF1H_Tag) - WF1H_Write_Value) >= Deviation_Check or abs(Read(Client,WF2H_Tag) - WF2H_Write_Value) >= Deviation_Check: #WF1H Check
-                H_Broken = V_Broken = True
-                print("Loop Broken")
-                break   
-
-        WF1H_Write_Value = WF1H_Start + (Delta_1/Read_Steps)*Right_Steps #Calculated value to walk 1 to the right
-        WF2H_Write_Value = WF2H_Start - (Delta_2/Read_Steps)*Right_Steps #Calculated value to walk 2 to the left
-
-        Write(Client, WF1H_Tag, WF1H_Write_Value) #Writing to 1h
-        Write(Client, WF2H_Tag, WF2H_Write_Value) #Writing to 2h
-        #print(WF1H_Write_Value)
-        #print(WF2H_Write_Value)
-
-        Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-        if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
-            break
-    print("Moving to center")
-    
-    Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Right_Steps//2, sleep_time = sleep_time) #Moves back to the start in half of the same # of steps taken
-
-    print("Left Displacement")
-
-    Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-
-    for Left_Steps in range(1, Read_Steps + 1):
-        if H_Broken or V_Broken == True:
-            break
-        if Left_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
-            #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-            if abs(Read(Client,WF1H_Tag) - WF1H_Write_Value) >= Deviation_Check or abs(Read(Client,WF2H_Tag) - WF2H_Write_Value) >= Deviation_Check: #WF1H Check
-                H_Broken = V_Broken = True
-                print("Loop Broken")
-                break
-
-        WF1H_Write_Value = WF1H_Start - (Delta_1/Read_Steps)*Left_Steps
-        WF2H_Write_Value = WF2H_Start + (Delta_2/Read_Steps)*Left_Steps
-
-        Write(Client, WF1H_Tag, WF1H_Write_Value) #Writing to 1h
-        Write(Client, WF2H_Tag, WF2H_Write_Value) #Writing to 2h
-        #print(WF1H_Write_Value)
-        #print(WF2H_Write_Value)
-
-        Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-
-        if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
-            break
-
-    print("Moving to center")
-
-    Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Left_Steps//2, sleep_time = sleep_time)
-
-    print("Upward Displacement")
-
-    Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-
-    for Upward_Steps in range(1, Read_Steps + 1):
-        if H_Broken or V_Broken == True:
-            break
-        if Upward_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
-            #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-            if abs(Read(Client,WF1V_Tag) - WF1V_Write_Value) >= Deviation_Check or abs(Read(Client,WF2V_Tag) - WF2V_Write_Value) >= Deviation_Check: #WF1H Check
-                H_Broken = V_Broken = True
-                print("Loop Broken")
-                break
-
-        WF1V_Write_Value = WF1V_Start + (Delta_1/Read_Steps)*Upward_Steps
-        WF2V_Write_Value = WF2V_Start - (Delta_2/Read_Steps)*Upward_Steps
-
-        Write(Client, WF1V_Tag, WF1V_Write_Value) #Writing to 1h
-        Write(Client, WF2V_Tag, WF2V_Write_Value) #Writing to 2h
-        #print(WF1V_Write_Value)
-        #print(WF2V_Write_Value)
-
-        Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-
-        if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
-            break
-
-    print("Moving to center")
-
-    Ramp_Two(Client, WF1V_Tag, WF2V_Tag, Magnet_1_Stop = WF1V_Start, Magnet_2_Stop = WF2V_Start, Resolution = Upward_Steps//2, sleep_time = sleep_time)
-
-    print("Downward Displacement")
-
-    Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-
-    for Downward_Steps in range(1, Read_Steps + 1):
-        if H_Broken or V_Broken == True:
-            break
-        if Downward_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
-            #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
-            if abs(Read(Client,WF1V_Tag) - WF1V_Write_Value) >= Deviation_Check or abs(Read(Client,WF2V_Tag) - WF2V_Write_Value) >= Deviation_Check: #WF1H Check
-                H_Broken = V_Broken = True
-                print("Loop Broken")
-                break
-
-        WF1V_Write_Value = WF1V_Start - (Delta_1/Read_Steps)*Downward_Steps
-        WF2V_Write_Value = WF2V_Start + (Delta_2/Read_Steps)*Downward_Steps
-
-        Write(Client, WF1V_Tag, WF1V_Write_Value) #Writing to 1h
-        Write(Client, WF2V_Tag, WF2V_Write_Value) #Writing to 2h
-        #print(WF1V_Write_Value)
-        #print(WF2V_Write_Value)
-
-        Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
-
-        if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
-            break
-
-    print("Moving to center")
-    
-    
-    if iteration == None:
-        now = datetime.today().strftime('%y%m%d_%H%M%S') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
-    else:
-        now = datetime.today().strftime('%y%m%d_%H%M%S__') #Taking the current time in YYMMDD_HHmm format to save the plot and the txt file
-        now += str(iteration)
-        
-    Controlled_Magnets = []
-    
-    Moved_Magnets = [WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag]
-    variables = vars(Tags)
-    for Mag_Tag in Moved_Magnets:
-        for item in variables.items():
-            if item[1] == Mag_Tag:
-                Controlled_Magnets.append(item[0])
-
-    Snapshot(Client, filename = now + "_snapshot.txt")
-    
-    with open(now + ".txt",'w') as f: #Opening a file with the current date and time
-        f.write("{}(A), {}(A), {}(A), {}(A), Avg'd Emitted Current(mA), Avg'd Loop Mid(mA), Avg'd Loop Bypass(mA), Cu Gun (V), SRF Pt (dBm)\n"\
-                .format(Controlled_Magnets[0], Controlled_Magnets[1], Controlled_Magnets[2], Controlled_Magnets[3]))
-        for line in Full_Data_Set:
-            f.write(str(line).strip("([])")+'\n') #Writing each line in that file
-        f.close() #Closing the file to save it
-
-    Full_Data_Array = np.array(Full_Data_Set) #Converting from a list to an array
-
-    Horizontal_1 = Full_Data_Array[:(Right_Steps + 2 + Left_Steps),0] #Defining the steps on in the horizontal
-    Horizontal_2 = Full_Data_Array[:(Right_Steps + 2 + Left_Steps),1]
-
-    Vertical_1 = Full_Data_Array[(Right_Steps + 2 + Left_Steps):,2] #Defining the steps only in the Vertical
-    Vertical_2 = Full_Data_Array[(Right_Steps + 2 + Left_Steps):,3]
-    Dump_1 = Full_Data_Array[:,5] #Dump 1 all values
-    Dump_2 = Full_Data_Array[:,6] #Dump 2 all values
-    Emitted_Current = Full_Data_Array[:,4] #Emitted current all values
-    Dump_Sum = Dump_1 + Dump_2 #All dump values
-
-    #Dump Sum into percent from start
-    Horizontal_Percent = Dump_Sum[:(Right_Steps + 2 + Left_Steps)]/Emitted_Current[:(Right_Steps + 2 + Left_Steps)]*100 #Defining the percents
-    Vertical_Percent = Dump_Sum[(Right_Steps + 2 + Left_Steps):]/Emitted_Current[(Right_Steps + 2 + Left_Steps):]*100
-
-    #FWHM of all of our data
-    Horizontal_Above, Horizontal_Below, H_Width, Center_Value_1H, H_Goodsum, H_Badsum = FWHM(Horizontal_1, Horizontal_Percent, extras = True) #FWHM Calclations
-    Vertical_Above, Vertical_Below, V_Width, Center_Value_1V, V_Goodsum, V_Badsum = FWHM(Vertical_1, Vertical_Percent, extras = True)
-    _,_1,_2,Center_Value_2H,_3, _4 = FWHM(Horizontal_2, Horizontal_Percent, extras = True)
-    _,_1,_2,Center_Value_2V,_3, _4 = FWHM(Vertical_2, Vertical_Percent, extras = True)
-
-    if move_to_center:
-        print('Moving to center of FWHM')
-        
-        Ramp_Two(Client, WF1H_Tag, WF1V_Tag, Magnet_1_Stop = Center_Value_1H, Magnet_2_Stop = Center_Value_1V, Resolution = Read_Steps, sleep_time = sleep_time)
-        Ramp_Two(Client, WF2H_Tag, WF2V_Tag, Magnet_1_Stop = Center_Value_2H, Magnet_2_Stop = Center_Value_2V, Resolution = Read_Steps, sleep_time = sleep_time)
-    else:
-        Ramp_Two(Client, WF1V_Tag, WF2V_Tag, Magnet_1_Stop = WF1V_Start, Magnet_2_Stop = WF2V_Start, Resolution = Downward_Steps//2, sleep_time = sleep_time)
-        
-    #Plotting
-    plt.figure(figsize = (9,9)) #Changing the figure to be larger
-
-    ax1 = plt.subplot(1,1,1)
-    ax1.scatter(Horizontal_1 - Horizontal_1[0], Horizontal_Above, label = 'Horizontal above FWHM',color = 'C0', alpha = 0.75) #Plotting 1H Above FWHM
-    ax1.scatter(Horizontal_1 - Horizontal_1[0], Horizontal_Below, label = 'Horizontal below FWHM', color = 'C0', alpha = 0.5, marker = '.') #Plotting 1H below FWHM
-    ax1.scatter(Vertical_1 - Vertical_1[0], Vertical_Above, label = 'Vertical above FWHM', color = 'C1', alpha = 0.75) #Plotting 1V above FWHM
-    ax1.scatter(Vertical_1 - Vertical_1[0], Vertical_Below, label = 'Vertical below FWHM', color = 'C1', alpha = 0.5, marker = '.') #plotting 1V Below FWHM
-    ax1.set_xlabel("Displacement WF6 (Amps)", fontsize = 12) #Setting xlabel
-    ax1.set_ylabel("Collection from start (%); ({0:.2f}\u03BCA) collected at start".format(1000*abs(min(Dump_Sum))), fontsize = 12) #Making the y axis label
-    ax1.set_title("Dog Leg Taken at " + now, fontsize = 16) #Making the title 
-    ax1.set_xlim(-0.4,0.4)
-    ax1.legend(bbox_to_anchor = (0.5,0.27), loc = 'upper center') #Adding the legend and placing it in the bottom center of the plot
-
-    ax1.minorticks_on() #Turning on the minor axis
-    ax1.grid(True,alpha = 0.25,which = 'both',color = 'gray') #Making the grid (and making it more in the background)
-
-    locs = ax1.get_xticks() #Grabbing the xticks from that axis
-
-    ax2 = ax1.twiny() #Copying axis
-
-    ax2.set_xticks(locs) #Setting xticks to same position
-    ax2.set_xticklabels(convert_to_mms(locs, Delta_1)) #Converting to mm
-    ax2.xaxis.set_ticks_position('top') # set the position of the second x-axis to top
-    ax2.xaxis.set_label_position('top') # set the position of the second x-axis to top
-    ax2.spines['top'].set_position(('outward', 0)) #Setting the ticks to go out of graph area
-    ax2.set_xlabel('Displacement (mm)', fontsize = 12) #Label
-    ax2.set_xlim(ax1.get_xlim()) #Setting to the same limit as prior axis
-
-    ax3 = ax1.twiny() #Repeat for axis 3
-
-    ax3.set_xticks(locs)
-    ax3.set_xticklabels(Delta2_1(locs, Delta_1, Delta_2))
-    ax3.xaxis.set_ticks_position('bottom') # set the position of the second x-axis to bottom
-    ax3.xaxis.set_label_position('bottom') # set the position of the second x-axis to bottom
-    ax3.spines['bottom'].set_position(('outward', 40))
-    ax3.set_xlabel('Displacement WF7(Amps)', fontsize = 12)
-    ax3.set_xlim(ax1.get_xlim())
-
-    col_labels = ['WF6  Start (A)','WF7 Start (A)','FWHM', 'Center (6,7) (A)', 'Sum Above', 'Sum Below'] #Making the table column names
-    row_labels = ['Horizontal','Vertical','Params'] #making the table row names
-    table_vals = [[round(WF1H_Start,3), round(WF2H_Start,3), round(H_Width,3), "{:.3f}; {:.3f}".format(Center_Value_1H, Center_Value_2H), round(H_Goodsum,1), round(H_Badsum,1)],
-                  [round(WF1V_Start,3) , round(WF2V_Start,3), round(V_Width,3), "{:.3f}; {:.3f}".format(Center_Value_1V, Center_Value_2V) , round(V_Goodsum,1), round(V_Badsum,1)],
-                  ["Threshold %: {:.0f}".format(Threshold_Percent),"Zoom: {:.2f}".format(Zoom_In_Factor),"Scale: {:.2f}".format(Scale_Factor),
-                   "# H Steps: {:.0f}".format(Right_Steps + 2 + Left_Steps),"# V Steps: {:.0f}".format(Upward_Steps + 2 + Downward_Steps), "EC (mA): {:.3f}".format(EC)]] #Setting values
-
-    the_table = plt.table(cellText=table_vals, #Putting the table onto the plot
-                      colWidths = [0.13]*6,
-                      rowLabels=row_labels,
-                      colLabels=col_labels,
-                      loc='lower center', zorder = 1) #Putting in the center and in front of all else
-
-    plt.gca().set_ylim(bottom=-2) #Making sure the plot always goes below 0 in the y axis
-
-    plt.tight_layout() #configuring plot to not cut off extraneous objects like title and x axes
-    
-    plt.savefig(now + "_graph.svg",transparent = True) #Saving the figure to a plot
-
-    plt.show()
-    
-    print("This DogLeg took {0:.1f} Seconds to run".format(time.time() - start_time)) #Printing the amount of time the dog leg took
-    
-    return -1 * ((H_Width)**2 + (V_Width)**2)

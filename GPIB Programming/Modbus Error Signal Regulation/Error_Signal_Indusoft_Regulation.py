@@ -36,7 +36,7 @@ print(Resources)
 try:
     SG = RM.open_resource(Resources[0]) #Opening the Signal generator as an object
     OS = RM.open_resource(Resources[1]) #Opening the oscilloscope as an object
-    
+     
     Start_Freq = float(SG.query("FREQ:CW?"))
     print("Starting Frequency of Signal Generator: {} Hz".format(Start_Freq))
 except:
