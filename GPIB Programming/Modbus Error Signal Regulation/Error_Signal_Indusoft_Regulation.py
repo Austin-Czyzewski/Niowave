@@ -4,6 +4,11 @@ Last Edit: 10/12/2020
     Edit notes: Deactivate the total walk threshold by changing bounds. Did connection test.
 
 Purpose: IF Signal regulation automation.
+
+-- Current work in progress:
+    - Add a configuration file for easier non-programmer parameter changes to be made
+    - Read the output status of the SRF to determine if it is off (turn off regulation if SRF off)
+    - Add more robust error handling so that program can run indefinitely.
 '''
 
 
