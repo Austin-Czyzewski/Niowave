@@ -133,9 +133,11 @@ def snap(Camera, def_exp = 0.01, def_gain = 480, fname = None):
 
                 # we will save image sequences in the imgs directory
     timestamp = datetime.now() # data acquisition time stamp. need to be moved?
+    
     if fname == None:
         fname = './imgs/' +  timestamp.strftime("%y%m%d_%H-%M-%S.%f") + \
             'exp' + str(def_exp) + '-gain' + str(def_gain) + '-dipolescan.bmp'
+        
     cv2.imwrite(fname, image)
 
 def merge(list1, list2): 
@@ -765,7 +767,6 @@ def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Sto
         -- Check to see if there has been human intervention, if so, break
         -- Write to the magnets the next step value towards the goal
         -- Sleep for a small amount of time to avoid crowding the PLC
-   
     '''
     
     Magnet_1_Start =  Read(Client,Magnet_1_Tag)

@@ -752,7 +752,7 @@ def Rapid_T_Scan(Client, WFH_Tag, WFV_Tag, Read_Tag, Horizontal_Delta = 0, Verti
 
 def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Stop = 0, Resolution = 25, sleep_time = .050):
     '''
-    Inputs: Client, see "Client" abov
+    Inputs: Client, see "Client" above
         __ Magnet_1_Tag: The tag for the horizontal controls for the window frame we are scanning
         __ Magnet_2_Tag: The tag for the horizontal controls for the window frame we are scanning
         __ Magent_1_Stop: This is the modbus tag for the data output tag we are reading, generally a beam dump outputting current
@@ -767,7 +767,7 @@ def Ramp_Two(Client, Magnet_1_Tag, Magnet_2_Tag, Magnet_1_Stop = 0, Magnet_2_Sto
         -- Check to see if there has been human intervention, if so, break
         -- Write to the magnets the next step value towards the goal
         -- Sleep for a small amount of time to avoid crowding the PLC
-   
+        --
     '''
     
     Magnet_1_Start =  Read(Client,Magnet_1_Tag)

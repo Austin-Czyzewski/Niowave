@@ -1,0 +1,2601 @@
+' Old Niowave method for building actinide inventory using pre-existing Scale
+'   transition matrices.
+'=arp
+'library type
+'irt4m6tube
+'w15x15
+'wt%
+'36
+'number of cycles
+'1
+'number of days per cycle
+'7
+'cycle-average specific power (MW/MTHM)
+'0.23
+'number of interpolated cross section sets generated per cycle
+'10
+'moderator density (g/cc)
+'1.0
+'interpolated output ORIGEN library
+'w15x15.f33
+'irt4m6tube.f33
+'end
+=couple
+Inputting MCNP-generated neutron flux spectrum into Origen
+for actinide build up.
+
+0$$ a3 74 a6 33 e
+1$$ a16 8 a18 252 e t
+'graphite thermal flux spectrum (238group endf/b-vii)
+9**
+1.56352e-09
+6.9545e-09
+5.68189e-09
+7.66201e-09
+2.49896e-08
+4.96876e-07
+1.6161e-06
+5.87347e-06
+1.67968e-05
+9.61788e-06
+4.40701e-05
+3.37127e-05
+1.02297e-05
+4.20951e-05
+3.58767e-05
+1.18729e-05
+5.17361e-06
+4.33086e-06
+8.06819e-06
+7.07663e-06
+1.3125e-05
+1.09663e-05
+1.13547e-05
+3.03994e-06
+3.99427e-06
+2.43076e-06
+7.30697e-06
+1.45027e-05
+1.43655e-05
+1.73259e-06
+1.4182e-05
+5.52451e-06
+5.00569e-06
+1.24835e-05
+4.72459e-06
+5.26492e-06
+3.29764e-06
+4.28091e-06
+1.6937e-05
+1.75775e-05
+2.16678e-05
+1.79306e-05
+8.61868e-06
+1.26433e-05
+6.97583e-06
+1.77107e-06
+4.2419e-06
+1.23735e-06
+8.6201e-06
+5.92711e-06
+1.59592e-06
+4.10622e-06
+1.43768e-05
+1.42183e-05
+5.52243e-06
+8.6074e-06
+1.00387e-05
+5.33304e-06
+1.03529e-05
+1.16586e-05
+1.20102e-06
+6.6581e-06
+5.4144e-06
+3.06952e-06
+6.66517e-07
+6.13257e-06
+4.29758e-06
+9.79969e-07
+8.10331e-06
+5.59459e-06
+9.85773e-06
+5.97559e-07
+5.78075e-06
+1.74507e-05
+1.95559e-06
+4.998e-06
+2.50134e-06
+1.47755e-06
+1.75284e-07
+8.26369e-07
+1.32231e-06
+2.00193e-07
+2.04719e-07
+1.84526e-07
+1.3451e-06
+1.72341e-06
+5.10018e-06
+4.6169e-06
+7.21599e-07
+3.81307e-07
+2.11893e-07
+8.58823e-07
+1.37367e-06
+9.04243e-07
+8.48202e-07
+1.3267e-06
+2.2406e-06
+2.86048e-06
+4.96062e-07
+1.59407e-06
+1.61963e-06
+1.84911e-06
+8.00143e-07
+8.30049e-07
+8.71192e-07
+1.59856e-06
+2.524e-06
+1.56379e-06
+1.35743e-06
+2.082e-06
+7.77588e-07
+1.10168e-06
+1.00336e-06
+1.10395e-06
+3.14012e-07
+8.06658e-07
+2.68754e-07
+2.14748e-07
+6.23809e-08
+4.07953e-08
+2.80592e-07
+4.12821e-07
+3.89447e-07
+9.91975e-07
+4.52422e-07
+1.28557e-06
+4.37519e-07
+1.27385e-06
+2.59627e-06
+2.93345e-06
+3.14072e-06
+8.98091e-07
+6.42609e-07
+2.54475e-07
+6.20151e-07
+8.3925e-07
+1.38394e-06
+2.4696e-06
+1.70499e-06
+3.08341e-06
+3.40309e-06
+2.36551e-06
+9.22322e-07
+4.15898e-06
+2.73731e-06
+3.36701e-06
+3.46743e-06
+5.57116e-07
+4.06775e-07
+1.68297e-07
+1.26233e-07
+8.06728e-07
+1.23422e-06
+2.79507e-06
+2.25394e-06
+1.78252e-06
+3.99219e-06
+2.68408e-06
+1.95731e-06
+2.56316e-06
+9.67161e-07
+8.73795e-07
+3.15105e-07
+9.70201e-07
+1.07358e-06
+1.02593e-06
+1.10399e-06
+1.21902e-06
+1.1205e-06
+1.06597e-06
+1.22559e-06
+1.26023e-06
+1.82056e-06
+9.87263e-07
+1.24634e-06
+1.45809e-06
+1.61279e-06
+1.67578e-06
+1.8806e-06
+1.09447e-06
+1.09338e-06
+1.09014e-06
+1.23161e-06
+1.31995e-06
+5.79049e-07
+6.57457e-07
+7.27754e-07
+7.00854e-07
+2.65197e-07
+2.88306e-07
+2.92182e-07
+3.11485e-07
+2.26758e-07
+2.67011e-07
+2.75562e-07
+2.62889e-07
+2.69849e-07
+2.90776e-07
+3.16791e-07
+3.12486e-07
+3.1805e-07
+2.81384e-07
+2.86839e-07
+7.09067e-07
+8.08829e-07
+7.71714e-07
+8.68842e-07
+1.86985e-06
+1.94237e-06
+2.12583e-06
+2.33825e-06
+2.45127e-06
+1.32042e-06
+1.2562e-06
+2.91371e-06
+3.35055e-06
+3.65281e-06
+4.32177e-06
+2.31402e-06
+2.49928e-06
+2.64795e-06
+3.05843e-06
+3.44468e-06
+3.91492e-06
+4.74859e-06
+6.62873e-06
+9.83166e-06
+1.65117e-05
+3.03448e-05
+5.82167e-05
+3.59851e-05
+4.6941e-05
+5.94325e-05
+7.48424e-05
+9.19041e-05
+0.00010968
+0.000123777
+6.04202e-05
+0.000174684
+1.92597e-05
+1.46963e-05
+4.43407e-06
+3.53261e-06
+1.33057e-06
+1.16831e-06
+9.00362e-07
+4.20045e-07
+2.40046e-07
+2.13218e-07
+1.24314e-07
+1.08075e-07
+3.71522e-09
+e t
+done
+end
+=shell
+    dir
+    cp ft33f001 "N:\Applications\UTA\5. Reactor Core\Fission Product Inventory Calcs\UTA-2\ORIGEN\Isotopic Inventories - Revised\Five Years"
+end
+% ----------------------------------------------------------------------------------
+% First Cycle
+% ----------------------------------------------------------------------------------
+=origen
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+
+% 1 MTU of LEU Uranium
+mat {
+units=grams
+iso=[u234=0.6133862 u235=81.83 u238=11276.56]
+}
+ 
+% power history (at least 4 steps for MATREX)
+time=[10i 0 7] %default time in days
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Second Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Third Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Fourth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Fifth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Sixth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Seventh Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Eighth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Ninth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Tenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Eleventh Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Twelfth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Thirteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Fourteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Fifteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Sixteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Seventeeth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Eighteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+%----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 21] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+% ----------------------------------------------------------------------------------
+% Nineteenth Cycle
+% ----------------------------------------------------------------------------------
+case(irrad){
+% use xs data at pos=1 corresponds to midpoint burnup (200 d * 15MW/MTU)/2
+lib {
+file="ft33f001" pos=1
+}
+ 
+ 
+% power history (at least 4 steps for MATREX)
+time{
+start = 0
+t=[10i 0 7] %default time in days
+}
+power=[12r 0.0000278] %power in MW
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+case(decay){
+time{
+units=days
+start=0 %start time at 0 in this case for ease of input for t[]
+t=[12i 0 0.5] %observe rule of threes
+ 
+}
+print{
+          nuc{ units=CURIES }
+          cutoffs[ ALL = 0 ]
+      }
+save{ file="UTA-2_NU_Inventory_five_years_twelve_hours.f71" } %only save begin and end
+}
+end

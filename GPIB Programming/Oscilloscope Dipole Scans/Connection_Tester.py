@@ -4,7 +4,7 @@ import time #imports time to sleep program temporarily
 import Master as M
 import Tag_Database as Tags
 
-Client = M.Make_Client('10.50.0.10') #Connecting to PLC
+Client = M.Make_Client('10.60.0.11') #Connecting to PLC
 
 
 print(M.Read(Client, Tags.Oscope_Reset, Bool = True))
@@ -25,8 +25,7 @@ Running_Tag = Tags.Error_Signal_Regulation #Assign Modbus address here
 RM = pyvisa.ResourceManager() #pyVISA device manager
 Resources = RM.list_resources() #Printing out all detected device IDs
 print(Resources)
-SG = RM.open_resource("GPIB0::10::INSTR")
-OS = RM.open_resource("GPIB0::16::INSTR")
+SG = RM.open_resource(Resources[0])
 time.sleep(2)
 
 
