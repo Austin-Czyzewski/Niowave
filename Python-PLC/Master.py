@@ -144,6 +144,10 @@ def merge(list1, list2):
     merged_list = [(list1[i], list2[i]) for i in range(0, len(list1))] 
     return merged_list
 
+def progress_bar(current, total, number_of_bars = 25):
+    print("[{}{}]\r".format("#"*int(round(current/total,10)*number_of_bars),\
+                            " "*(-1 + number_of_bars - int(round(current/total,10)*number_of_bars))), end = '')
+
 
 
 def Make_Client(IP):
