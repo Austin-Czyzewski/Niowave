@@ -620,6 +620,8 @@ def output_reader(filename, NOI, time_units = 'days'):
         return All_FP
     if NOI == 'AC':
         return All_AC
+    if NOI == 'Both':
+        return All_FP,All_AC
 
 def dataframe_merger(List_of_DataFrames, time_units):
     """

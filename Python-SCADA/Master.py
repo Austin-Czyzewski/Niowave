@@ -318,7 +318,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
 
         Write(Client, Tag_Number, write_value)
 
-        print("I JUST TOOK A STEP")
+#         print("I JUST TOOK A STEP")
 
         time.sleep(.05)
 
