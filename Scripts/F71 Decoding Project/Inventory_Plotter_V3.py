@@ -1,8 +1,9 @@
 ################################################################################
 # Chad Denbrock
+# Editor: Austin Czyzewski
 # Niowave Inc.
 # Produced: 03.04.2020
-# Last updated: 08.06.2020
+# Last updated: 02.10.2021 (AC)
 ################################################################################
 
 import matplotlib.pyplot as plt
@@ -15,6 +16,7 @@ import time
 import pandas as pd
 import os
 import glob
+import xlsxwriter
 # Time = time.time()
 mpl.rcParams['savefig.dpi']  = 500
 mpl.rcParams['font.size']    = 12
@@ -27,7 +29,7 @@ mpl.rcParams['font.family'] = 'STIXGeneral'
 #           irradiation/decay cycle.
 #
 #
-# Requirements:
+# Requirements: (Outdated)
 #       Two excel (.xlsx) files. One for each the NU and LEU portions of UTA-2.
 #           They must be named with 'NU' and 'LEU' being the beginning characters
 #           in the file like 'NU blah blah.xlsx' and 'LEU blah blah.xlsx'. These
@@ -79,6 +81,11 @@ def convert_to_1kgNU(NU, time_units) :
 
     fraction_FP_and_An_in_7rods_over_total_NU = 0.1187849
     fraction_U237_in_7rods_over_total_NU = 0.3376
+    
+    print(f'Assumptions made:'\
+         f'Mass per rod: {Mass_per_rod_gU:.2f} grams'\
+          f'Fraction of fission products and actinides in 7 rods over total NU: {fraction_FP_and_An_in_7rods_over_total_NU:.6f}'\
+          f'Fraction of U-237 in 7 rods over total NU: {fraction_U237_in_7rods_over_total_NU:.4f}')
 
     fraction_FP_and_An_in_1kgNU_over_total_NU = fraction_FP_and_An_in_7rods_over_total_NU * scaling     # Linearly scaling fractions from 7 rods to ~ 7.429 rods in 1 kgNU
     fraction_U237_in_1kgNU_over_total_NU = fraction_U237_in_7rods_over_total_NU * scaling               # Linearly scaling fractions from 7 rods to ~ 7.429 rods in 1 kgNU
@@ -124,13 +131,22 @@ def U_237_adder(NU,LEU, time_units) :
         'The neutron flux to achieve the ORIGEN results and the electron rate to '\
         'achieve the U-237 production are no longer physically linked. So, be '\
         'careful and make sure the hardcoded electron rate corresponds to the '\
-        'electron rate necessary to produce the fission power input into ORIGEN.\n\n')
+        'electron rate necessary to produce the fission power input into ORIGEN.')
+    
 
     Total_core_reaction_rate = Electron_rate * Total_core_reaction_rate_per_e
 
 
     half_life_U_237 = 6.752*86400
     lambda_U_237 = np.log(2)/half_life_U_237
+    
+    print("-"*80 + "\nAssumptions made for U-237:")
+    print(f'Fraction of U-237 in LEU: {fraction_U_237_in_LEU:.3f}\n'\
+         f'Fraction of U-237 in NU: {fraction_U_237_in_NU:.3f}\n'\
+         f'Total Core reaction rate per electron: {Total_core_reaction_rate_per_e:.3E}\n'\
+         f'Electron Rate: {Electron_rate:.3E}\n'\
+         f'The half life of U-237: {half_life_U_237:.3f}\n\n')
+    
     try :
         test_activity = pd.Series.to_numpy(LEU['np239'],dtype = 'float')
     except :
@@ -138,7 +154,7 @@ def U_237_adder(NU,LEU, time_units) :
         exit()
     
     Time = pd.Series.to_numpy(NU['Time ({})'.format(time_units)],dtype = 'float')
-    print("Time ",len(Time))
+#     print("Time ",len(Time))
 #     print(NU['ac224'])
 #     if time_units.lower() == 'years' :
 #         dt_multiplier = 86400*365.25
@@ -183,7 +199,7 @@ def U_237_adder(NU,LEU, time_units) :
 
         U_237[time_values+1] = U_237[time_values] + dU_237
     U_237 = U_237 * lambda_U_237/3.7e10
-    print("U237 ",len(U_237))
+#     print("U237 ",len(U_237))
 
     #plt.plot(Time,U_237)
     #plt.plot(Time,U_237*fraction_U_237_in_NU)
@@ -191,22 +207,22 @@ def U_237_adder(NU,LEU, time_units) :
     #plt.show()
 
     if 'u237' not in NU.columns:
-        print('False ',len(U_237*fraction_U_237_in_NU))
+#         print('False ',len(U_237*fraction_U_237_in_NU))
         NU.insert(loc = 1,column = 'u237',value=U_237*fraction_U_237_in_NU)
     else :
-        print('True ',len(U_237*fraction_U_237_in_NU))
+#         print('True ',len(U_237*fraction_U_237_in_NU))
         U_237_Col = U_237*fraction_U_237_in_NU + NU.u237
-        print(U_237_Col)
+        #print(U_237_Col)
 #         NU = NU.add(pd.DataFrame(U_237*fraction_U_237_in_NU,columns = ['u237']),fill_value = 0)
         NU.u237 = U_237_Col
 
     if 'u237' not in LEU.columns:
-        print('False ',len(U_237*fraction_U_237_in_LEU))
+#         print('False ',len(U_237*fraction_U_237_in_LEU))
         LEU.insert(loc = 1,column = 'u237',value=U_237*fraction_U_237_in_LEU)
     else :
-        print('True ',len(U_237*fraction_U_237_in_LEU))
+#         print('True ',len(U_237*fraction_U_237_in_LEU))
         U_237_Col = U_237*fraction_U_237_in_LEU + LEU.u237
-        print(U_237_Col)
+        #print(U_237_Col)
 #         LEU = LEU.add(pd.DataFrame(U_237*fraction_U_237_in_LEU,columns = ['u237']),fill_value = 0)
         LEU.u237 = U_237_Col
     return NU,LEU
@@ -223,7 +239,7 @@ def plotting(The_Inventory):
     top_regex = '[Tt]op [0-9]+'
     while True :
         #try :
-        Input.append(input('Name isotopes you wish to plot. You can also plot the total by typing \'Total\', the top x isotopes by activity at final time by typing \'Top <integer number of isotopes you want to see>\', or the effluents list by typing \'Effluents\'. (Hit enter after each one and type \'Stop\' to quit entering isotopes)\n'))
+        Input.append(input('Name isotopes you wish to plot. You can also plot the total by typing \'Total\', the top x isotopes by activity at final time by typing \'Top <integer number of isotopes you want to see>\', or the effluents list by typing \'Effluents\'. (Hit enter after each one and type \'Stop\' to quit entering isotopes)\n').lower())
         if Input[-1].lower() == 'effluents' :
             Input = Input[:-1] + eff_list
         if len(re.findall(top_regex,Input[-1])) > 0:
@@ -240,8 +256,9 @@ def plotting(The_Inventory):
     Greater_than,Less_than = split_120(The_Inventory)     # Split the inventory by half-lives and retrieve the time vector
 
     Time = The_Inventory[f'Time ({time_units})']
+    print("\n")
 
-    if 'Total' in Input:
+    if 'total' in Input:
         # -----------------------
         # Plotting both HL's
         # -----------------------
@@ -256,8 +273,8 @@ def plotting(The_Inventory):
         if len(Greater_than['Total']) > 0:
             max = (Greater_than['Total'] + Less_than['Total']).max()
             end = pd.Series.to_numpy(Greater_than['Total'] + Less_than['Total'])[-1]
-            print(f'\nThe max total activity was {max:.3f} (Ci)')
-            print(f'The final total activity was {end:.3f} (Ci)')
+            print(f'\nThe max Total activity was {max:.3f} (Ci)')
+            print(f'The final Total activity was {end:.3f} (Ci)')
             max = Greater_than['Total'].max()
             end = pd.Series.to_numpy(Greater_than['Total'])[-1]
             print(f'The max activity (HL > 120 d) was {max:.3f} (Ci)')
@@ -272,15 +289,19 @@ def plotting(The_Inventory):
             print(f'The max total activity was {max:.3f} (Ci)')
             print(f'The final total activity was {end:.3f} (Ci)\n')
         for vals in Input :
-            if vals != 'Total'  :
+            try:
+                if vals != 'total'  :
 
-                plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]))
-                print(f'The max activity of {vals} was {pd.Series.to_numpy(The_Inventory[vals]).max():.3f} (Ci)')
-                print(f'The final activity of {vals} was {pd.Series.to_numpy(The_Inventory[vals])[-1]:.3f} (Ci)')
+                    plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]))
+                    print(f'The max activity of {vals} was {pd.Series.to_numpy(The_Inventory[vals]).max():.3f} (Ci)')
+                    print(f'The final activity of {vals} was {pd.Series.to_numpy(The_Inventory[vals])[-1]:.3f} (Ci)')
+            except:
+                print(f'\nPlotting {vals} wasnt found. Check if it is in the isotope list and try again.')
+                continue
         plt.grid(which = 'both', axis = 'both')
         plt.legend(legend_list)
         plt.title(f'Activity of {Title}')
-        plt.xlabel(time_units)
+        plt.xlabel(time_units.capitalize())
         plt.ylabel('Activity (Ci)')
         plt.savefig(fname + '_Both.png',bbox_inches = 'tight')
         print(f'\nFigure {fname}_Both.png produced and saved.\n')
@@ -292,16 +313,20 @@ def plotting(The_Inventory):
             plt.plot(Time,Greater_than['Total'])
             legend_list = ['Half Life > 120 d']
             for vals in Input :
-                if vals != 'Total'  :
-                    legend_list.append(vals)
-                    plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]))
+                try:
+                    if vals != 'total'  :
+                        legend_list.append(vals)
+                        plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]))
+                except :
+#                     print(f'\nPlotting {vals} wasnt found. Check if it is in the isotope list and try again.')
+                    continue
             plt.grid(which = 'both', axis = 'both')
             plt.legend(legend_list)
             plt.title(f'Activity of {Title} (HL > 120 days)')
-            plt.xlabel(time_units)
+            plt.xlabel(time_units.capitalize())
             plt.ylabel('Activity (Ci)')
             plt.savefig(fname + '_Greaterthan.png',bbox_inches = 'tight')
-            print(f'Figure {fname}_Greaterthan.png produced and saved.\n')
+            print(f'\nFigure {fname}_Greaterthan.png produced and saved.\n')
             plt.close()
         # -----------------------
         # Plotting HL <
@@ -309,51 +334,40 @@ def plotting(The_Inventory):
         plt.plot(Time,Less_than['Total'])
         legend_list = ['Half Life < 120 d']
         for vals in Input :
-            if vals != 'Total'  :
-                plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]))
-                legend_list.append(vals)
+            try:
+                if vals != 'total'  :
+                    plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]))
+                    legend_list.append(vals)
+            except :
+#                 print(f'\nPlotting {vals} wasnt found. Check if it is in the isotope list and try again.')
+                continue
         plt.grid(which = 'both', axis = 'both')
         plt.legend(legend_list)
         plt.title(f'Activity of {Title} (HL < 120 days)')
-        plt.xlabel(time_units)
+        plt.xlabel(time_units.capitalize())
         plt.ylabel('Activity (Ci)')
         plt.savefig(fname + '_Lessthan.png',bbox_inches = 'tight')
-        print(f'Figure {fname}_Lessthan.png produced and saved.\n')
+        print(f'\nFigure {fname}_Lessthan.png produced and saved.\n')
         plt.close()
-        # -----------------------
-        # Plotting Individual Isotopes (doesnt work)
-        # -----------------------
-        # for vals in Input :
-        #     if vals != 'Total'  :
-        #         plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]))
-        #         legend_list.append(vals)
-        # plt.grid(which = 'both', axis = 'both')
-        # plt.legend(legend_list)
-        # plt.title(f'Activity of {Title} (HL < 120 days)')
-        # plt.xlabel(time_units)
-        # plt.ylabel('Activity (Ci)')
-        # plt.savefig(fname + 'Less.png',bbox_inches = 'tight')
-        # print(f'Figure {fname}Less.png produced and saved.\n')
-        # plt.close()
 
     else :
         legend_list = list()
         for vals in Input :
             try :
-                if vals != 'Total'  :
+                if vals != 'total'  :
                     plt.plot(Time,pd.Series.to_numpy(The_Inventory[vals]),linewidth=0.75)
                     print(f'The max activity of {vals} was {pd.Series.to_numpy(The_Inventory[vals]).max():.3f} (Ci)')
                     print(f'The final activity of {vals} was {pd.Series.to_numpy(The_Inventory[vals])[-1]:.3f} (Ci)')
                     legend_list.append(vals)
             except :
-                print(f'\nPlotting {vals} wasnt found. Check if it is in the isotope list and try again.\n')
+                print(f'\nPlotting {vals} wasnt found. Check if it is in the isotope list and try again.')
                 continue
 
         if len(legend_list)>0 :
             plt.grid(which = 'both', axis = 'both')
             plt.legend(legend_list)
             plt.title(f'Activity of {Title}')
-            plt.xlabel(time_units)
+            plt.xlabel(time_units.capitalize())
             plt.ylabel('Activity (Ci)')
             plt.savefig(fname,bbox_inches = 'tight')
             print(f'\nFigure {fname} produced and saved.\n')
@@ -384,22 +398,25 @@ def output_reader(filename, NOI, time_units = 'days'):
     first_file_string = re.sub(r'(\d{1}.\d{4})(-\d{3})', r'\1E\2', first_file_string)
 #     #The above searches for "#.####-###" and replaces them with "#.####E-###"
     Case_Intervals = re.findall(r't\s*=\s*\[[^\]]*\]|time\s*=\s*\[[^\]]*\]', first_file_string)
+#     #This regex searches for the times that each case runs for. The amount gathered here will be used later
+        #To verify all cases are present in the output files.
     
     Integer_Interval_List = list()
     Case_Start_List = list()
     Case_End_List = list()
     for Interval in Case_Intervals:
         if 'i' in Interval:
-            Interval_String = re.split('\[|i\s+',Interval)
+
+            Interval_String = re.split('\[|i\s+',Interval) #This detects the number before i, the amount of timesteps in the interval
             Integer_Interval_List.append(int(Interval_String[1]))
             Case_times = re.split('\s{1,}|\]',Interval_String[2])
-            #print(Case_times)
-            Case_Start_List.append(float(Case_times[0]))
-            Case_End_List.append(float(Case_times[1]))
-    print(Case_Start_List)
-    print(Case_End_List)
 
-    print("{} Cases".format(len(Integer_Interval_List)))
+            Case_Start_List.append(float(Case_times[0])) #this is the start time. Most often zero
+            Case_End_List.append(float(Case_times[1])) #End time. The useful bit
+
+
+
+    print("{} Cases in {}".format(len(Integer_Interval_List), filename))
     ###################################
     # Split them using key phrase, "in curies for case {decay/irrad}"
     ###################################
@@ -407,41 +424,34 @@ def output_reader(filename, NOI, time_units = 'days'):
                       first_file_string, flags=re.MULTILINE)
     
     groups = groups[1:]
-    # The first group is all of the junk before the first actual table.
+    # The first group is all of the junk before the first actual table. Just dump it
 
     all_times = list()
-    
     header_unit_list = list()
-
     Start_End_Times = list()
 
-    All_LE = pd.Series()
-    All_AC = pd.Series()
-    All_FP = pd.Series()
+    All_LE = pd.Series(dtype = object)
+    All_AC = pd.Series(dtype = object)
+    All_FP = pd.Series(dtype = object)
     
     print("Creating DataFrames")
     for number, case in enumerate(groups):
-        #Used for debugging
-#         if number > 5:
-#             break
         print("Case ({}/{})\r".format(number+1,len(groups)), end = '')
         
         # Handle the last table from each split section
         #################################
-        
         data_from_case = re.sub(r'\s{2,}(?=\d+)',"  ", case)
         data_from_case = re.sub(r'^[.]\s*|^\s{2}',"", data_from_case, flags = re.MULTILINE)
         data_from_case = re.split(r'he-3', data_from_case)
         
         header_unit_string = re.findall('\d{1,}[a-z]{1,2}\s{2}',data_from_case[0], flags = re.MULTILINE)
         header_unit = re.findall('[a-z]{2}|[a-z]{1}', header_unit_string[1])[0]
-    #     print(header_unit)
         header_unit_list.append(header_unit)
 
         header_handling = re.split(r"{}(.+)".format(header_unit),data_from_case[0], flags = re.MULTILINE)
 
         times = header_handling[1].split('{}'.format(header_unit))
-    #     print(times)
+        
         start_time = times[1] 
         times.insert(1,start_time)
         Start_End_Times.append((float(times[0]),float(times[-2])))
@@ -465,7 +475,6 @@ def output_reader(filename, NOI, time_units = 'days'):
         
         t_df = pd.DataFrame(temp_data)
         t_df = t_df[0].str.split(" * ", expand = True)
-#         t_df.iloc[0] = t_df.iloc[0].shift(1) #This gets rid of the first column. 
         t_df = t_df.transpose() # We will be transposing all of our dataframes.
                     # We want to build on times Not on isotopes.
         header = t_df.iloc[0] #The first row in this dataframe is the isotope names we want
@@ -504,7 +513,6 @@ def output_reader(filename, NOI, time_units = 'days'):
         temp_data = data_from_case[2].split('\n')
         t_df = pd.DataFrame(temp_data)
         t_df = t_df[0].str.split(" * ", expand = True)
-#         t_df.iloc[0] = t_df.iloc[0].shift(1)
         t_df = t_df.transpose()
         header = t_df.iloc[0]
         for num, head in enumerate(header):
@@ -513,9 +521,7 @@ def output_reader(filename, NOI, time_units = 'days'):
                 
                 
         header = pd.concat([pd.Series(["he3"]),header[1:]])
-#         df_naming_mask = t_df[2:]
         if (number == 0):# or (number == len(groups) - 1):
-#             print("-"*80)
             df_naming_mask = t_df.iloc[1:]
         else:
             df_naming_mask = t_df[2:] #Get rid of those pesky empty lines
@@ -537,9 +543,7 @@ def output_reader(filename, NOI, time_units = 'days'):
             if num > 0:
                 header[num] = re.sub(r'\-', "", head)
         header = pd.concat([pd.Series(["he3"]),header[1:]])
-#         df_naming_mask = t_df[2:]
         if (number == 0):# or (number == len(groups) - 1):
-#             print("-"*80)
             df_naming_mask = t_df.iloc[1:]
         else:
             df_naming_mask = t_df[2:] #Get rid of those pesky empty lines
@@ -557,69 +561,58 @@ def output_reader(filename, NOI, time_units = 'days'):
         All_FP = pd.concat([All_FP,FP_df_final],sort = True)
 
     print("All cases stored in DataFrames as strings")
+    
 
-    #We ignore LE for our purposes. But you can see there is some clear repitition here.
-    
-    #Drop empty column
-    All_FP = All_FP.drop([0,''], axis = 1)
-    All_AC = All_AC.drop([0,''], axis = 1)
-    
-    # DEBUGGING drop the last row to curb duplicates.
-#     All_FP.drop(All_FP.tail(1).index,inplace=True) # drop last n rows
-#     All_AC.drop(All_AC.tail(1).index,inplace=True) # drop last n rows
-    
-    #Convert the index from strings to floats
-#     print(Start_End_Times[0][0])
+    global Times_list
     Times_list = list()   #[Start_End_Times[0][0]]
-    print(Start_End_Times)
-    #for Times, Interval in zip(Start_End_Times, Integer_Interval_List):
+    #print(Start_End_Times)
+
     Starts = 0
     Ends = 0
     for Interval, Start, End in zip(Integer_Interval_List, Case_Start_List,Case_End_List):
         Ends += Start + End
         Calculated_Times = np.linspace(Starts,Ends,2+Interval)[:-1]
         Starts += End
-        #Calculated_Times = np.linspace(Times[0],Times[1],2+Interval)[:-1]
+
         for time in Calculated_Times:
             Times_list.append(time)
-    #Times_list.append(Times[1]) #Add the second item from the last time.
+
     Times_list.append(Ends)
     if time_units == 'years' :
         for num, time in enumerate(Times_list):
             Times_list[num] = time/365.25
-#     All_FP.index = pd.to_numeric(All_FP.index)#, downcast="float")
-#     All_AC.index = pd.to_numeric(All_AC.index)#, downcast="float")
-#     print(All_FP.index)
-#     for item in All_FP.index:
-#         print(item)
-#     print(Times_list)
-    All_FP.index = pd.Series(Times_list)#, downcast="float")
-    All_AC.index = pd.Series(Times_list)#, downcast="float")
-
-    print("Converting strings to floats in DataFrame")
-    
-    for column in All_AC:
-        #Converting strings to floats in DataFrame
-        All_AC[All_AC[column].name] = pd.to_numeric(All_AC[All_AC[column].name])
-        
-    print("Actinides complete")
-    
-    for column in All_FP:
-        All_FP[All_FP[column].name] = pd.to_numeric(All_FP[All_FP[column].name])
-        
-    print("Fission Products complete")
-
-    #Convert the index to a new column named Time ({Days/Years})
-#     All_FP.insert(loc = 0, column = 'Time ({})'.format(time_units),value = All_FP.index)
-#     All_AC.insert(loc = 0, column = 'Time ({})'.format(time_units),value = All_AC.index)
-    All_FP.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
-    All_AC.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
     
     #Here, NOI is to identify the Type of isotope of interest
     if NOI == 'FP':
+        All_FP = All_FP.drop([0,''], axis = 1)
+        All_FP.index = pd.Series(Times_list)#, downcast="float")
+        print("Converting strings to floats in DataFrame. This could take some time")
+        
+        for column in All_FP:
+            All_FP[All_FP[column].name] = pd.to_numeric(All_FP[All_FP[column].name])
+        
+        print("String conversion complete\n")
+        
+        All_FP.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
+        
         return All_FP
+    
+    
     if NOI == 'AC':
+        All_AC = All_AC.drop([0,''], axis = 1)
+        All_AC.index = pd.Series(Times_list)#, downcast="float")
+        print("Converting strings to floats in DataFrame. This could take some time")
+        
+        for column in All_AC:
+        #Converting strings to floats in DataFrame
+            All_AC[All_AC[column].name] = pd.to_numeric(All_AC[All_AC[column].name])
+            
+        print("String conversion complete\n")
+        
+        All_AC.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
+        
         return All_AC
+    
 
 def dataframe_merger(List_of_DataFrames, time_units):
     """
@@ -632,89 +625,72 @@ def dataframe_merger(List_of_DataFrames, time_units):
             List_of_DataFrames[1],List_of_DataFrames[0] = U_237_adder(List_of_DataFrames[1],List_of_DataFrames[0], time_units = time_units)
             
     if Portion_of_core == 1:
-        List_of_DataFrames[0] = List_of_DataFrames[0].drop(columns = ["Time ({})".format(time_units)])
-        List_of_DataFrames[0]["Total_Activity"] = List_of_DataFrames[0].iloc[:, 1:].sum(axis=1)
-        List_of_DataFrames[0] = List_of_DataFrames[0].sort_values(by = List_of_DataFrames[0].iloc[-1].name, axis = 1, ascending = False)
-#         print(List_of_DataFrames[1].head())
-        List_of_DataFrames[1]["Total_Activity"] = List_of_DataFrames[1].iloc[:, 1:].sum(axis=1)
-        List_of_DataFrames[1] = List_of_DataFrames[1].sort_values(List_of_DataFrames[1].iloc[-1].name, axis = 1, ascending = False)
-#         print(Total_Activity.head())
-        Total_Activity = List_of_DataFrames[0].add(List_of_DataFrames[1], fill_value = 0)
+
+        Reset_Index_LEU = List_of_DataFrames[0].drop(columns = ["Time ({})".format(time_units)])
+        Reset_Index_LEU["Total_Activity"] = Reset_Index_LEU.iloc[:, 1:].sum(axis=1)
+        Reset_Index_LEU = Reset_Index_LEU.sort_values(by = Reset_Index_LEU.iloc[-1].name, axis = 1, ascending = False)
+
+
+
+        Reset_Index_NU = List_of_DataFrames[1].drop(columns = ["Time ({})".format(time_units)])
+        Reset_Index_NU["Total_Activity"] = Reset_Index_NU.iloc[:, 1:].sum(axis=1)
+        Reset_Index_NU = Reset_Index_NU.sort_values(by = Reset_Index_NU.iloc[-1].name, axis = 1, ascending = False)
+
+
+
+        Reset_Index_LEU = Reset_Index_LEU.reset_index(drop = True)
+        Reset_Index_NU = Reset_Index_NU.reset_index(drop = True)
+
+        Total_Activity = Reset_Index_LEU.add(Reset_Index_NU, fill_value = 0)
+
         Total_Activity["Total_Activity"] = Total_Activity.iloc[:, 1:].sum(axis=1)
         Total_Activity = Total_Activity.sort_values(Total_Activity.iloc[-1].name, axis = 1, ascending = False)
-#         print(Total_Activity.head())
+    
+        Total_Activity.index = pd.Series(Times_list)
+        Reset_Index_LEU.index = pd.Series(Times_list)
+        Reset_Index_NU.index = pd.Series(Times_list)
+        Total_Activity.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
+        Reset_Index_LEU.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
+        Reset_Index_NU.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
+        
         time1 = time.time()
         print("Writing data to excel file...")
         print("Hang around, this may take a few minutes...")
-        with pd.ExcelWriter('Total_Core.xlsx') as writer:  
-            Total_Activity.to_excel(writer, sheet_name='Total')
-            List_of_DataFrames[0].to_excel(writer, sheet_name='LEU')
-            List_of_DataFrames[1].to_excel(writer, sheet_name='NU')
+
+        attempts_at_saving = 0
+        while True:
+
+            try:
+                workbook = xlsxwriter.Workbook("Total_Core.xlsx")
+                Total = workbook.add_worksheet("Total")
+                LEU = workbook.add_worksheet("LEU")
+                NU = workbook.add_worksheet("NU")
+
+                worksheets = [Total, LEU, NU]
+                dfs = [Total_Activity, Reset_Index_LEU, Reset_Index_NU]
+                
+                for iterative_value in range(3):
+                    temporary_data_list = [list(dfs[iterative_value].columns)] + dfs[iterative_value].values.tolist()
+                    for x, i in enumerate(temporary_data_list):
+                        for y, _ in enumerate(i):
+                            worksheets[iterative_value].write(x,y,temporary_data_list[x][y])
+                    worksheets[iterative_value].freeze_panes(1,1)
+
+                workbook.close()
+                break
+                
+            except:
+                print("Error Saving Total_Core.xlsx, please ensure all open copies are closed. Trying again in 15 seconds")
+                attempts_at_saving += 1
+                if attempts_at_saving >= 5:
+                    break
+                time.sleep(15)
+
         print("Total_Core.xlsx saved")
-#         print('Wow, that took {:.1f} seconds'.format(time.time()-time1))
     if Portion_of_core == 2:
         Total_Activity = convert_to_1kgNU(List_of_DataFrames[1], time_units = time_units)
     return Total_Activity  
             
-
-def obtain_inventory() :
-    print('LEU and NU inventories must be named with LEU and NU in the first characters of each respective file name.\nAlso, there can be only the NU and LEU inventory excel documents in the directory.\n')
-    print('\n\nTHIS SCRIPT ASSUMES THAT ANY ISOTOPE NOT FOUND IN THE ISOTOPE HALF-LIFE LIBRARY HAS A HALF-LIFE LESS THAN 120 DAYS!!!\n\n')
-    cwd = os.getcwd()
-    Files = os.listdir(cwd)
-    excel_list = list()
-    for file in Files :
-        if '.' in file :
-            if file.split('.')[1] == 'xlsx' :
-                excel_list.append(file)
-
-    excel_list.sort()
-    for i,excel_files in enumerate(excel_list) :
-        if excel_files == 'The_Hottest_1kgNU_Inventory.xlsx' or excel_files == 'Total_core.xlsx':
-            continue
-        if i == 0 :
-            print(f'Pulling LEU inventory from {excel_files}\n')
-            LEU = pd.read_excel(excel_files)
-
-        elif i == 1 :
-            print(f'Pulling NU inventory from {excel_files}\n')
-            NU = pd.read_excel(excel_files)
-
-
-
-
-#   U-237 has to be entered into NU and LEU here before added to total core.
-
-    if kind_of_isotopes.lower() == 'actinides' or kind_of_isotopes.lower() == 'an' :
-        print('Computing U-237 activity as a function of time and adding it to the inventories.\n')
-        NU,LEU = U_237_adder(NU,LEU)
-
-    if Portion_of_core == 1 :
-        print(f'Adding the LEU and NU dataframes.\n')
-        Total_core = NU.add(LEU,fill_value = 0)
-        Time = pd.Series.to_numpy(NU['Unnamed: 0'])
-        print(Time)
-        Total_core = Total_core.drop(columns = ['Unnamed: 0'])
-        # Sorting the dataframe by highest endpoint activity
-        Total_core = pd.DataFrame.sort_values(Total_core,Total_core.shape[0]-1,axis = 1,ascending = False)
-        Time_column_name = f'Time ({time_units})'
-        Total_core.insert(loc=0,column = Time_column_name,value= Time)
-        # Writing the total core excel spreadsheet
-        print(f'Writing total inventory to Total_core.xlsx\n')
-        Total_core.reset_index(drop=True, inplace=True)
-        Total_core.to_excel('Total_core.xlsx')
-        print(f'Total Core inventory saved in Total_core.xlsx\n')
-        return Total_core
-    if Portion_of_core == 2 :
-        print(f'Converting NU inventory into hottest 1 kgNU.\n')
-
-        Inventory = convert_to_1kgNU(NU)
-
-        return Inventory
-
-
-
-
 def half_life_greater_than(isotope) :
     with open('Half_Lives_List.txt','r') as file_handle :
         bool = False
@@ -781,9 +757,15 @@ def split_120(original) :
     Less_than.insert(0,'Total',total_list)
 
     return Greater_than, Less_than
-print('The Inventory Plotter: Chad Denbrock, Niowave Inc. August 2020\n\n')
+print('The Inventory Plotter: Author: Chad Denbrock, Co-Author: Austin Czyzewski, Niowave Inc. August 2020; revised February 2021\n\n')
+print(f'This script makes the following assumptions in regard to how the ORIGEN simulations are run:'\
+     f'The units in the input file are in DAYS. Other units will either crash the program or output invalid data.\n'\
+     f'There is a print statement for every case ran in the file. In this print statement, the units must be specified to '\
+     f'be CURIES and the CUTOFFS for ALL element tables must be set to 0.\n'\
+      f'The output files are in the directory that this Python script is run. There must be one LEU and one NU output file.')
+
 while True :
-    time_units = input('What are the time units given in the excel files? (e.g. Days or Years)\n')
+    time_units = input('What time units do you want the excel and plots to have? (e.g. Days or Years)\n')
     time_units = time_units.lower()
 #    if time_units.lower() == 'years' :
     if time_units == 'years':
@@ -809,6 +791,7 @@ while True :
         break
     else :
         print('You must be plotting either Actinides or fission products, not both or neither.')
+        
 while True :
     Portion_of_core = int(input('What portion of the core would you like to analyze (1 or 2)? \n'\
                                 '1: Whole Core (LEU + NU)\n'\
@@ -823,23 +806,34 @@ while True :
         break
     else :
         print('Type 1 or 2 as your selection for what part of the core you would like to analyze.\n')
+
 files = glob.glob("*.out")
+LEU_files = glob.glob("*LEU*.out")
+NU_files = glob.glob("*NU*.out")
+#print(LEU_files, NU_files)
 print("#"*60)
 print("---LEU---")
 print("#"*60)
+attempts = 0
 while True:
     try:
-        print("Please select which output file to analyze (LEU)")
-        for number,file in enumerate(files):
-            print("{}: {}\n".format(number, file))
-        file_number_LEU = int(input(""))
-        print("Loading {}".format(files[file_number_LEU]))
+        if len(LEU_files) == 1:
+            LEU_file = LEU_files[0]
+        else:
+            print("Please select which output file to analyze (LEU)")
+            for number,file in enumerate(LEU_files):
+                print("{}: {}\n".format(number, file))
+            file_number_LEU = int(input(""))
+            LEU_file = LEU_files[file_number_LEU]
+    #         print("Loading {}".format(files[file_number_LEU]))
+        print("{} Selected".format(LEU_file))
         break
     except:
         print("Please enter an integer corresponding to the filename above")
+        attempts += 1
+        if attempts > 5:
+            exit()
         continue
-
-# The_Inventory = obtain_inventory()
 
 
 print("#"*60)
@@ -847,11 +841,16 @@ print("---NU---")
 print("#"*60)
 while True:
     try:
-        print("Please select which output file to analyze (NU)")
-        for number,file in enumerate(files):
-            print("{}: {}\n".format(number, file))
-        file_number_NU = int(input(""))
-        print("Loading {}".format(files[file_number_NU]))
+        if len(NU_files) == 1:
+            NU_file = NU_files[0]
+        else:
+            print("Please select which output file to analyze (NU)")
+            for number,file in enumerate(NU_files):
+                print("{}: {}\n".format(number, file))
+            file_number_NU = int(input(""))
+            NU_file = NU_files[file_number_NU]
+    #         print("Loading {}".format(files[file_number_LEU]))
+        print("{} Selected\n\n".format(NU_file))
         break
     except:
         print("Please enter an integer corresponding to the filename above")
@@ -859,12 +858,22 @@ while True:
         
 #Run it
 ###############################################################################
-LEU = output_reader(files[file_number_LEU], plotting_type, time_units = time_units.lower())
-NU = output_reader(files[file_number_NU], plotting_type, time_units = time_units.lower())
+LEU = output_reader(LEU_file, plotting_type, time_units = time_units.lower())
+NU = output_reader(NU_file, plotting_type, time_units = time_units.lower())
 dfs = dataframe_merger([LEU, NU], time_units = time_units.lower())
 The_Inventory = dfs
-plotting(The_Inventory)
-print("Inventory Plotter Complete")
-# time.sleep(600)
-# print("{:.2f} seconds to run".format(time.time()-Time))
+
+while True:
+    try:
+        plotting(The_Inventory)
+    except:
+        print("Error raised in plotting, please make sure plots are closed")
+    end = input("Did this produce the plots that you desired? (Y/N)  ")
+    if (end.lower() == "y") or (end.lower() == "yes"):
+        break
+    else:
+        print("\nPlease try again\n")
+        continue
+        
+print("\n" + "-"*60 + "\nInventory Plotter Complete\n" + "-"*60)
 input("Please Press 'Enter' to close this script")

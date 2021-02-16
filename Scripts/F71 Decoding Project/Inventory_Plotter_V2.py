@@ -15,7 +15,7 @@ import time
 import pandas as pd
 import os
 import glob
-# Time = time.time()
+Time = time.time()
 mpl.rcParams['savefig.dpi']  = 500
 mpl.rcParams['font.size']    = 12
 mpl.rcParams['mathtext.fontset'] = 'stix'
@@ -136,19 +136,17 @@ def U_237_adder(NU,LEU, time_units) :
     except :
         print('Np239 doesnt exist in the LEU spreadsheet. This probably means you incorrectly asked for what youre plotting.\n')
         exit()
-    
     Time = pd.Series.to_numpy(NU['Time ({})'.format(time_units)],dtype = 'float')
-    print("Time ",len(Time))
-#     print(NU['ac224'])
+
 #     if time_units.lower() == 'years' :
 #         dt_multiplier = 86400*365.25
 
 #     elif time_units.lower() == 'days' :
 #         dt_multiplier = 86400.0
-    if time_units == 'years':
+    if time_units == 'years' :
         dt_multiplier = 86400*365.25
 
-    elif time_units == 'days':
+    elif time_units == 'days' :
         dt_multiplier = 86400.0
 
     U_237 = np.zeros(len(Time))
@@ -176,43 +174,32 @@ def U_237_adder(NU,LEU, time_units) :
             dU_237 =                           - lambda_U_237*U_237[time_values]*dt
 
 #         if time_units == 'Years' and (Time[time_values] == 4.006471 or Time[time_values] ==4.004729):
-        if time_units == 'years' and (Time[time_values] == 4.006471 or Time[time_values] ==4.004729):
+        if time_units == 'Years' and (Time[time_values] == 4.006471 or Time[time_values] ==4.004729):
             #print('\nin here\n')
             dU_237 = 0.0
         #print(Time[time_values],test_activity[time_values+1] - test_activity[time_values],dU_237,U_237[time_values],dt)
 
         U_237[time_values+1] = U_237[time_values] + dU_237
     U_237 = U_237 * lambda_U_237/3.7e10
-    print("U237 ",len(U_237))
 
     #plt.plot(Time,U_237)
     #plt.plot(Time,U_237*fraction_U_237_in_NU)
     #plt.plot(Time,U_237*fraction_U_237_in_LEU)
     #plt.show()
 
-    if 'u237' not in NU.columns:
-        print('False ',len(U_237*fraction_U_237_in_NU))
-        NU.insert(loc = 1,column = 'u237',value=U_237*fraction_U_237_in_NU)
+    if 'u237' not in NU.columns :
+        NU.insert(loc = 0,column = 'u237',value=U_237*fraction_U_237_in_NU)
     else :
-        print('True ',len(U_237*fraction_U_237_in_NU))
-        U_237_Col = U_237*fraction_U_237_in_NU + NU.u237
-        print(U_237_Col)
-#         NU = NU.add(pd.DataFrame(U_237*fraction_U_237_in_NU,columns = ['u237']),fill_value = 0)
-        NU.u237 = U_237_Col
+        NU = NU.add(pd.DataFrame(U_237*fraction_U_237_in_NU,columns = ['u237']),fill_value = 0)
 
-    if 'u237' not in LEU.columns:
-        print('False ',len(U_237*fraction_U_237_in_LEU))
-        LEU.insert(loc = 1,column = 'u237',value=U_237*fraction_U_237_in_LEU)
+    if 'u237' not in LEU.columns :
+        LEU.insert(loc = 0,column = 'u237',value=U_237*fraction_U_237_in_LEU)
     else :
-        print('True ',len(U_237*fraction_U_237_in_LEU))
-        U_237_Col = U_237*fraction_U_237_in_LEU + LEU.u237
-        print(U_237_Col)
-#         LEU = LEU.add(pd.DataFrame(U_237*fraction_U_237_in_LEU,columns = ['u237']),fill_value = 0)
-        LEU.u237 = U_237_Col
+        LEU = LEU.add(pd.DataFrame(U_237*fraction_U_237_in_LEU,columns = ['u237']),fill_value = 0)
     return NU,LEU
 
 
-def plotting(The_Inventory):
+def plotting(The_Inventory) :
     eff_list = ['kr85m','kr88','kr85','kr87','i131','i132','i133','i135','xe133','xe133m','xe135']
     Input = list()
 
@@ -382,24 +369,8 @@ def output_reader(filename, NOI, time_units = 'days'):
         file.close()
         
     first_file_string = re.sub(r'(\d{1}.\d{4})(-\d{3})', r'\1E\2', first_file_string)
-#     #The above searches for "#.####-###" and replaces them with "#.####E-###"
-    Case_Intervals = re.findall(r't\s*=\s*\[[^\]]*\]|time\s*=\s*\[[^\]]*\]', first_file_string)
+    #The above searches for "#.####-###" and replaces them with "#.####E-###"
     
-    Integer_Interval_List = list()
-    Case_Start_List = list()
-    Case_End_List = list()
-    for Interval in Case_Intervals:
-        if 'i' in Interval:
-            Interval_String = re.split('\[|i\s+',Interval)
-            Integer_Interval_List.append(int(Interval_String[1]))
-            Case_times = re.split('\s{1,}|\]',Interval_String[2])
-            #print(Case_times)
-            Case_Start_List.append(float(Case_times[0]))
-            Case_End_List.append(float(Case_times[1]))
-    print(Case_Start_List)
-    print(Case_End_List)
-
-    print("{} Cases".format(len(Integer_Interval_List)))
     ###################################
     # Split them using key phrase, "in curies for case {decay/irrad}"
     ###################################
@@ -410,16 +381,12 @@ def output_reader(filename, NOI, time_units = 'days'):
     # The first group is all of the junk before the first actual table.
 
     all_times = list()
-    
-    header_unit_list = list()
-
-    Start_End_Times = list()
 
     All_LE = pd.Series()
     All_AC = pd.Series()
     All_FP = pd.Series()
     
-    print("Creating DataFrames")
+    print("Creating DataFrames from")
     for number, case in enumerate(groups):
         #Used for debugging
 #         if number > 5:
@@ -432,30 +399,19 @@ def output_reader(filename, NOI, time_units = 'days'):
         data_from_case = re.sub(r'\s{2,}(?=\d+)',"  ", case)
         data_from_case = re.sub(r'^[.]\s*|^\s{2}',"", data_from_case, flags = re.MULTILINE)
         data_from_case = re.split(r'he-3', data_from_case)
-        
-        header_unit_string = re.findall('\d{1,}[a-z]{1,2}\s{2}',data_from_case[0], flags = re.MULTILINE)
-        header_unit = re.findall('[a-z]{2}|[a-z]{1}', header_unit_string[1])[0]
-    #     print(header_unit)
-        header_unit_list.append(header_unit)
-
-        header_handling = re.split(r"{}(.+)".format(header_unit),data_from_case[0], flags = re.MULTILINE)
-
-        times = header_handling[1].split('{}'.format(header_unit))
+        header_handling = re.split(r"d(.+)",data_from_case[0], flags = re.MULTILINE) #Splitting the first 
+                                                                    #portion of list by the the first occuring d
+        #################################
+        times = header_handling[1].split('d') #Splitting string to list for numpy to use
     #     print(times)
-        start_time = times[1] 
+        start_time = times[1] #We have two cases of the first time. The index list must be the right length, so we append.
+                            #This is an artifact of using the first 'd' to split our header
         times.insert(1,start_time)
-        Start_End_Times.append((float(times[0]),float(times[-2])))
         
-        cut_number = 0
-        if (number == 0):# or (number == len(groups)-1):
-            cut_number = -1
-        else:
-            cut_number = -2
-            
         if time_units == 'years':
-            times = np.array(times[:cut_number]).astype(float)/365.25 #The first and last objects are empty strings
+            times = np.array(times[1:-1]).astype(float)/365.25 #The first and last objects are empty strings
         else:
-            times = np.array(times[:cut_number]).astype(float)
+            times = np.array(times[1:-1]).astype(float)
             
         all_times.append(times)
         
@@ -465,63 +421,51 @@ def output_reader(filename, NOI, time_units = 'days'):
         
         t_df = pd.DataFrame(temp_data)
         t_df = t_df[0].str.split(" * ", expand = True)
-#         t_df.iloc[0] = t_df.iloc[0].shift(1) #This gets rid of the first column. 
+        t_df.iloc[0] = t_df.iloc[0].shift(1) #This gets rid of the first column. 
         t_df = t_df.transpose() # We will be transposing all of our dataframes.
                     # We want to build on times Not on isotopes.
         header = t_df.iloc[0] #The first row in this dataframe is the isotope names we want
-        for num, head in enumerate(header):
-            if num > 0:
-                header[num] = re.sub(r'\-', "", head) #Get rid of the dash in the isotope names
+        for number, head in enumerate(header):
+            if number > 0:
+                header[number] = re.sub(r'\-', "", head) #Get rid of the dash in the isotope names
 
         ##################################################################################################################
         
         temp_data = data_from_case[1].split('\n')
         t_df = pd.DataFrame(temp_data)
         t_df = t_df[0].str.split(" * ", expand = True)
-#         t_df.iloc[0] = t_df.iloc[0].shift(1)
+        t_df.iloc[0] = t_df.iloc[0].shift(1)
         t_df = t_df.transpose()
         header = t_df.iloc[0]
-        for num, head in enumerate(header):
-            if num > 0:
-                header[num] = re.sub(r'\-', "", head)
+        for number, head in enumerate(header):
+            if number > 0:
+                header[number] = re.sub(r'\-', "", head)
             
         header = pd.concat([pd.Series(["he3"]),header[1:]]) #Adding he3 as the name back to its respective isotope
         
         #Here we create a mask in order to name columns and index easier (maybe not easier but I like it this way)
-#         df_naming_mask = t_df[2:]
-        if (number == 0):# or (number == len(groups) - 1):
-#             print("-"*80)
-            df_naming_mask = t_df.iloc[1:]
-        else:
-            df_naming_mask = t_df[2:] #Get rid of those pesky empty lines
-            
+        df_naming_mask = t_df[2:] #Get rid of those pesky empty lines
         df_naming_mask.columns = header #Name the columns by their isotope partner's name
-        LE_df_final = df_naming_mask.set_index(times).iloc[1:]
-
+        LE_df_final = df_naming_mask.set_index(times)
 
         ##################################################################################################################
         #See above for what we're doing here
         temp_data = data_from_case[2].split('\n')
         t_df = pd.DataFrame(temp_data)
         t_df = t_df[0].str.split(" * ", expand = True)
-#         t_df.iloc[0] = t_df.iloc[0].shift(1)
+        t_df.iloc[0] = t_df.iloc[0].shift(1)
         t_df = t_df.transpose()
         header = t_df.iloc[0]
-        for num, head in enumerate(header):
-            if num > 0:
-                header[num] = re.sub(r'\-', "", head)
+        for number, head in enumerate(header):
+            if number > 0:
+                header[number] = re.sub(r'\-', "", head)
                 
                 
         header = pd.concat([pd.Series(["he3"]),header[1:]])
-#         df_naming_mask = t_df[2:]
-        if (number == 0):# or (number == len(groups) - 1):
-#             print("-"*80)
-            df_naming_mask = t_df.iloc[1:]
-        else:
-            df_naming_mask = t_df[2:] #Get rid of those pesky empty lines
+        df_naming_mask = t_df[2:]
         df_naming_mask.columns = header
-        AC_df_final = df_naming_mask.set_index(times).iloc[1:]
-#         print(times)
+        AC_df_final = df_naming_mask.set_index(times)
+        
         ##################################################################################################################
         # Handle the last table from each split section
         FP_handling = re.split(r"\-{6,}",data_from_case[3]) #Gets rid of everything after the actual .out file
@@ -533,20 +477,22 @@ def output_reader(filename, NOI, time_units = 'days'):
         t_df.iloc[0] = t_df.iloc[0].shift(1)
         t_df = t_df.transpose()
         header = t_df.iloc[0]
-        for num, head in enumerate(header):
-            if num > 0:
-                header[num] = re.sub(r'\-', "", head)
+        for number, head in enumerate(header):
+            if number > 0:
+                header[number] = re.sub(r'\-', "", head)
         header = pd.concat([pd.Series(["he3"]),header[1:]])
-#         df_naming_mask = t_df[2:]
-        if (number == 0):# or (number == len(groups) - 1):
-#             print("-"*80)
-            df_naming_mask = t_df.iloc[1:]
-        else:
-            df_naming_mask = t_df[2:] #Get rid of those pesky empty lines
+        df_naming_mask = t_df[2:]
         df_naming_mask.columns = header
-        
-        
+#         if number == 0:
+#             df_naming_mask = t_df
+#             df_naming_mask.columns = header
+#             FP_df_final = df_naming_mask.set_index(times)
+#         else:
+#             df_naming_mask = t_df[2:]
+#             df_naming_mask.columns = header
         FP_df_final = df_naming_mask.set_index(times).iloc[1:] #This is very close to doing what I want
+            
+#         FP_df_final = df_naming_mask.set_index(times).iloc[:-1]
         
         ##################################################################################################################
         ###################################
@@ -565,36 +511,12 @@ def output_reader(filename, NOI, time_units = 'days'):
     All_AC = All_AC.drop([0,''], axis = 1)
     
     # DEBUGGING drop the last row to curb duplicates.
-#     All_FP.drop(All_FP.tail(1).index,inplace=True) # drop last n rows
-#     All_AC.drop(All_AC.tail(1).index,inplace=True) # drop last n rows
+    All_FP.drop(All_FP.tail(1).index,inplace=True) # drop last n rows
+    All_AC.drop(All_AC.tail(1).index,inplace=True) # drop last n rows
     
     #Convert the index from strings to floats
-#     print(Start_End_Times[0][0])
-    Times_list = list()   #[Start_End_Times[0][0]]
-    print(Start_End_Times)
-    #for Times, Interval in zip(Start_End_Times, Integer_Interval_List):
-    Starts = 0
-    Ends = 0
-    for Interval, Start, End in zip(Integer_Interval_List, Case_Start_List,Case_End_List):
-        Ends += Start + End
-        Calculated_Times = np.linspace(Starts,Ends,2+Interval)[:-1]
-        Starts += End
-        #Calculated_Times = np.linspace(Times[0],Times[1],2+Interval)[:-1]
-        for time in Calculated_Times:
-            Times_list.append(time)
-    #Times_list.append(Times[1]) #Add the second item from the last time.
-    Times_list.append(Ends)
-    if time_units == 'years' :
-        for num, time in enumerate(Times_list):
-            Times_list[num] = time/365.25
-#     All_FP.index = pd.to_numeric(All_FP.index)#, downcast="float")
-#     All_AC.index = pd.to_numeric(All_AC.index)#, downcast="float")
-#     print(All_FP.index)
-#     for item in All_FP.index:
-#         print(item)
-#     print(Times_list)
-    All_FP.index = pd.Series(Times_list)#, downcast="float")
-    All_AC.index = pd.Series(Times_list)#, downcast="float")
+    All_FP.index = pd.to_numeric(All_FP.index)#, downcast="float")
+    All_AC.index = pd.to_numeric(All_AC.index)#, downcast="float")
 
     print("Converting strings to floats in DataFrame")
     
@@ -610,11 +532,9 @@ def output_reader(filename, NOI, time_units = 'days'):
     print("Fission Products complete")
 
     #Convert the index to a new column named Time ({Days/Years})
-#     All_FP.insert(loc = 0, column = 'Time ({})'.format(time_units),value = All_FP.index)
-#     All_AC.insert(loc = 0, column = 'Time ({})'.format(time_units),value = All_AC.index)
-    All_FP.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
-    All_AC.insert(loc = 0, column = 'Time ({})'.format(time_units),value = Times_list)
-    
+    All_FP.insert(loc = 0, column = 'Time ({})'.format(time_units),value = All_FP.index)
+    All_AC.insert(loc = 0, column = 'Time ({})'.format(time_units),value = All_AC.index)
+
     #Here, NOI is to identify the Type of isotope of interest
     if NOI == 'FP':
         return All_FP
@@ -626,11 +546,6 @@ def dataframe_merger(List_of_DataFrames, time_units):
     Here List_of_DataFrames, List_of_DataFrames[0] is intended to be LEU and 
         List_of_DataFrames[1] is intended to be NU
     """
-#     print("Here are the time units: {}".format(time_units))
-    if kind_of_isotopes.lower() == 'actinides' or kind_of_isotopes.lower() == 'an' :
-            print('Computing U-237 activity as a function of time and adding it to the inventories.\n')
-            List_of_DataFrames[1],List_of_DataFrames[0] = U_237_adder(List_of_DataFrames[1],List_of_DataFrames[0], time_units = time_units)
-            
     if Portion_of_core == 1:
         List_of_DataFrames[0] = List_of_DataFrames[0].drop(columns = ["Time ({})".format(time_units)])
         List_of_DataFrames[0]["Total_Activity"] = List_of_DataFrames[0].iloc[:, 1:].sum(axis=1)
@@ -784,12 +699,9 @@ def split_120(original) :
 print('The Inventory Plotter: Chad Denbrock, Niowave Inc. August 2020\n\n')
 while True :
     time_units = input('What are the time units given in the excel files? (e.g. Days or Years)\n')
-    time_units = time_units.lower()
-#    if time_units.lower() == 'years' :
-    if time_units == 'years':
+    if time_units.lower() == 'years' :
         break
-#    elif time_units.lower() == 'days' :
-    elif time_units == 'days':
+    elif time_units.lower() == 'days' :
         break
     else :
         print('The time units must be either days or years. Try again.\n')
@@ -866,5 +778,4 @@ The_Inventory = dfs
 plotting(The_Inventory)
 print("Inventory Plotter Complete")
 # time.sleep(600)
-# print("{:.2f} seconds to run".format(time.time()-Time))
-input("Please Press 'Enter' to close this script")
+print(Time-time.time())
