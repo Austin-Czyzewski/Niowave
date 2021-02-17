@@ -417,6 +417,8 @@ def output_reader(filename, NOI, time_units = 'days'):
 
 
     print("{} Cases in {}".format(len(Integer_Interval_List), filename))
+    
+    
     ###################################
     # Split them using key phrase, "in curies for case {decay/irrad}"
     ###################################
@@ -425,6 +427,10 @@ def output_reader(filename, NOI, time_units = 'days'):
     
     groups = groups[1:]
     # The first group is all of the junk before the first actual table. Just dump it
+    if len(Integer_Interval_List) != len(groups):
+        print("#"*120 + "\nWARNING: \nDetected number of case time intervals does not match the amount of tables found."\
+              "\nPlease ensure the proper print statement is present in all cases in the input file."\
+             "\nIf all cases are present, one case may not have printed properly, please rerun the ORIGEN input file and check again.\n" + "#"*120)
 
     all_times = list()
     header_unit_list = list()
@@ -559,6 +565,14 @@ def output_reader(filename, NOI, time_units = 'days'):
         All_LE = pd.concat([All_LE,LE_df_final],sort = True)
         All_AC = pd.concat([All_AC,AC_df_final],sort = True)
         All_FP = pd.concat([All_FP,FP_df_final],sort = True)
+        
+        if (len(All_LE) == 0) or (len(All_AC) == 0) or (len(All_FP) == 0):
+            print("#"*120 + "\nWARNING: \nDetected length of tables is 0.\nThis problem may occur if there are no print statements in the input file."\
+                  "\nPlease ensure the proper print statement is present in all cases in the input file."\
+                 "\nThe format for the print statement is as follows and should precede the save statement in each case:\n"\
+                  "print{\n        nuc{ units=CURIES }\n        cutoffs[ ALL = 0 ]\n    }\n" + "#"*120)
+            input("Please press enter to acknowledge this statement and close the script.")
+            exit()
 
     print("All cases stored in DataFrames as strings")
     
