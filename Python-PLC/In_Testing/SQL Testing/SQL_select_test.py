@@ -16,3 +16,6 @@ cursor.execute(sql_query)
 
 for row in cursor:
     print(row)
+
+#Here is a random commented line
+    
