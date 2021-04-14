@@ -1,0 +1,54 @@
+Welcome to this config file.
+
+Current Tunnel: West
+PLC IP: 10.60.0.11
+
+IF_Channel: 3
+Trigger_Channel: 4 
+Trigger_Level: .020
+Read_Start_Voltage: True
+Measurement: 1
+Step_size: 30
+Pulse_Step_size: 30
+Max_Threshold: 100000000
+Walk_Threshold: 0.5
+Pulse_Walk_Threshold: 0.5
+Wait_after_step: 0.0100
+Wait_between_reads: 0.0100
+Interlock_Threshold_mv: 50
+Loops_Debounce: 2
+Interlock_Debounce = 3
+#
+#
+#
+#
+#
+#
+#
+#
+#
+Parameter descriptions:
+Current Tunnel: The name of the tunnel (West, Test, East)
+PLC IP: The IP address of the PLC controlling the magnets. Can be found in productivity suite at the bottom of the screen.
+IF_Channel: This is the oscilloscope channel that the IF error signal is being sent to
+Trigger_Channel: This is the channel to trigger off of on the oscilloscope
+Trigger_Level: This is the level, in Volts, that the trigger is set to
+Read_Start_Voltage: This should almost always remain true. This is to test the form of the output from the oscilloscope.
+                    The form of the output changes based on nuanced features in the oscilloscope and it is easier to work
+                    around it than it is to change it or inform the operator how to change it.
+Measurement: This is the measurement number for the average of the oscilloscope. As a reminder. It is necessary to have 
+                a measurement that reads the mean value of the IF channel. This is the corresponding number of that measurement.
+                As a side note, the measurement number starts at 1. So the top measurement is 1, then 2,3,4.
+Step_size: This is the step size, in Hz, during CW operation
+Pulse_Step_Size: This is the step size, in Hz, while pulsing.
+Max_Threshold: This is the total drift level before the program stops regulation. This is in place as a precursor warning to excessive
+                coupler heating but has since inception been deemed unimportant. The feature remains in case this changes.
+Walk_Threshold: This is the variation, in mV, when CW, before the signal is changed on the signal generator. This is essentailly
+                    the plus-minus on the 0 level for the signal.
+Pulse_Walk_Threshold: This is the variation, in mV, when pulsing, before the signal is changed on the signal generator. This is essentailly
+                    the plus-minus on the 0 level for the signal.
+Wait_after_step: This time, in seconds, is a time set to wait after a step has been taken for the system to stabilize.
+Wait_between_reads: This time, in seconds, simply slows the script down.
+Interlock_Threshold_mv: This is the threshold of variation before a debounce count has begun.
+Loops_Debounce: This is the amount of reads in a row before any change is made.
+Trip_Debounce: This is the amount of reads above the interlock threshold in a row before regulation trips off.
