@@ -1,0 +1,17 @@
+Welcome to Snapshot Config file.
+
+Current_Tunnel: West
+PLC_IP: 10.50.0.10
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+Parameter descriptions:
+Current Tunnel: The name of the tunnel (West, Test, East)
+PLC IP: The IP address of the PLC controlling the magnets. Can be found in productivity suite at the bottom of the screen.

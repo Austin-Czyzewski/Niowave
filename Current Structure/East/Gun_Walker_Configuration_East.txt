@@ -1,0 +1,29 @@
+Welcome to Gun Walker Config file.
+
+Current_Tunnel: East
+PLC_IP: 10.60.0.11
+
+End_Freq: 350.11e6
+
+Big_Step_Size: 3000
+Small_Step_Size: 350
+Small_Sleep_Time: 0.025
+Big_Sleep_Time: 0.250
+Pr_Small_Step_Threshold: 500
+Pr_Absolute_Threshold: 290
+
+SG_GPIB_Add: 10
+OS_GPIB_Add: 1
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+Parameter descriptions:
+Current Tunnel: The name of the tunnel (West, Test, East)
+PLC IP: The IP address of the PLC controlling the magnets. Can be found in productivity suite at the bottom of the screen.

@@ -1,0 +1,28 @@
+Welcome to this config file.
+
+Current Tunnel: West
+PLC IP: 192.168.1.2
+OS_Address: GPIB0::16::INSTR
+
+Runs: 1
+Step_size: .001
+count: 20
+Oscope: False
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+Parameter descriptions:
+Current Tunnel: The name of the tunnel (West, Test, East)
+PLC IP: The IP address of the PLC controlling the magnets. Can be found in productivity suite at the bottom of the screen.
+Runs: How many times you want the Dipole scan to run. This is typically 1 but if you are studying the change in the scan over time you may want more runs.
+Step_size: The difference, in Amps, of each step taken on the dipole scan. Highest resolution is currently (11/20/2020) 1mA or .001 Amps. Be careful lowering
+            this resolution. It may cause the dipole to take steps faster than anticipated. .001 is the recommended step size
+count: The number of PLC scans to average the collected current over. This is for CW operation
+pulsing_count: Similar to count but for pulsing mode. Likely need more than CW to account for averaging on 0s. On short duties please see oscilloscope scans.

@@ -1,0 +1,31 @@
+Welcome to Dog Leg Config file.
+
+Current Tunnel: East
+PLC IP: 10.60.0.11
+
+Threshold_Percent: 60
+Read_Steps: 40
+Center: True
+count: 10
+pulsing_count: 20 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+Parameter descriptions:
+Current Tunnel: The name of the tunnel (West, Test, East)
+PLC IP: The IP address of the PLC controlling the magnets. Can be found in productivity suite at the bottom of the screen.
+Threshold_Percent: This is the amount of initial collection (in percent) that we are willing to have before we turn this down. Setting this to 0 means
+                    that the dog leg will run the full sweep without regard to how much collection remains at each step.
+Read_Steps: This is the amount of steps that will be taken throughout the sweep. Higher number is a higher resolution. Be careful with too low of numbers,
+               as this will change the window frames very quickly. Too high of numbers just slow the program down. Standard is 40 (11/20/2020)
+Center: This is a True or a False. If True then at the end of the dog leg the window frames for both horizontal and vertical will be set to the center of the FWHM
+           for those axes. When False, the window frame values will return to their starting value.
+count: The number of PLC scans to average the collected current over. This is for CW operation
+pulsing_count: Similar to count but for pulsing mode. Likely need more than CW to account for averaging on off pulses.
