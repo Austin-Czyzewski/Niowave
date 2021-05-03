@@ -196,33 +196,38 @@ def Read(Client, Tag_Number, Average = False, count = 20,sleep_time = .010, Bool
         Dipole_1_Current = Read(Client,22201)
 
     '''
-    Tag_Number = int(Tag_Number)-1
+    try:
+        Tag_Number = int(Tag_Number)-1
 
 
-    if Bool == False:
-        
-        if Average == True:
-            
-            temp_list = []
-            for i in range(count):
+        if Bool == False:
+
+            if Average == True:
+
+                temp_list = []
+                for i in range(count):
+                    Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
+                    Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+                    Tag_Value = Tag_Value_Bit.decode_32bit_float()
+                    temp_list.append(Tag_Value)
+
+                    time.sleep(sleep_time)
+
+                return (sum(temp_list)/count)
+            else:
                 Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
                 Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
                 Tag_Value = Tag_Value_Bit.decode_32bit_float()
-                temp_list.append(Tag_Value)
+                return Tag_Value
 
-                time.sleep(sleep_time)
+        if Bool == True:
+            Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
 
-            return (sum(temp_list)/count)
-        else:
-            Payload = Client.read_holding_registers(Tag_Number,2,unit=1)
-            Tag_Value_Bit = BinaryPayloadDecoder.fromRegisters(Payload.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-            Tag_Value = Tag_Value_Bit.decode_32bit_float()
-            return Tag_Value
-        
-    if Bool == True:
-        Tag_Value = Client.read_coils(Tag_Number,unit=1).bits[0]
-
-    return Tag_Value
+        return Tag_Value
+    
+    except:
+        print("\n\n Bad Read from PLC\n\n")
+        return 0
 
 
 def Gather(Client, tag_list, count = 20, sleep_time = 0.010):
@@ -427,6 +432,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
     '''
 
     if Oscope:
+        import GPIB_FUNCS as GPIB
         RM = pyvisa.ResourceManager() #pyVISA device manager
         Resources = RM.list_resources() #Printing out all detected device IDs
         print(Resources)
@@ -470,10 +476,14 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
 
     #print("Difference between start and end value: {0:.3f} Amps".format(Delta))
 
-    write_value_list = []
-    collected_list = []
+    write_value_list = list()
+    collected_list = list()
+    oscope_list = list()
+    o2 = list()
 
     for i in range(Steps + 1):
+
+        progress_bar(i, Steps)
 
         #This is to enforce that any human intervention will break the program and prevent it from running further
         #Note that we are using the write value from the last run in the loop to check that the value is the same as the loop left it
@@ -503,8 +513,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
                 oscope_temp_list = list()
                 oscope_temp_list_2 = list()
 
-                collected_list.append(Read(Client,Read_Tag,Average = False,count = count))
-                for _ in range(5):
+                for _ in range(1):
                     #GPIB_Read_Value = GPIB.cursor_vbar_read_mv(OS)
                     GPIB_Read_Value = GPIB.read_mv(OS, long = Long, measurement = Measurement)
                     GPIB_Read_2 = GPIB.read_mv(OS, long = Long, measurement = M2)
@@ -524,6 +533,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
             time.sleep(sleep_time)
                 
 #     print(write_value_list, collected_list)
+    print("\n")
 
     if Return == "N":
         return
@@ -1052,11 +1062,12 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
                  Read(Client, Target_2_Tag, Average = True, count = count,sleep_time = sleep_time))
     
     print("Right Displacement")
-
+    
     ## Each of these are adding our data to a list as instantiated above. These will appear at each data gathering point
     Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
     for Right_Steps in range(1, Read_Steps + 1):
+        progress_bar(Right_Steps, Read_Steps)
         if Right_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
             #Comparing the current value to the last write value, if it is different, this updates the break loop for both Horizontal and Vertical
             if abs(Read(Client,WF1H_Tag) - WF1H_Write_Value) >= Deviation_Check or abs(Read(Client,WF2H_Tag) - WF2H_Write_Value) >= Deviation_Check: #WF1H Check
@@ -1075,7 +1086,8 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
         Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
         if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
             break
-    print("Moving to center")
+            
+    print("\nMoving to center")
     
     Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Right_Steps//2, sleep_time = sleep_time) #Moves back to the start in half of the same # of steps taken
 
@@ -1084,6 +1096,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
     Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
     for Left_Steps in range(1, Read_Steps + 1):
+        progress_bar(Left_Steps, Read_Steps)
         if H_Broken or V_Broken == True:
             break
         if Left_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
@@ -1106,7 +1119,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
         if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
             break
 
-    print("Moving to center")
+    print("\nMoving to center")
 
     Ramp_Two(Client, WF1H_Tag, WF2H_Tag, Magnet_1_Stop = WF1H_Start, Magnet_2_Stop = WF2H_Start, Resolution = Left_Steps//2, sleep_time = sleep_time)
 
@@ -1115,6 +1128,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
     Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
     for Upward_Steps in range(1, Read_Steps + 1):
+        progress_bar(Upward_Steps, Read_Steps)
         if H_Broken or V_Broken == True:
             break
         if Upward_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
@@ -1137,7 +1151,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
         if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
             break
 
-    print("Moving to center")
+    print("\nMoving to center")
 
     Ramp_Two(Client, WF1V_Tag, WF2V_Tag, Magnet_1_Stop = WF1V_Start, Magnet_2_Stop = WF2V_Start, Resolution = Upward_Steps//2, sleep_time = sleep_time)
 
@@ -1146,6 +1160,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
     Full_Data_Set.append(Gather(Client, Tag_List, count = count, sleep_time = sleep_time))
 
     for Downward_Steps in range(1, Read_Steps + 1):
+        progress_bar(Downward_Steps, Read_Steps)
         if H_Broken or V_Broken == True:
             break
         if Downward_Steps != 1: #Don't check on the first run due to absence of Window Frame write values
@@ -1168,7 +1183,7 @@ def Dog_Leg(Client, WF1H_Tag, WF2H_Tag, WF1V_Tag, WF2V_Tag, Target_1_Tag, \
         if abs(Full_Data_Set[-1][5] + Full_Data_Set[-1][6]) < abs(Threshold_Percent*Start_Current*.01): #Checking our threshold
             break
 
-    print("Moving to center")
+    print("\nMoving to center")
     
     
     if iteration == None:

@@ -2,7 +2,7 @@ import GPIB_FUNCS as GPIB #Importing our GPIB communication functions for easier
 import pyvisa #import GPIB communication module
 import time #imports time to sleep program temporarily
 import Master as M
-
+import sys
 config_file_path = str(sys.argv[-1])
 
 Tunnel, PLC_IP, End_Freq, Big_Step_Size, Small_Step_Size, Small_Sleep_Time, \
