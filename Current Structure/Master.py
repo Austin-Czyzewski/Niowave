@@ -145,10 +145,10 @@ def merge(list1, list2):
     return merged_list
 
 def progress_bar(current, total, number_of_bars = 25):
-    print("[{}{}]\r".format("#"*int(round(current/total,10)*number_of_bars),\
-                            " "*(-1 + number_of_bars - int(round(current/total,10)*number_of_bars))), end = '')
-
-
+    current += 1
+    Fills = '\u2588'*int(round(current/total,10)*number_of_bars)
+    Blanks = f" "*(number_of_bars - int(round(current/total,10)*number_of_bars))
+    print(f"|{Fills}{Blanks}| {current}/{total}\r", end = '')
 
 def Make_Client(IP):
     '''
@@ -435,7 +435,7 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
         import GPIB_FUNCS as GPIB
         RM = pyvisa.ResourceManager() #pyVISA device manager
         Resources = RM.list_resources() #Printing out all detected device IDs
-        print(Resources)
+        #print(Resources)
 
         OS = RM.open_resource(os_address) #Opening the oscilloscope as an object
 
@@ -458,7 +458,21 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
             if Read_Start_Voltage == True:
                 Error_signal_offset = long_test
             pass
-    
+
+        try:
+            gating_status = OS.query("MEASU:GAT?")
+            #print(gating_status)
+            if not 'CURS' in gating_status:
+                OS.write("MEASU:GAT CURS")
+                print("-"*60)
+                print("Measurement gating was off, now gating between vertical cursor bars")
+                print("-"*60)
+                time.sleep(0.5)
+        except:
+            print("-"*60)
+            print("Please ensure that your measurement is gated on the oscilloscope.")
+            print("-"*60)
+                
     Start_Value = Read(Client,Tag_Number)
     
     Delta = End_Value-Start_Value
@@ -480,6 +494,8 @@ def Ramp_One_Way(Client, Tag_Number, End_Value = 0, Max_Step = 0.010, Return = "
     collected_list = list()
     oscope_list = list()
     o2 = list()
+
+    print(f"Going to {End_Value} Amps")
 
     for i in range(Steps + 1):
 

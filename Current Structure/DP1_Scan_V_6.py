@@ -84,9 +84,9 @@ colors = list()
 Oscope_Data = list()
 Oscope_Data_2 = list()
 
-print("Beginning Scan")
+print("Beginning dipole scans")
 for i in range(Runs):
-    print("Going to target value")
+    #print("Going to target value")
 
     if use_oscope.lower() == 'true':
         DP1_Vals, DBA_Col, Oscope, O2 = M.Ramp_One_Way(Client, Dipole_Tag, End_Value, Max_Step = Step_Size, Return = "Y", \
@@ -103,7 +103,7 @@ for i in range(Runs):
     
     colors += ['chocolate' for i in list(range(len(DP1_Vals)))] #Appending 'chocolate' as the color for this data set
     
-    print("Going to start")
+    #print("Going to start")
     
     if use_oscope.lower() == 'true':
         DP1_Vals, DBA_Col, Oscope, O2 = M.Ramp_One_Way(Client, Dipole_Tag, Start_Value, Max_Step = Step_Size, Return = "Y", \
@@ -123,6 +123,8 @@ DP1_Values = np.array(DP1_Values)
 DBA_Collection = np.array(DBA_Collection)
 Oscope_List = np.array(Oscope_Data)
 Oscope_List_2 = np.array(Oscope_Data_2)
+
+print("Dipole scans finished. Saving to .xlsx and plotting.")
 
 fig, ax = plt.subplots(figsize = (12,8))
 
@@ -146,10 +148,19 @@ ax.set_title("Dipole 1 current collected over walk from {0:.3f} to {1:.3f}".form
 fig.suptitle("Orange = Ascending, Red = Descending",fontsize = 8, alpha = 0.65)
 fig.savefig(f'.\Output Data\{Tunnel}\Dipole Scans\{now}_DP1_scan_graph.{plot_type}', dpi = 450, transparent = True)
 
+print(f'.\\Output Data\\{Tunnel}\\Dipole Scans\\{now}_DP1_scan_graph.{plot_type} saved. Writing excel file. ')
 
-data_frame = pd.DataFrame([DP1_Values, DBA_Collection, Oscope_List, Oscope_List_2])
-data_frame = data_frame.transpose()
-data_frame.columns =  ['Dipole 1 (Amps)', 'Collection (Amps -- PLC)', 'Collection (mV -- Oscope)', 'Emitted Current (mV -- Oscope)']
+if use_oscope.lower() == 'true':
+    percent_collection_excel_formulas = [f"=(C{num+2}/D{num+2})*25" for num in range(len(DP1_Values))]
+    data_frame = pd.DataFrame([DP1_Values, DBA_Collection, Oscope_List, Oscope_List_2, percent_collection_excel_formulas])
+    data_frame = data_frame.transpose()
+    data_frame.columns =  ['Dipole 1 (Amps)', 'Collection (Amps -- PLC)', 'Collection (mV -- Oscope)', 'Emitted Current (mV -- Oscope)', "Percent Collection"]
+
+else:
+    data_frame = pd.DataFrame([DP1_Values, DBA_Collection])
+    data_frame = data_frame.transpose()
+    data_frame.columns =  ['Dipole 1 (Amps)', 'Collection (Amps -- PLC)']
+
 # data_frame.transpose()
 print(data_frame.head())
 
@@ -182,11 +193,13 @@ chart1.add_series({
     'categories': "='Dipole Scan Data'!$A$2:$A${}".format(len(data_frame['Dipole 1 (Amps)'])+1),
     'values':     "='Dipole Scan Data'!$B$2:$B${}".format(len(data_frame['Dipole 1 (Amps)'])+1),
 })
-chart1.add_series({
-    'name':       'Oscilloscope data',
-    'categories': "='Dipole Scan Data'!$A$2:$A${}".format(len(data_frame['Dipole 1 (Amps)'])+1),
-    'values':     "='Dipole Scan Data'!$C$2:$C${}".format(len(data_frame['Dipole 1 (Amps)'])+1),
-})
+
+if use_oscope.lower() == 'true':
+    chart1.add_series({
+        'name':       'Oscilloscope data',
+        'categories': "='Dipole Scan Data'!$A$2:$A${}".format(len(data_frame['Dipole 1 (Amps)'])+1),
+        'values':     "='Dipole Scan Data'!$C$2:$C${}".format(len(data_frame['Dipole 1 (Amps)'])+1),
+    })
 
 chart1.set_title({'name': 'Dipole Scan'})
 
@@ -195,11 +208,13 @@ chart1.set_x_axis({'name': 'Dipole 1 Amps',# 'min': min(df.One), 'max': max(df.O
                    'name_font': {'bold': True, 'italic': True}, 'reverse': True,
                    'interval_tick': int(len(data_frame['Dipole 1 (Amps)'])/10)})
 
-chart1.set_y_axis({'name': 'Emitted Current'})
+chart1.set_y_axis({'name': 'Emitted Current', 'reverse': True})
 
-dpscan.insert_chart('E2', chart1, {'x_offset': 25, 'y_offset': 10})
+dpscan.insert_chart('F2', chart1, {'x_offset': 25, 'y_offset': 10})
 
 workbook.close()
+
+print(f'.\Output Data\{Tunnel}\Dipole Scans\{now}_DP1_scan.xlsx saved. Program finished. Displaying plot.')
 
 plt.show()
 
